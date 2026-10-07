@@ -1,0 +1,38 @@
+{
+    "description": "Programmatic surface for the Adviverse dashboard — advertiser, publisher, finance, deals, reporting and admin endpoints. Authenticate with a session bearer token or a scoped API key (x-api-key: ak_<prefix>.<secret>).",
+    "keywords": [
+        "openapitools",
+        "openapi-generator",
+        "openapi",
+        "php",
+        "sdk",
+        "rest",
+        "api"
+    ],
+    "homepage": "https://openapi-generator.tech",
+    "license": "unlicense",
+    "authors": [
+        {
+            "name": "OpenAPI",
+            "homepage": "https://openapi-generator.tech"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "guzzlehttp/guzzle": "^7.3",
+        "guzzlehttp/psr7": "^1.7 || ^2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0 || ^9.0",
+        "friendsofphp/php-cs-fixer": "^3.5"
+    },
+    "autoload": {
+        "psr-4": { "Adviverse\\Api\\" : "lib/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Adviverse\\Api\\Test\\" : "test/" }
+    }
+}
