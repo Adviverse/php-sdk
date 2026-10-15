@@ -74,6 +74,9 @@ class RewardsApi
         'rewardsControllerAdminPayouts' => [
             'application/json',
         ],
+        'rewardsControllerCreateOnchainPool' => [
+            'application/json',
+        ],
         'rewardsControllerFundPool' => [
             'application/json',
         ],
@@ -90,6 +93,9 @@ class RewardsApi
             'application/json',
         ],
         'rewardsControllerSetWorldWebhook' => [
+            'application/json',
+        ],
+        'rewardsControllerVoucherSecret' => [
             'application/json',
         ],
     ];
@@ -344,6 +350,214 @@ class RewardsApi
         $query = ObjectSerializer::buildQuery($queryParams);
         return new Request(
             'GET',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation rewardsControllerCreateOnchainPool
+     *
+     * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto create_onchain_pool_dto (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
+     *
+     * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws \InvalidArgumentException
+     * @return void
+     */
+    public function rewardsControllerCreateOnchainPool($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
+    {
+        $this->rewardsControllerCreateOnchainPoolWithHttpInfo($create_onchain_pool_dto, $contentType);
+    }
+
+    /**
+     * Operation rewardsControllerCreateOnchainPoolWithHttpInfo
+     *
+     * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
+     *
+     * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws \InvalidArgumentException
+     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function rewardsControllerCreateOnchainPoolWithHttpInfo($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
+    {
+        $request = $this->rewardsControllerCreateOnchainPoolRequest($create_onchain_pool_dto, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+
+            return [null, $statusCode, $response->getHeaders()];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation rewardsControllerCreateOnchainPoolAsync
+     *
+     * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function rewardsControllerCreateOnchainPoolAsync($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
+    {
+        return $this->rewardsControllerCreateOnchainPoolAsyncWithHttpInfo($create_onchain_pool_dto, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation rewardsControllerCreateOnchainPoolAsyncWithHttpInfo
+     *
+     * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function rewardsControllerCreateOnchainPoolAsyncWithHttpInfo($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
+    {
+        $returnType = '';
+        $request = $this->rewardsControllerCreateOnchainPoolRequest($create_onchain_pool_dto, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'rewardsControllerCreateOnchainPool'
+     *
+     * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function rewardsControllerCreateOnchainPoolRequest($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
+    {
+
+        // verify the required parameter 'create_onchain_pool_dto' is set
+        if ($create_onchain_pool_dto === null || (is_array($create_onchain_pool_dto) && count($create_onchain_pool_dto) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $create_onchain_pool_dto when calling rewardsControllerCreateOnchainPool'
+            );
+        }
+
+
+        $resourcePath = '/v1/rewards/pools/onchain';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            [],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (isset($create_onchain_pool_dto)) {
+            if (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the body
+                $httpBody = \GuzzleHttp\Utils::jsonEncode(ObjectSerializer::sanitizeForSerialization($create_onchain_pool_dto));
+            } else {
+                $httpBody = $create_onchain_pool_dto;
+            }
+        } elseif (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'POST',
             $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
             $headers,
             $httpBody
@@ -1617,6 +1831,215 @@ class RewardsApi
         $query = ObjectSerializer::buildQuery($queryParams);
         return new Request(
             'POST',
+            $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
+            $headers,
+            $httpBody
+        );
+    }
+
+    /**
+     * Operation rewardsControllerVoucherSecret
+     *
+     * @param  string $campaign_id campaign_id (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
+     *
+     * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws \InvalidArgumentException
+     * @return void
+     */
+    public function rewardsControllerVoucherSecret($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
+    {
+        $this->rewardsControllerVoucherSecretWithHttpInfo($campaign_id, $contentType);
+    }
+
+    /**
+     * Operation rewardsControllerVoucherSecretWithHttpInfo
+     *
+     * @param  string $campaign_id (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
+     *
+     * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
+     * @throws \InvalidArgumentException
+     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     */
+    public function rewardsControllerVoucherSecretWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
+    {
+        $request = $this->rewardsControllerVoucherSecretRequest($campaign_id, $contentType);
+
+        try {
+            $options = $this->createHttpClientOption();
+            try {
+                $response = $this->client->send($request, $options);
+            } catch (RequestException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    $e->getResponse() ? $e->getResponse()->getHeaders() : null,
+                    $e->getResponse() ? (string) $e->getResponse()->getBody() : null
+                );
+            } catch (ConnectException $e) {
+                throw new ApiException(
+                    "[{$e->getCode()}] {$e->getMessage()}",
+                    (int) $e->getCode(),
+                    null,
+                    null
+                );
+            }
+
+            $statusCode = $response->getStatusCode();
+
+
+            return [null, $statusCode, $response->getHeaders()];
+
+        } catch (ApiException $e) {
+            switch ($e->getCode()) {
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Operation rewardsControllerVoucherSecretAsync
+     *
+     * @param  string $campaign_id (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function rewardsControllerVoucherSecretAsync($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
+    {
+        return $this->rewardsControllerVoucherSecretAsyncWithHttpInfo($campaign_id, $contentType)
+            ->then(
+                function ($response) {
+                    return $response[0];
+                }
+            );
+    }
+
+    /**
+     * Operation rewardsControllerVoucherSecretAsyncWithHttpInfo
+     *
+     * @param  string $campaign_id (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function rewardsControllerVoucherSecretAsyncWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
+    {
+        $returnType = '';
+        $request = $this->rewardsControllerVoucherSecretRequest($campaign_id, $contentType);
+
+        return $this->client
+            ->sendAsync($request, $this->createHttpClientOption())
+            ->then(
+                function ($response) use ($returnType) {
+                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                },
+                function ($exception) {
+                    $response = $exception->getResponse();
+                    $statusCode = $response->getStatusCode();
+                    throw new ApiException(
+                        sprintf(
+                            '[%d] Error connecting to the API (%s)',
+                            $statusCode,
+                            $exception->getRequest()->getUri()
+                        ),
+                        $statusCode,
+                        $response->getHeaders(),
+                        (string) $response->getBody()
+                    );
+                }
+            );
+    }
+
+    /**
+     * Create request for operation 'rewardsControllerVoucherSecret'
+     *
+     * @param  string $campaign_id (required)
+     * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
+     *
+     * @throws \InvalidArgumentException
+     * @return \GuzzleHttp\Psr7\Request
+     */
+    public function rewardsControllerVoucherSecretRequest($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
+    {
+
+        // verify the required parameter 'campaign_id' is set
+        if ($campaign_id === null || (is_array($campaign_id) && count($campaign_id) === 0)) {
+            throw new \InvalidArgumentException(
+                'Missing the required parameter $campaign_id when calling rewardsControllerVoucherSecret'
+            );
+        }
+
+
+        $resourcePath = '/v1/rewards/pools/{campaignId}/voucher-secret';
+        $formParams = [];
+        $queryParams = [];
+        $headerParams = [];
+        $httpBody = '';
+        $multipart = false;
+
+
+
+        // path params
+        if ($campaign_id !== null) {
+            $resourcePath = str_replace(
+                '{' . 'campaignId' . '}',
+                ObjectSerializer::toPathValue($campaign_id),
+                $resourcePath
+            );
+        }
+
+
+        $headers = $this->headerSelector->selectHeaders(
+            [],
+            $contentType,
+            $multipart
+        );
+
+        // for model (json/xml)
+        if (count($formParams) > 0) {
+            if ($multipart) {
+                $multipartContents = [];
+                foreach ($formParams as $formParamName => $formParamValue) {
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
+                }
+                // for HTTP post (form)
+                $httpBody = new MultipartStream($multipartContents);
+
+            } elseif (stripos($headers['Content-Type'], 'application/json') !== false) {
+                # if Content-Type contains "application/json", json_encode the form parameters
+                $httpBody = \GuzzleHttp\Utils::jsonEncode($formParams);
+            } else {
+                // for HTTP post (form)
+                $httpBody = ObjectSerializer::buildQuery($formParams);
+            }
+        }
+
+
+        $defaultHeaders = [];
+        if ($this->config->getUserAgent()) {
+            $defaultHeaders['User-Agent'] = $this->config->getUserAgent();
+        }
+
+        $headers = array_merge(
+            $defaultHeaders,
+            $headerParams,
+            $headers
+        );
+
+        $operationHost = $this->config->getHost();
+        $query = ObjectSerializer::buildQuery($queryParams);
+        return new Request(
+            'GET',
             $operationHost . $resourcePath . ($query ? "?{$query}" : ''),
             $headers,
             $httpBody

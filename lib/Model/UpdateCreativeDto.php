@@ -68,7 +68,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => 'float',
         'width' => 'float',
         'height' => 'float',
-        'weight' => 'float'
+        'weight' => 'float',
+        'carousel_items' => '\Adviverse\Api\Model\CarouselItemDto[]',
+        'duration' => 'float',
+        'skip_offset_sec' => 'float',
+        'vpaid_url' => 'string',
+        'companions' => '\Adviverse\Api\Model\CompanionDto[]',
+        'vast_tag_url' => 'string'
     ];
 
     /**
@@ -90,7 +96,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => null,
         'width' => null,
         'height' => null,
-        'weight' => null
+        'weight' => null,
+        'carousel_items' => null,
+        'duration' => null,
+        'skip_offset_sec' => null,
+        'vpaid_url' => 'uri',
+        'companions' => null,
+        'vast_tag_url' => 'uri'
     ];
 
     /**
@@ -110,7 +122,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => false,
         'width' => false,
         'height' => false,
-        'weight' => false
+        'weight' => false,
+        'carousel_items' => false,
+        'duration' => false,
+        'skip_offset_sec' => false,
+        'vpaid_url' => false,
+        'companions' => false,
+        'vast_tag_url' => false
     ];
 
     /**
@@ -210,7 +228,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => 'starRating',
         'width' => 'width',
         'height' => 'height',
-        'weight' => 'weight'
+        'weight' => 'weight',
+        'carousel_items' => 'carouselItems',
+        'duration' => 'duration',
+        'skip_offset_sec' => 'skipOffsetSec',
+        'vpaid_url' => 'vpaidUrl',
+        'companions' => 'companions',
+        'vast_tag_url' => 'vastTagUrl'
     ];
 
     /**
@@ -230,7 +254,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => 'setStarRating',
         'width' => 'setWidth',
         'height' => 'setHeight',
-        'weight' => 'setWeight'
+        'weight' => 'setWeight',
+        'carousel_items' => 'setCarouselItems',
+        'duration' => 'setDuration',
+        'skip_offset_sec' => 'setSkipOffsetSec',
+        'vpaid_url' => 'setVpaidUrl',
+        'companions' => 'setCompanions',
+        'vast_tag_url' => 'setVastTagUrl'
     ];
 
     /**
@@ -250,7 +280,13 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'star_rating' => 'getStarRating',
         'width' => 'getWidth',
         'height' => 'getHeight',
-        'weight' => 'getWeight'
+        'weight' => 'getWeight',
+        'carousel_items' => 'getCarouselItems',
+        'duration' => 'getDuration',
+        'skip_offset_sec' => 'getSkipOffsetSec',
+        'vpaid_url' => 'getVpaidUrl',
+        'companions' => 'getCompanions',
+        'vast_tag_url' => 'getVastTagUrl'
     ];
 
     /**
@@ -322,6 +358,12 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         $this->setIfExists('width', $data ?? [], null);
         $this->setIfExists('height', $data ?? [], null);
         $this->setIfExists('weight', $data ?? [], null);
+        $this->setIfExists('carousel_items', $data ?? [], null);
+        $this->setIfExists('duration', $data ?? [], null);
+        $this->setIfExists('skip_offset_sec', $data ?? [], null);
+        $this->setIfExists('vpaid_url', $data ?? [], null);
+        $this->setIfExists('companions', $data ?? [], null);
+        $this->setIfExists('vast_tag_url', $data ?? [], null);
     }
 
     /**
@@ -350,6 +392,34 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
     public function listInvalidProperties()
     {
         $invalidProperties = [];
+
+        if (!is_null($this->container['duration']) && ($this->container['duration'] > 600)) {
+            $invalidProperties[] = "invalid value for 'duration', must be smaller than or equal to 600.";
+        }
+
+        if (!is_null($this->container['duration']) && ($this->container['duration'] < 1)) {
+            $invalidProperties[] = "invalid value for 'duration', must be bigger than or equal to 1.";
+        }
+
+        if (!is_null($this->container['skip_offset_sec']) && ($this->container['skip_offset_sec'] > 600)) {
+            $invalidProperties[] = "invalid value for 'skip_offset_sec', must be smaller than or equal to 600.";
+        }
+
+        if (!is_null($this->container['skip_offset_sec']) && ($this->container['skip_offset_sec'] < 0)) {
+            $invalidProperties[] = "invalid value for 'skip_offset_sec', must be bigger than or equal to 0.";
+        }
+
+        if (!is_null($this->container['vpaid_url']) && (mb_strlen($this->container['vpaid_url']) > 2048)) {
+            $invalidProperties[] = "invalid value for 'vpaid_url', the character length must be smaller than or equal to 2048.";
+        }
+
+        if (!is_null($this->container['companions']) && (count($this->container['companions']) > 5)) {
+            $invalidProperties[] = "invalid value for 'companions', number of items must be less than or equal to 5.";
+        }
+
+        if (!is_null($this->container['vast_tag_url']) && (mb_strlen($this->container['vast_tag_url']) > 2048)) {
+            $invalidProperties[] = "invalid value for 'vast_tag_url', the character length must be smaller than or equal to 2048.";
+        }
 
         return $invalidProperties;
     }
@@ -686,6 +756,196 @@ class UpdateCreativeDto implements ModelInterface, ArrayAccess, \JsonSerializabl
             throw new \InvalidArgumentException('non-nullable weight cannot be null');
         }
         $this->container['weight'] = $weight;
+
+        return $this;
+    }
+
+    /**
+     * Gets carousel_items
+     *
+     * @return \Adviverse\Api\Model\CarouselItemDto[]|null
+     */
+    public function getCarouselItems()
+    {
+        return $this->container['carousel_items'];
+    }
+
+    /**
+     * Sets carousel_items
+     *
+     * @param \Adviverse\Api\Model\CarouselItemDto[]|null $carousel_items carousel_items
+     *
+     * @return self
+     */
+    public function setCarouselItems($carousel_items)
+    {
+        if (is_null($carousel_items)) {
+            throw new \InvalidArgumentException('non-nullable carousel_items cannot be null');
+        }
+        $this->container['carousel_items'] = $carousel_items;
+
+        return $this;
+    }
+
+    /**
+     * Gets duration
+     *
+     * @return float|null
+     */
+    public function getDuration()
+    {
+        return $this->container['duration'];
+    }
+
+    /**
+     * Sets duration
+     *
+     * @param float|null $duration duration
+     *
+     * @return self
+     */
+    public function setDuration($duration)
+    {
+        if (is_null($duration)) {
+            throw new \InvalidArgumentException('non-nullable duration cannot be null');
+        }
+
+        if (($duration > 600)) {
+            throw new \InvalidArgumentException('invalid value for $duration when calling UpdateCreativeDto., must be smaller than or equal to 600.');
+        }
+        if (($duration < 1)) {
+            throw new \InvalidArgumentException('invalid value for $duration when calling UpdateCreativeDto., must be bigger than or equal to 1.');
+        }
+
+        $this->container['duration'] = $duration;
+
+        return $this;
+    }
+
+    /**
+     * Gets skip_offset_sec
+     *
+     * @return float|null
+     */
+    public function getSkipOffsetSec()
+    {
+        return $this->container['skip_offset_sec'];
+    }
+
+    /**
+     * Sets skip_offset_sec
+     *
+     * @param float|null $skip_offset_sec >0 makes the linear ad skippable after N seconds (VAST skipoffset).
+     *
+     * @return self
+     */
+    public function setSkipOffsetSec($skip_offset_sec)
+    {
+        if (is_null($skip_offset_sec)) {
+            throw new \InvalidArgumentException('non-nullable skip_offset_sec cannot be null');
+        }
+
+        if (($skip_offset_sec > 600)) {
+            throw new \InvalidArgumentException('invalid value for $skip_offset_sec when calling UpdateCreativeDto., must be smaller than or equal to 600.');
+        }
+        if (($skip_offset_sec < 0)) {
+            throw new \InvalidArgumentException('invalid value for $skip_offset_sec when calling UpdateCreativeDto., must be bigger than or equal to 0.');
+        }
+
+        $this->container['skip_offset_sec'] = $skip_offset_sec;
+
+        return $this;
+    }
+
+    /**
+     * Gets vpaid_url
+     *
+     * @return string|null
+     */
+    public function getVpaidUrl()
+    {
+        return $this->container['vpaid_url'];
+    }
+
+    /**
+     * Sets vpaid_url
+     *
+     * @param string|null $vpaid_url Interactive VPAID (application/javascript) creative file, https.
+     *
+     * @return self
+     */
+    public function setVpaidUrl($vpaid_url)
+    {
+        if (is_null($vpaid_url)) {
+            throw new \InvalidArgumentException('non-nullable vpaid_url cannot be null');
+        }
+        if ((mb_strlen($vpaid_url) > 2048)) {
+            throw new \InvalidArgumentException('invalid length for $vpaid_url when calling UpdateCreativeDto., must be smaller than or equal to 2048.');
+        }
+
+        $this->container['vpaid_url'] = $vpaid_url;
+
+        return $this;
+    }
+
+    /**
+     * Gets companions
+     *
+     * @return \Adviverse\Api\Model\CompanionDto[]|null
+     */
+    public function getCompanions()
+    {
+        return $this->container['companions'];
+    }
+
+    /**
+     * Sets companions
+     *
+     * @param \Adviverse\Api\Model\CompanionDto[]|null $companions Companion banners (VAST CompanionAds), max 5.
+     *
+     * @return self
+     */
+    public function setCompanions($companions)
+    {
+        if (is_null($companions)) {
+            throw new \InvalidArgumentException('non-nullable companions cannot be null');
+        }
+
+        if ((count($companions) > 5)) {
+            throw new \InvalidArgumentException('invalid value for $companions when calling UpdateCreativeDto., number of items must be less than or equal to 5.');
+        }
+        $this->container['companions'] = $companions;
+
+        return $this;
+    }
+
+    /**
+     * Gets vast_tag_url
+     *
+     * @return string|null
+     */
+    public function getVastTagUrl()
+    {
+        return $this->container['vast_tag_url'];
+    }
+
+    /**
+     * Sets vast_tag_url
+     *
+     * @param string|null $vast_tag_url Third-party VAST tag (the advertiser's own ad server), https. Only valid for type video/audio. Makes assetUrl optional: with no assetUrl the engine serves a VAST <Wrapper> pointing at this tag; when both are set the inline asset wins.
+     *
+     * @return self
+     */
+    public function setVastTagUrl($vast_tag_url)
+    {
+        if (is_null($vast_tag_url)) {
+            throw new \InvalidArgumentException('non-nullable vast_tag_url cannot be null');
+        }
+        if ((mb_strlen($vast_tag_url) > 2048)) {
+            throw new \InvalidArgumentException('invalid length for $vast_tag_url when calling UpdateCreativeDto., must be smaller than or equal to 2048.');
+        }
+
+        $this->container['vast_tag_url'] = $vast_tag_url;
 
         return $this;
     }

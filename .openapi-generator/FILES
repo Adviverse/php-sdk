@@ -60,6 +60,7 @@ lib/Model/ClaimScreenDto.php
 lib/Model/ClaimSurfaceDto.php
 lib/Model/ClientPingDto.php
 lib/Model/ComboUnitDto.php
+lib/Model/CompanionDto.php
 lib/Model/ConsentConfigDto.php
 lib/Model/ConsentDto.php
 lib/Model/CreateAppDto.php
@@ -73,6 +74,7 @@ lib/Model/CreateDestinationDto.php
 lib/Model/CreateFeedDto.php
 lib/Model/CreateGuideDto.php
 lib/Model/CreateKeyDto.php
+lib/Model/CreateOnchainPoolDto.php
 lib/Model/CreatePlacementDto.php
 lib/Model/CreatePortalConfigDto.php
 lib/Model/CreatePostDto.php
