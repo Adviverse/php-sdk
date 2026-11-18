@@ -134,27 +134,32 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerClearing
      *
+     * Get the clearing-price distribution for a placement
+     *
      * @param  string $placement_id placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerClearing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PublisherInsightsControllerClearing200Response
      */
     public function publisherInsightsControllerClearing($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerClearing'][0])
     {
-        $this->publisherInsightsControllerClearingWithHttpInfo($placement_id, $contentType);
+        list($response) = $this->publisherInsightsControllerClearingWithHttpInfo($placement_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation publisherInsightsControllerClearingWithHttpInfo
+     *
+     * Get the clearing-price distribution for a placement
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerClearing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PublisherInsightsControllerClearing200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function publisherInsightsControllerClearingWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerClearing'][0])
     {
@@ -183,10 +188,87 @@ class PublisherInsightsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -194,6 +276,8 @@ class PublisherInsightsApi
 
     /**
      * Operation publisherInsightsControllerClearingAsync
+     *
+     * Get the clearing-price distribution for a placement
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerClearing'] to see the possible values for this operation
@@ -214,6 +298,8 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerClearingAsyncWithHttpInfo
      *
+     * Get the clearing-price distribution for a placement
+     *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerClearing'] to see the possible values for this operation
      *
@@ -222,14 +308,27 @@ class PublisherInsightsApi
      */
     public function publisherInsightsControllerClearingAsyncWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerClearing'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerClearing200Response';
         $request = $this->publisherInsightsControllerClearingRequest($placement_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -289,7 +388,7 @@ class PublisherInsightsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -319,6 +418,15 @@ class PublisherInsightsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -344,25 +452,30 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerDeals
      *
+     * Get performance of your deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerDeals'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PublisherInsightsControllerDeals200Response
      */
     public function publisherInsightsControllerDeals(string $contentType = self::contentTypes['publisherInsightsControllerDeals'][0])
     {
-        $this->publisherInsightsControllerDealsWithHttpInfo($contentType);
+        list($response) = $this->publisherInsightsControllerDealsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation publisherInsightsControllerDealsWithHttpInfo
      *
+     * Get performance of your deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerDeals'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PublisherInsightsControllerDeals200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function publisherInsightsControllerDealsWithHttpInfo(string $contentType = self::contentTypes['publisherInsightsControllerDeals'][0])
     {
@@ -391,10 +504,87 @@ class PublisherInsightsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -402,6 +592,8 @@ class PublisherInsightsApi
 
     /**
      * Operation publisherInsightsControllerDealsAsync
+     *
+     * Get performance of your deals
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerDeals'] to see the possible values for this operation
      *
@@ -421,6 +613,8 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerDealsAsyncWithHttpInfo
      *
+     * Get performance of your deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerDeals'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -428,14 +622,27 @@ class PublisherInsightsApi
      */
     public function publisherInsightsControllerDealsAsyncWithHttpInfo(string $contentType = self::contentTypes['publisherInsightsControllerDeals'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerDeals200Response';
         $request = $this->publisherInsightsControllerDealsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -478,7 +685,7 @@ class PublisherInsightsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -508,6 +715,15 @@ class PublisherInsightsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -533,27 +749,32 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerFloorRecommendation
      *
+     * Get a revenue-maximizing floor recommendation
+     *
      * @param  string $placement_id placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerFloorRecommendation'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response
      */
     public function publisherInsightsControllerFloorRecommendation($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerFloorRecommendation'][0])
     {
-        $this->publisherInsightsControllerFloorRecommendationWithHttpInfo($placement_id, $contentType);
+        list($response) = $this->publisherInsightsControllerFloorRecommendationWithHttpInfo($placement_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation publisherInsightsControllerFloorRecommendationWithHttpInfo
+     *
+     * Get a revenue-maximizing floor recommendation
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerFloorRecommendation'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function publisherInsightsControllerFloorRecommendationWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerFloorRecommendation'][0])
     {
@@ -582,10 +803,87 @@ class PublisherInsightsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -593,6 +891,8 @@ class PublisherInsightsApi
 
     /**
      * Operation publisherInsightsControllerFloorRecommendationAsync
+     *
+     * Get a revenue-maximizing floor recommendation
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerFloorRecommendation'] to see the possible values for this operation
@@ -613,6 +913,8 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerFloorRecommendationAsyncWithHttpInfo
      *
+     * Get a revenue-maximizing floor recommendation
+     *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerFloorRecommendation'] to see the possible values for this operation
      *
@@ -621,14 +923,27 @@ class PublisherInsightsApi
      */
     public function publisherInsightsControllerFloorRecommendationAsyncWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerFloorRecommendation'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerFloorRecommendation200Response';
         $request = $this->publisherInsightsControllerFloorRecommendationRequest($placement_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -688,7 +1003,7 @@ class PublisherInsightsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -718,6 +1033,15 @@ class PublisherInsightsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -743,27 +1067,32 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerNoFill
      *
+     * Get no-fill reasons for a placement
+     *
      * @param  string $placement_id placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerNoFill'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response
      */
     public function publisherInsightsControllerNoFill($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerNoFill'][0])
     {
-        $this->publisherInsightsControllerNoFillWithHttpInfo($placement_id, $contentType);
+        list($response) = $this->publisherInsightsControllerNoFillWithHttpInfo($placement_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation publisherInsightsControllerNoFillWithHttpInfo
+     *
+     * Get no-fill reasons for a placement
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerNoFill'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function publisherInsightsControllerNoFillWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerNoFill'][0])
     {
@@ -792,10 +1121,87 @@ class PublisherInsightsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -803,6 +1209,8 @@ class PublisherInsightsApi
 
     /**
      * Operation publisherInsightsControllerNoFillAsync
+     *
+     * Get no-fill reasons for a placement
      *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerNoFill'] to see the possible values for this operation
@@ -823,6 +1231,8 @@ class PublisherInsightsApi
     /**
      * Operation publisherInsightsControllerNoFillAsyncWithHttpInfo
      *
+     * Get no-fill reasons for a placement
+     *
      * @param  string $placement_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['publisherInsightsControllerNoFill'] to see the possible values for this operation
      *
@@ -831,14 +1241,27 @@ class PublisherInsightsApi
      */
     public function publisherInsightsControllerNoFillAsyncWithHttpInfo($placement_id, string $contentType = self::contentTypes['publisherInsightsControllerNoFill'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PublisherInsightsControllerNoFill200Response';
         $request = $this->publisherInsightsControllerNoFillRequest($placement_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -898,7 +1321,7 @@ class PublisherInsightsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -928,6 +1351,15 @@ class PublisherInsightsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

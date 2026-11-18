@@ -131,27 +131,32 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerCreateConfig
      *
+     * Save a portal template config
+     *
      * @param  \Adviverse\Api\Model\CreatePortalConfigDto $create_portal_config_dto create_portal_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerCreateConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response
      */
     public function portalTemplatesControllerCreateConfig($create_portal_config_dto, string $contentType = self::contentTypes['portalTemplatesControllerCreateConfig'][0])
     {
-        $this->portalTemplatesControllerCreateConfigWithHttpInfo($create_portal_config_dto, $contentType);
+        list($response) = $this->portalTemplatesControllerCreateConfigWithHttpInfo($create_portal_config_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation portalTemplatesControllerCreateConfigWithHttpInfo
+     *
+     * Save a portal template config
      *
      * @param  \Adviverse\Api\Model\CreatePortalConfigDto $create_portal_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerCreateConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function portalTemplatesControllerCreateConfigWithHttpInfo($create_portal_config_dto, string $contentType = self::contentTypes['portalTemplatesControllerCreateConfig'][0])
     {
@@ -180,10 +185,87 @@ class PortalApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -191,6 +273,8 @@ class PortalApi
 
     /**
      * Operation portalTemplatesControllerCreateConfigAsync
+     *
+     * Save a portal template config
      *
      * @param  \Adviverse\Api\Model\CreatePortalConfigDto $create_portal_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerCreateConfig'] to see the possible values for this operation
@@ -211,6 +295,8 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerCreateConfigAsyncWithHttpInfo
      *
+     * Save a portal template config
+     *
      * @param  \Adviverse\Api\Model\CreatePortalConfigDto $create_portal_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerCreateConfig'] to see the possible values for this operation
      *
@@ -219,14 +305,27 @@ class PortalApi
      */
     public function portalTemplatesControllerCreateConfigAsyncWithHttpInfo($create_portal_config_dto, string $contentType = self::contentTypes['portalTemplatesControllerCreateConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerCreateConfig201Response';
         $request = $this->portalTemplatesControllerCreateConfigRequest($create_portal_config_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -277,7 +376,7 @@ class PortalApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -314,6 +413,15 @@ class PortalApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -339,27 +447,32 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerGetConfig
      *
+     * Fetch a portal config
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerGetConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response
      */
     public function portalTemplatesControllerGetConfig($id, string $contentType = self::contentTypes['portalTemplatesControllerGetConfig'][0])
     {
-        $this->portalTemplatesControllerGetConfigWithHttpInfo($id, $contentType);
+        list($response) = $this->portalTemplatesControllerGetConfigWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation portalTemplatesControllerGetConfigWithHttpInfo
+     *
+     * Fetch a portal config
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerGetConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function portalTemplatesControllerGetConfigWithHttpInfo($id, string $contentType = self::contentTypes['portalTemplatesControllerGetConfig'][0])
     {
@@ -388,10 +501,87 @@ class PortalApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -399,6 +589,8 @@ class PortalApi
 
     /**
      * Operation portalTemplatesControllerGetConfigAsync
+     *
+     * Fetch a portal config
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerGetConfig'] to see the possible values for this operation
@@ -419,6 +611,8 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerGetConfigAsyncWithHttpInfo
      *
+     * Fetch a portal config
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerGetConfig'] to see the possible values for this operation
      *
@@ -427,14 +621,27 @@ class PortalApi
      */
     public function portalTemplatesControllerGetConfigAsyncWithHttpInfo($id, string $contentType = self::contentTypes['portalTemplatesControllerGetConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerGetConfig200Response';
         $request = $this->portalTemplatesControllerGetConfigRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -493,7 +700,7 @@ class PortalApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -548,25 +755,30 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerListTemplates
      *
+     * List portal experience templates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerListTemplates'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]
      */
     public function portalTemplatesControllerListTemplates(string $contentType = self::contentTypes['portalTemplatesControllerListTemplates'][0])
     {
-        $this->portalTemplatesControllerListTemplatesWithHttpInfo($contentType);
+        list($response) = $this->portalTemplatesControllerListTemplatesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation portalTemplatesControllerListTemplatesWithHttpInfo
      *
+     * List portal experience templates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerListTemplates'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function portalTemplatesControllerListTemplatesWithHttpInfo(string $contentType = self::contentTypes['portalTemplatesControllerListTemplates'][0])
     {
@@ -595,10 +807,87 @@ class PortalApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -606,6 +895,8 @@ class PortalApi
 
     /**
      * Operation portalTemplatesControllerListTemplatesAsync
+     *
+     * List portal experience templates
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerListTemplates'] to see the possible values for this operation
      *
@@ -625,6 +916,8 @@ class PortalApi
     /**
      * Operation portalTemplatesControllerListTemplatesAsyncWithHttpInfo
      *
+     * List portal experience templates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['portalTemplatesControllerListTemplates'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -632,14 +925,27 @@ class PortalApi
      */
     public function portalTemplatesControllerListTemplatesAsyncWithHttpInfo(string $contentType = self::contentTypes['portalTemplatesControllerListTemplates'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PortalTemplatesControllerListTemplates200ResponseInner[]';
         $request = $this->portalTemplatesControllerListTemplatesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -682,7 +988,7 @@ class PortalApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -712,6 +1018,15 @@ class PortalApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

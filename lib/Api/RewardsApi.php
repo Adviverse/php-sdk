@@ -149,27 +149,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerAdminPayouts
      *
+     * List recent reward payouts
+     *
      * @param  string $limit limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerAdminPayouts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]
      */
     public function rewardsControllerAdminPayouts($limit, string $contentType = self::contentTypes['rewardsControllerAdminPayouts'][0])
     {
-        $this->rewardsControllerAdminPayoutsWithHttpInfo($limit, $contentType);
+        list($response) = $this->rewardsControllerAdminPayoutsWithHttpInfo($limit, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerAdminPayoutsWithHttpInfo
+     *
+     * List recent reward payouts
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerAdminPayouts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerAdminPayoutsWithHttpInfo($limit, string $contentType = self::contentTypes['rewardsControllerAdminPayouts'][0])
     {
@@ -198,10 +203,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -209,6 +291,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerAdminPayoutsAsync
+     *
+     * List recent reward payouts
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerAdminPayouts'] to see the possible values for this operation
@@ -229,6 +313,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerAdminPayoutsAsyncWithHttpInfo
      *
+     * List recent reward payouts
+     *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerAdminPayouts'] to see the possible values for this operation
      *
@@ -237,14 +323,27 @@ class RewardsApi
      */
     public function rewardsControllerAdminPayoutsAsyncWithHttpInfo($limit, string $contentType = self::contentTypes['rewardsControllerAdminPayouts'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewardsControllerAdminPayouts200ResponseInner[]';
         $request = $this->rewardsControllerAdminPayoutsRequest($limit, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -304,7 +403,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -334,6 +433,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -359,27 +467,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerCreateOnchainPool
      *
+     * Create an on-chain (advertiser-custodied) reward pool
+     *
      * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto create_onchain_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewPool
      */
     public function rewardsControllerCreateOnchainPool($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
     {
-        $this->rewardsControllerCreateOnchainPoolWithHttpInfo($create_onchain_pool_dto, $contentType);
+        list($response) = $this->rewardsControllerCreateOnchainPoolWithHttpInfo($create_onchain_pool_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerCreateOnchainPoolWithHttpInfo
+     *
+     * Create an on-chain (advertiser-custodied) reward pool
      *
      * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewPool, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerCreateOnchainPoolWithHttpInfo($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
     {
@@ -408,10 +521,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\RewPool' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewPool' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewPool', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewPool';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewPool',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -419,6 +609,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerCreateOnchainPoolAsync
+     *
+     * Create an on-chain (advertiser-custodied) reward pool
      *
      * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
@@ -439,6 +631,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerCreateOnchainPoolAsyncWithHttpInfo
      *
+     * Create an on-chain (advertiser-custodied) reward pool
+     *
      * @param  \Adviverse\Api\Model\CreateOnchainPoolDto $create_onchain_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerCreateOnchainPool'] to see the possible values for this operation
      *
@@ -447,14 +641,27 @@ class RewardsApi
      */
     public function rewardsControllerCreateOnchainPoolAsyncWithHttpInfo($create_onchain_pool_dto, string $contentType = self::contentTypes['rewardsControllerCreateOnchainPool'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewPool';
         $request = $this->rewardsControllerCreateOnchainPoolRequest($create_onchain_pool_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -505,7 +712,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -542,6 +749,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -567,27 +783,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerFundPool
      *
+     * Fund or top up a campaign reward pool
+     *
      * @param  \Adviverse\Api\Model\FundPoolDto $fund_pool_dto fund_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerFundPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewPool
      */
     public function rewardsControllerFundPool($fund_pool_dto, string $contentType = self::contentTypes['rewardsControllerFundPool'][0])
     {
-        $this->rewardsControllerFundPoolWithHttpInfo($fund_pool_dto, $contentType);
+        list($response) = $this->rewardsControllerFundPoolWithHttpInfo($fund_pool_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerFundPoolWithHttpInfo
+     *
+     * Fund or top up a campaign reward pool
      *
      * @param  \Adviverse\Api\Model\FundPoolDto $fund_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerFundPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewPool, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerFundPoolWithHttpInfo($fund_pool_dto, string $contentType = self::contentTypes['rewardsControllerFundPool'][0])
     {
@@ -616,10 +837,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\RewPool' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewPool' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewPool', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewPool';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewPool',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -627,6 +925,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerFundPoolAsync
+     *
+     * Fund or top up a campaign reward pool
      *
      * @param  \Adviverse\Api\Model\FundPoolDto $fund_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerFundPool'] to see the possible values for this operation
@@ -647,6 +947,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerFundPoolAsyncWithHttpInfo
      *
+     * Fund or top up a campaign reward pool
+     *
      * @param  \Adviverse\Api\Model\FundPoolDto $fund_pool_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerFundPool'] to see the possible values for this operation
      *
@@ -655,14 +957,27 @@ class RewardsApi
      */
     public function rewardsControllerFundPoolAsyncWithHttpInfo($fund_pool_dto, string $contentType = self::contentTypes['rewardsControllerFundPool'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewPool';
         $request = $this->rewardsControllerFundPoolRequest($fund_pool_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -713,7 +1028,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -750,6 +1065,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -775,27 +1099,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerGetPool
      *
+     * Get a campaign reward pool
+     *
      * @param  string $campaign_id campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerGetPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewPool
      */
     public function rewardsControllerGetPool($campaign_id, string $contentType = self::contentTypes['rewardsControllerGetPool'][0])
     {
-        $this->rewardsControllerGetPoolWithHttpInfo($campaign_id, $contentType);
+        list($response) = $this->rewardsControllerGetPoolWithHttpInfo($campaign_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerGetPoolWithHttpInfo
+     *
+     * Get a campaign reward pool
      *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerGetPool'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewPool, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerGetPoolWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerGetPool'][0])
     {
@@ -824,10 +1153,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewPool' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewPool' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewPool', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewPool';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewPool',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -835,6 +1241,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerGetPoolAsync
+     *
+     * Get a campaign reward pool
      *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerGetPool'] to see the possible values for this operation
@@ -855,6 +1263,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerGetPoolAsyncWithHttpInfo
      *
+     * Get a campaign reward pool
+     *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerGetPool'] to see the possible values for this operation
      *
@@ -863,14 +1273,27 @@ class RewardsApi
      */
     public function rewardsControllerGetPoolAsyncWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerGetPool'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewPool';
         $request = $this->rewardsControllerGetPoolRequest($campaign_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -929,7 +1352,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -959,6 +1382,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -984,25 +1416,30 @@ class RewardsApi
     /**
      * Operation rewardsControllerListPools
      *
+     * List your reward pools
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerListPools'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewPool[]
      */
     public function rewardsControllerListPools(string $contentType = self::contentTypes['rewardsControllerListPools'][0])
     {
-        $this->rewardsControllerListPoolsWithHttpInfo($contentType);
+        list($response) = $this->rewardsControllerListPoolsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerListPoolsWithHttpInfo
      *
+     * List your reward pools
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerListPools'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewPool[], HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerListPoolsWithHttpInfo(string $contentType = self::contentTypes['rewardsControllerListPools'][0])
     {
@@ -1031,10 +1468,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewPool[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewPool[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewPool[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewPool[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewPool[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1042,6 +1556,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerListPoolsAsync
+     *
+     * List your reward pools
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerListPools'] to see the possible values for this operation
      *
@@ -1061,6 +1577,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerListPoolsAsyncWithHttpInfo
      *
+     * List your reward pools
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerListPools'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1068,14 +1586,27 @@ class RewardsApi
      */
     public function rewardsControllerListPoolsAsyncWithHttpInfo(string $contentType = self::contentTypes['rewardsControllerListPools'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewPool[]';
         $request = $this->rewardsControllerListPoolsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1118,7 +1649,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1148,6 +1679,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1173,21 +1713,26 @@ class RewardsApi
     /**
      * Operation rewardsControllerReport
      *
+     * Get your reward payout report
+     *
      * @param  string $from from (required)
      * @param  string $to to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerReport'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewardsControllerReport200Response
      */
     public function rewardsControllerReport($from, $to, string $contentType = self::contentTypes['rewardsControllerReport'][0])
     {
-        $this->rewardsControllerReportWithHttpInfo($from, $to, $contentType);
+        list($response) = $this->rewardsControllerReportWithHttpInfo($from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerReportWithHttpInfo
+     *
+     * Get your reward payout report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -1195,7 +1740,7 @@ class RewardsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewardsControllerReport200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerReportWithHttpInfo($from, $to, string $contentType = self::contentTypes['rewardsControllerReport'][0])
     {
@@ -1224,10 +1769,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewardsControllerReport200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewardsControllerReport200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewardsControllerReport200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewardsControllerReport200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewardsControllerReport200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1235,6 +1857,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerReportAsync
+     *
+     * Get your reward payout report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -1256,6 +1880,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerReportAsyncWithHttpInfo
      *
+     * Get your reward payout report
+     *
      * @param  string $from (required)
      * @param  string $to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerReport'] to see the possible values for this operation
@@ -1265,14 +1891,27 @@ class RewardsApi
      */
     public function rewardsControllerReportAsyncWithHttpInfo($from, $to, string $contentType = self::contentTypes['rewardsControllerReport'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewardsControllerReport200Response';
         $request = $this->rewardsControllerReportRequest($from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1349,7 +1988,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1379,6 +2018,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1404,21 +2052,26 @@ class RewardsApi
     /**
      * Operation rewardsControllerSetPoolStatus
      *
+     * Pause or resume a reward pool
+     *
      * @param  string $campaign_id campaign_id (required)
      * @param  \Adviverse\Api\Model\SetPoolStatusDto $set_pool_status_dto set_pool_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetPoolStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response
      */
     public function rewardsControllerSetPoolStatus($campaign_id, $set_pool_status_dto, string $contentType = self::contentTypes['rewardsControllerSetPoolStatus'][0])
     {
-        $this->rewardsControllerSetPoolStatusWithHttpInfo($campaign_id, $set_pool_status_dto, $contentType);
+        list($response) = $this->rewardsControllerSetPoolStatusWithHttpInfo($campaign_id, $set_pool_status_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerSetPoolStatusWithHttpInfo
+     *
+     * Pause or resume a reward pool
      *
      * @param  string $campaign_id (required)
      * @param  \Adviverse\Api\Model\SetPoolStatusDto $set_pool_status_dto (required)
@@ -1426,7 +2079,7 @@ class RewardsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerSetPoolStatusWithHttpInfo($campaign_id, $set_pool_status_dto, string $contentType = self::contentTypes['rewardsControllerSetPoolStatus'][0])
     {
@@ -1455,10 +2108,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1466,6 +2196,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerSetPoolStatusAsync
+     *
+     * Pause or resume a reward pool
      *
      * @param  string $campaign_id (required)
      * @param  \Adviverse\Api\Model\SetPoolStatusDto $set_pool_status_dto (required)
@@ -1487,6 +2219,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerSetPoolStatusAsyncWithHttpInfo
      *
+     * Pause or resume a reward pool
+     *
      * @param  string $campaign_id (required)
      * @param  \Adviverse\Api\Model\SetPoolStatusDto $set_pool_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetPoolStatus'] to see the possible values for this operation
@@ -1496,14 +2230,27 @@ class RewardsApi
      */
     public function rewardsControllerSetPoolStatusAsyncWithHttpInfo($campaign_id, $set_pool_status_dto, string $contentType = self::contentTypes['rewardsControllerSetPoolStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewardsControllerSetPoolStatus201Response';
         $request = $this->rewardsControllerSetPoolStatusRequest($campaign_id, $set_pool_status_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1570,7 +2317,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1607,6 +2354,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1632,27 +2388,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerSetWorldWebhook
      *
+     * Set a world&#39;s reward-payout webhook
+     *
      * @param  \Adviverse\Api\Model\SetWorldWebhookDto $set_world_webhook_dto set_world_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetWorldWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response
      */
     public function rewardsControllerSetWorldWebhook($set_world_webhook_dto, string $contentType = self::contentTypes['rewardsControllerSetWorldWebhook'][0])
     {
-        $this->rewardsControllerSetWorldWebhookWithHttpInfo($set_world_webhook_dto, $contentType);
+        list($response) = $this->rewardsControllerSetWorldWebhookWithHttpInfo($set_world_webhook_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerSetWorldWebhookWithHttpInfo
+     *
+     * Set a world&#39;s reward-payout webhook
      *
      * @param  \Adviverse\Api\Model\SetWorldWebhookDto $set_world_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetWorldWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerSetWorldWebhookWithHttpInfo($set_world_webhook_dto, string $contentType = self::contentTypes['rewardsControllerSetWorldWebhook'][0])
     {
@@ -1681,10 +2442,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1692,6 +2530,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerSetWorldWebhookAsync
+     *
+     * Set a world&#39;s reward-payout webhook
      *
      * @param  \Adviverse\Api\Model\SetWorldWebhookDto $set_world_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetWorldWebhook'] to see the possible values for this operation
@@ -1712,6 +2552,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerSetWorldWebhookAsyncWithHttpInfo
      *
+     * Set a world&#39;s reward-payout webhook
+     *
      * @param  \Adviverse\Api\Model\SetWorldWebhookDto $set_world_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerSetWorldWebhook'] to see the possible values for this operation
      *
@@ -1720,14 +2562,27 @@ class RewardsApi
      */
     public function rewardsControllerSetWorldWebhookAsyncWithHttpInfo($set_world_webhook_dto, string $contentType = self::contentTypes['rewardsControllerSetWorldWebhook'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewardsControllerSetWorldWebhook201Response';
         $request = $this->rewardsControllerSetWorldWebhookRequest($set_world_webhook_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1778,7 +2633,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1815,6 +2670,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1840,27 +2704,32 @@ class RewardsApi
     /**
      * Operation rewardsControllerVoucherSecret
      *
+     * Get the voucher secret for an on-chain pool
+     *
      * @param  string $campaign_id campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewardsControllerVoucherSecret200Response
      */
     public function rewardsControllerVoucherSecret($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
     {
-        $this->rewardsControllerVoucherSecretWithHttpInfo($campaign_id, $contentType);
+        list($response) = $this->rewardsControllerVoucherSecretWithHttpInfo($campaign_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation rewardsControllerVoucherSecretWithHttpInfo
+     *
+     * Get the voucher secret for an on-chain pool
      *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewardsControllerVoucherSecret200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function rewardsControllerVoucherSecretWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
     {
@@ -1889,10 +2758,87 @@ class RewardsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1900,6 +2846,8 @@ class RewardsApi
 
     /**
      * Operation rewardsControllerVoucherSecretAsync
+     *
+     * Get the voucher secret for an on-chain pool
      *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
@@ -1920,6 +2868,8 @@ class RewardsApi
     /**
      * Operation rewardsControllerVoucherSecretAsyncWithHttpInfo
      *
+     * Get the voucher secret for an on-chain pool
+     *
      * @param  string $campaign_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['rewardsControllerVoucherSecret'] to see the possible values for this operation
      *
@@ -1928,14 +2878,27 @@ class RewardsApi
      */
     public function rewardsControllerVoucherSecretAsyncWithHttpInfo($campaign_id, string $contentType = self::contentTypes['rewardsControllerVoucherSecret'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewardsControllerVoucherSecret200Response';
         $request = $this->rewardsControllerVoucherSecretRequest($campaign_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1994,7 +2957,7 @@ class RewardsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2024,6 +2987,15 @@ class RewardsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

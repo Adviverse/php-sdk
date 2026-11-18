@@ -167,25 +167,30 @@ class DoohApi
     /**
      * Operation doohControllerGetSetup
      *
+     * Get your DOOH network registration
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerGetSetup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohPartner
      */
     public function doohControllerGetSetup(string $contentType = self::contentTypes['doohControllerGetSetup'][0])
     {
-        $this->doohControllerGetSetupWithHttpInfo($contentType);
+        list($response) = $this->doohControllerGetSetupWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation doohControllerGetSetupWithHttpInfo
      *
+     * Get your DOOH network registration
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerGetSetup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohPartner, HTTP status code, HTTP response headers (array of strings)
      */
     public function doohControllerGetSetupWithHttpInfo(string $contentType = self::contentTypes['doohControllerGetSetup'][0])
     {
@@ -214,10 +219,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupDoohPartner' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohPartner' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohPartner', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohPartner';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohPartner',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -225,6 +307,8 @@ class DoohApi
 
     /**
      * Operation doohControllerGetSetupAsync
+     *
+     * Get your DOOH network registration
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerGetSetup'] to see the possible values for this operation
      *
@@ -244,6 +328,8 @@ class DoohApi
     /**
      * Operation doohControllerGetSetupAsyncWithHttpInfo
      *
+     * Get your DOOH network registration
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerGetSetup'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -251,14 +337,27 @@ class DoohApi
      */
     public function doohControllerGetSetupAsyncWithHttpInfo(string $contentType = self::contentTypes['doohControllerGetSetup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohPartner';
         $request = $this->doohControllerGetSetupRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -301,7 +400,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -331,6 +430,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -356,27 +464,32 @@ class DoohApi
     /**
      * Operation doohControllerList
      *
+     * List DOOH partner registrations
+     *
      * @param  string $status status (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DoohControllerList200ResponseInner[]
      */
     public function doohControllerList($status, string $contentType = self::contentTypes['doohControllerList'][0])
     {
-        $this->doohControllerListWithHttpInfo($status, $contentType);
+        list($response) = $this->doohControllerListWithHttpInfo($status, $contentType);
+        return $response;
     }
 
     /**
      * Operation doohControllerListWithHttpInfo
+     *
+     * List DOOH partner registrations
      *
      * @param  string $status (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DoohControllerList200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function doohControllerListWithHttpInfo($status, string $contentType = self::contentTypes['doohControllerList'][0])
     {
@@ -405,10 +518,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\DoohControllerList200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DoohControllerList200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DoohControllerList200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DoohControllerList200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DoohControllerList200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -416,6 +606,8 @@ class DoohApi
 
     /**
      * Operation doohControllerListAsync
+     *
+     * List DOOH partner registrations
      *
      * @param  string $status (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerList'] to see the possible values for this operation
@@ -436,6 +628,8 @@ class DoohApi
     /**
      * Operation doohControllerListAsyncWithHttpInfo
      *
+     * List DOOH partner registrations
+     *
      * @param  string $status (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerList'] to see the possible values for this operation
      *
@@ -444,14 +638,27 @@ class DoohApi
      */
     public function doohControllerListAsyncWithHttpInfo($status, string $contentType = self::contentTypes['doohControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DoohControllerList200ResponseInner[]';
         $request = $this->doohControllerListRequest($status, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -511,7 +718,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -541,6 +748,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -566,27 +782,32 @@ class DoohApi
     /**
      * Operation doohControllerSaveSetup
      *
+     * Create or update your DOOH network registration
+     *
      * @param  \Adviverse\Api\Model\DoohSetupDto $dooh_setup_dto dooh_setup_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSaveSetup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DoohControllerSaveSetup201Response
      */
     public function doohControllerSaveSetup($dooh_setup_dto, string $contentType = self::contentTypes['doohControllerSaveSetup'][0])
     {
-        $this->doohControllerSaveSetupWithHttpInfo($dooh_setup_dto, $contentType);
+        list($response) = $this->doohControllerSaveSetupWithHttpInfo($dooh_setup_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation doohControllerSaveSetupWithHttpInfo
+     *
+     * Create or update your DOOH network registration
      *
      * @param  \Adviverse\Api\Model\DoohSetupDto $dooh_setup_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSaveSetup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DoohControllerSaveSetup201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function doohControllerSaveSetupWithHttpInfo($dooh_setup_dto, string $contentType = self::contentTypes['doohControllerSaveSetup'][0])
     {
@@ -615,10 +836,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\DoohControllerSaveSetup201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DoohControllerSaveSetup201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DoohControllerSaveSetup201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DoohControllerSaveSetup201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DoohControllerSaveSetup201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -626,6 +924,8 @@ class DoohApi
 
     /**
      * Operation doohControllerSaveSetupAsync
+     *
+     * Create or update your DOOH network registration
      *
      * @param  \Adviverse\Api\Model\DoohSetupDto $dooh_setup_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSaveSetup'] to see the possible values for this operation
@@ -646,6 +946,8 @@ class DoohApi
     /**
      * Operation doohControllerSaveSetupAsyncWithHttpInfo
      *
+     * Create or update your DOOH network registration
+     *
      * @param  \Adviverse\Api\Model\DoohSetupDto $dooh_setup_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSaveSetup'] to see the possible values for this operation
      *
@@ -654,14 +956,27 @@ class DoohApi
      */
     public function doohControllerSaveSetupAsyncWithHttpInfo($dooh_setup_dto, string $contentType = self::contentTypes['doohControllerSaveSetup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DoohControllerSaveSetup201Response';
         $request = $this->doohControllerSaveSetupRequest($dooh_setup_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -712,7 +1027,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -749,6 +1064,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -774,27 +1098,32 @@ class DoohApi
     /**
      * Operation doohControllerSetStatus
      *
+     * Set a DOOH registration&#39;s onboarding status
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSetStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AuthControllerResendVerification201Response
      */
     public function doohControllerSetStatus($id, string $contentType = self::contentTypes['doohControllerSetStatus'][0])
     {
-        $this->doohControllerSetStatusWithHttpInfo($id, $contentType);
+        list($response) = $this->doohControllerSetStatusWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation doohControllerSetStatusWithHttpInfo
+     *
+     * Set a DOOH registration&#39;s onboarding status
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSetStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AuthControllerResendVerification201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function doohControllerSetStatusWithHttpInfo($id, string $contentType = self::contentTypes['doohControllerSetStatus'][0])
     {
@@ -823,10 +1152,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AuthControllerResendVerification201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AuthControllerResendVerification201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AuthControllerResendVerification201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AuthControllerResendVerification201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AuthControllerResendVerification201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -834,6 +1240,8 @@ class DoohApi
 
     /**
      * Operation doohControllerSetStatusAsync
+     *
+     * Set a DOOH registration&#39;s onboarding status
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSetStatus'] to see the possible values for this operation
@@ -854,6 +1262,8 @@ class DoohApi
     /**
      * Operation doohControllerSetStatusAsyncWithHttpInfo
      *
+     * Set a DOOH registration&#39;s onboarding status
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['doohControllerSetStatus'] to see the possible values for this operation
      *
@@ -862,14 +1272,27 @@ class DoohApi
      */
     public function doohControllerSetStatusAsyncWithHttpInfo($id, string $contentType = self::contentTypes['doohControllerSetStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AuthControllerResendVerification201Response';
         $request = $this->doohControllerSetStatusRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -928,7 +1351,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -958,6 +1381,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -983,25 +1415,30 @@ class DoohApi
     /**
      * Operation screensControllerAdminScreens
      *
+     * List all paired DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdminScreens'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]
      */
     public function screensControllerAdminScreens(string $contentType = self::contentTypes['screensControllerAdminScreens'][0])
     {
-        $this->screensControllerAdminScreensWithHttpInfo($contentType);
+        list($response) = $this->screensControllerAdminScreensWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerAdminScreensWithHttpInfo
      *
+     * List all paired DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdminScreens'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerAdminScreensWithHttpInfo(string $contentType = self::contentTypes['screensControllerAdminScreens'][0])
     {
@@ -1030,10 +1467,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1041,6 +1555,8 @@ class DoohApi
 
     /**
      * Operation screensControllerAdminScreensAsync
+     *
+     * List all paired DOOH screens
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdminScreens'] to see the possible values for this operation
      *
@@ -1060,6 +1576,8 @@ class DoohApi
     /**
      * Operation screensControllerAdminScreensAsyncWithHttpInfo
      *
+     * List all paired DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdminScreens'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1067,14 +1585,27 @@ class DoohApi
      */
     public function screensControllerAdminScreensAsyncWithHttpInfo(string $contentType = self::contentTypes['screensControllerAdminScreens'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerAdminScreens200ResponseInner[]';
         $request = $this->screensControllerAdminScreensRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1117,7 +1648,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1147,6 +1678,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1172,21 +1712,26 @@ class DoohApi
     /**
      * Operation screensControllerAdvertiserPlays
      *
+     * Get DOOH proof-of-play for your campaigns
+     *
      * @param  string $from from (required)
      * @param  string $to to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdvertiserPlays'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohPlayReport
      */
     public function screensControllerAdvertiserPlays($from, $to, string $contentType = self::contentTypes['screensControllerAdvertiserPlays'][0])
     {
-        $this->screensControllerAdvertiserPlaysWithHttpInfo($from, $to, $contentType);
+        list($response) = $this->screensControllerAdvertiserPlaysWithHttpInfo($from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerAdvertiserPlaysWithHttpInfo
+     *
+     * Get DOOH proof-of-play for your campaigns
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -1194,7 +1739,7 @@ class DoohApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohPlayReport, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerAdvertiserPlaysWithHttpInfo($from, $to, string $contentType = self::contentTypes['screensControllerAdvertiserPlays'][0])
     {
@@ -1223,10 +1768,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupDoohPlayReport' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohPlayReport' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohPlayReport', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohPlayReport';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohPlayReport',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1234,6 +1856,8 @@ class DoohApi
 
     /**
      * Operation screensControllerAdvertiserPlaysAsync
+     *
+     * Get DOOH proof-of-play for your campaigns
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -1255,6 +1879,8 @@ class DoohApi
     /**
      * Operation screensControllerAdvertiserPlaysAsyncWithHttpInfo
      *
+     * Get DOOH proof-of-play for your campaigns
+     *
      * @param  string $from (required)
      * @param  string $to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAdvertiserPlays'] to see the possible values for this operation
@@ -1264,14 +1890,27 @@ class DoohApi
      */
     public function screensControllerAdvertiserPlaysAsyncWithHttpInfo($from, $to, string $contentType = self::contentTypes['screensControllerAdvertiserPlays'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohPlayReport';
         $request = $this->screensControllerAdvertiserPlaysRequest($from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1348,7 +1987,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1378,6 +2017,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1403,25 +2051,30 @@ class DoohApi
     /**
      * Operation screensControllerAttest
      *
+     * Upload a proof-of-play screenshot
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAttest'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerAttest201Response
      */
     public function screensControllerAttest(string $contentType = self::contentTypes['screensControllerAttest'][0])
     {
-        $this->screensControllerAttestWithHttpInfo($contentType);
+        list($response) = $this->screensControllerAttestWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerAttestWithHttpInfo
      *
+     * Upload a proof-of-play screenshot
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAttest'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerAttest201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerAttestWithHttpInfo(string $contentType = self::contentTypes['screensControllerAttest'][0])
     {
@@ -1450,10 +2103,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ScreensControllerAttest201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerAttest201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerAttest201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerAttest201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerAttest201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1461,6 +2191,8 @@ class DoohApi
 
     /**
      * Operation screensControllerAttestAsync
+     *
+     * Upload a proof-of-play screenshot
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAttest'] to see the possible values for this operation
      *
@@ -1480,6 +2212,8 @@ class DoohApi
     /**
      * Operation screensControllerAttestAsyncWithHttpInfo
      *
+     * Upload a proof-of-play screenshot
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerAttest'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1487,14 +2221,27 @@ class DoohApi
      */
     public function screensControllerAttestAsyncWithHttpInfo(string $contentType = self::contentTypes['screensControllerAttest'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerAttest201Response';
         $request = $this->screensControllerAttestRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1537,7 +2284,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1592,27 +2339,32 @@ class DoohApi
     /**
      * Operation screensControllerClaim
      *
+     * Claim a DOOH screen by its pairing code
+     *
      * @param  \Adviverse\Api\Model\ClaimScreenDto $claim_screen_dto claim_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohScreen
      */
     public function screensControllerClaim($claim_screen_dto, string $contentType = self::contentTypes['screensControllerClaim'][0])
     {
-        $this->screensControllerClaimWithHttpInfo($claim_screen_dto, $contentType);
+        list($response) = $this->screensControllerClaimWithHttpInfo($claim_screen_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerClaimWithHttpInfo
+     *
+     * Claim a DOOH screen by its pairing code
      *
      * @param  \Adviverse\Api\Model\ClaimScreenDto $claim_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohScreen, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerClaimWithHttpInfo($claim_screen_dto, string $contentType = self::contentTypes['screensControllerClaim'][0])
     {
@@ -1641,10 +2393,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SupDoohScreen' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohScreen' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohScreen', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohScreen';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohScreen',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1652,6 +2481,8 @@ class DoohApi
 
     /**
      * Operation screensControllerClaimAsync
+     *
+     * Claim a DOOH screen by its pairing code
      *
      * @param  \Adviverse\Api\Model\ClaimScreenDto $claim_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerClaim'] to see the possible values for this operation
@@ -1672,6 +2503,8 @@ class DoohApi
     /**
      * Operation screensControllerClaimAsyncWithHttpInfo
      *
+     * Claim a DOOH screen by its pairing code
+     *
      * @param  \Adviverse\Api\Model\ClaimScreenDto $claim_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerClaim'] to see the possible values for this operation
      *
@@ -1680,14 +2513,27 @@ class DoohApi
      */
     public function screensControllerClaimAsyncWithHttpInfo($claim_screen_dto, string $contentType = self::contentTypes['screensControllerClaim'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohScreen';
         $request = $this->screensControllerClaimRequest($claim_screen_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1738,7 +2584,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1775,6 +2621,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1800,27 +2655,32 @@ class DoohApi
     /**
      * Operation screensControllerGet
      *
+     * Get a DOOH screen
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohScreen
      */
     public function screensControllerGet($id, string $contentType = self::contentTypes['screensControllerGet'][0])
     {
-        $this->screensControllerGetWithHttpInfo($id, $contentType);
+        list($response) = $this->screensControllerGetWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerGetWithHttpInfo
+     *
+     * Get a DOOH screen
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohScreen, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerGetWithHttpInfo($id, string $contentType = self::contentTypes['screensControllerGet'][0])
     {
@@ -1849,10 +2709,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupDoohScreen' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohScreen' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohScreen', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohScreen';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohScreen',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1860,6 +2797,8 @@ class DoohApi
 
     /**
      * Operation screensControllerGetAsync
+     *
+     * Get a DOOH screen
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerGet'] to see the possible values for this operation
@@ -1880,6 +2819,8 @@ class DoohApi
     /**
      * Operation screensControllerGetAsyncWithHttpInfo
      *
+     * Get a DOOH screen
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerGet'] to see the possible values for this operation
      *
@@ -1888,14 +2829,27 @@ class DoohApi
      */
     public function screensControllerGetAsyncWithHttpInfo($id, string $contentType = self::contentTypes['screensControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohScreen';
         $request = $this->screensControllerGetRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1954,7 +2908,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1984,6 +2938,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2009,25 +2972,30 @@ class DoohApi
     /**
      * Operation screensControllerList
      *
+     * List your DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerList200ResponseInner[]
      */
     public function screensControllerList(string $contentType = self::contentTypes['screensControllerList'][0])
     {
-        $this->screensControllerListWithHttpInfo($contentType);
+        list($response) = $this->screensControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerListWithHttpInfo
      *
+     * List your DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerList200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerListWithHttpInfo(string $contentType = self::contentTypes['screensControllerList'][0])
     {
@@ -2056,10 +3024,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2067,6 +3112,8 @@ class DoohApi
 
     /**
      * Operation screensControllerListAsync
+     *
+     * List your DOOH screens
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerList'] to see the possible values for this operation
      *
@@ -2086,6 +3133,8 @@ class DoohApi
     /**
      * Operation screensControllerListAsyncWithHttpInfo
      *
+     * List your DOOH screens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2093,14 +3142,27 @@ class DoohApi
      */
     public function screensControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['screensControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerList200ResponseInner[]';
         $request = $this->screensControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2143,7 +3205,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2173,6 +3235,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2198,27 +3269,32 @@ class DoohApi
     /**
      * Operation screensControllerPairInit
      *
+     * Start pairing a DOOH screen
+     *
      * @param  \Adviverse\Api\Model\PairInitDto $pair_init_dto pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairInit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerPairInit201Response
      */
     public function screensControllerPairInit($pair_init_dto, string $contentType = self::contentTypes['screensControllerPairInit'][0])
     {
-        $this->screensControllerPairInitWithHttpInfo($pair_init_dto, $contentType);
+        list($response) = $this->screensControllerPairInitWithHttpInfo($pair_init_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerPairInitWithHttpInfo
+     *
+     * Start pairing a DOOH screen
      *
      * @param  \Adviverse\Api\Model\PairInitDto $pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairInit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerPairInit201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerPairInitWithHttpInfo($pair_init_dto, string $contentType = self::contentTypes['screensControllerPairInit'][0])
     {
@@ -2247,10 +3323,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ScreensControllerPairInit201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerPairInit201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerPairInit201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerPairInit201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerPairInit201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2258,6 +3411,8 @@ class DoohApi
 
     /**
      * Operation screensControllerPairInitAsync
+     *
+     * Start pairing a DOOH screen
      *
      * @param  \Adviverse\Api\Model\PairInitDto $pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairInit'] to see the possible values for this operation
@@ -2278,6 +3433,8 @@ class DoohApi
     /**
      * Operation screensControllerPairInitAsyncWithHttpInfo
      *
+     * Start pairing a DOOH screen
+     *
      * @param  \Adviverse\Api\Model\PairInitDto $pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairInit'] to see the possible values for this operation
      *
@@ -2286,14 +3443,27 @@ class DoohApi
      */
     public function screensControllerPairInitAsyncWithHttpInfo($pair_init_dto, string $contentType = self::contentTypes['screensControllerPairInit'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerPairInit201Response';
         $request = $this->screensControllerPairInitRequest($pair_init_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2344,7 +3514,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2406,27 +3576,32 @@ class DoohApi
     /**
      * Operation screensControllerPairStatus
      *
+     * Poll a DOOH screen&#39;s pairing status
+     *
      * @param  string $poll_token poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerPairStatus200Response
      */
     public function screensControllerPairStatus($poll_token, string $contentType = self::contentTypes['screensControllerPairStatus'][0])
     {
-        $this->screensControllerPairStatusWithHttpInfo($poll_token, $contentType);
+        list($response) = $this->screensControllerPairStatusWithHttpInfo($poll_token, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerPairStatusWithHttpInfo
+     *
+     * Poll a DOOH screen&#39;s pairing status
      *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerPairStatus200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerPairStatusWithHttpInfo($poll_token, string $contentType = self::contentTypes['screensControllerPairStatus'][0])
     {
@@ -2455,10 +3630,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ScreensControllerPairStatus200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerPairStatus200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerPairStatus200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerPairStatus200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerPairStatus200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2466,6 +3718,8 @@ class DoohApi
 
     /**
      * Operation screensControllerPairStatusAsync
+     *
+     * Poll a DOOH screen&#39;s pairing status
      *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairStatus'] to see the possible values for this operation
@@ -2486,6 +3740,8 @@ class DoohApi
     /**
      * Operation screensControllerPairStatusAsyncWithHttpInfo
      *
+     * Poll a DOOH screen&#39;s pairing status
+     *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPairStatus'] to see the possible values for this operation
      *
@@ -2494,14 +3750,27 @@ class DoohApi
      */
     public function screensControllerPairStatusAsyncWithHttpInfo($poll_token, string $contentType = self::contentTypes['screensControllerPairStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerPairStatus200Response';
         $request = $this->screensControllerPairStatusRequest($poll_token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2561,7 +3830,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2616,21 +3885,26 @@ class DoohApi
     /**
      * Operation screensControllerPublisherPlays
      *
+     * Get your DOOH proof-of-play report
+     *
      * @param  string $from from (required)
      * @param  string $to to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPublisherPlays'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohPlayReport
      */
     public function screensControllerPublisherPlays($from, $to, string $contentType = self::contentTypes['screensControllerPublisherPlays'][0])
     {
-        $this->screensControllerPublisherPlaysWithHttpInfo($from, $to, $contentType);
+        list($response) = $this->screensControllerPublisherPlaysWithHttpInfo($from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerPublisherPlaysWithHttpInfo
+     *
+     * Get your DOOH proof-of-play report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -2638,7 +3912,7 @@ class DoohApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohPlayReport, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerPublisherPlaysWithHttpInfo($from, $to, string $contentType = self::contentTypes['screensControllerPublisherPlays'][0])
     {
@@ -2667,10 +3941,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupDoohPlayReport' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohPlayReport' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohPlayReport', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohPlayReport';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohPlayReport',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2678,6 +4029,8 @@ class DoohApi
 
     /**
      * Operation screensControllerPublisherPlaysAsync
+     *
+     * Get your DOOH proof-of-play report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -2699,6 +4052,8 @@ class DoohApi
     /**
      * Operation screensControllerPublisherPlaysAsyncWithHttpInfo
      *
+     * Get your DOOH proof-of-play report
+     *
      * @param  string $from (required)
      * @param  string $to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerPublisherPlays'] to see the possible values for this operation
@@ -2708,14 +4063,27 @@ class DoohApi
      */
     public function screensControllerPublisherPlaysAsyncWithHttpInfo($from, $to, string $contentType = self::contentTypes['screensControllerPublisherPlays'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohPlayReport';
         $request = $this->screensControllerPublisherPlaysRequest($from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2792,7 +4160,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2822,6 +4190,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2847,21 +4224,26 @@ class DoohApi
     /**
      * Operation screensControllerSetStatus
      *
+     * Pause or activate a DOOH screen
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\SetScreenStatusDto $set_screen_status_dto set_screen_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerSetStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerSetStatus201Response
      */
     public function screensControllerSetStatus($id, $set_screen_status_dto, string $contentType = self::contentTypes['screensControllerSetStatus'][0])
     {
-        $this->screensControllerSetStatusWithHttpInfo($id, $set_screen_status_dto, $contentType);
+        list($response) = $this->screensControllerSetStatusWithHttpInfo($id, $set_screen_status_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerSetStatusWithHttpInfo
+     *
+     * Pause or activate a DOOH screen
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetScreenStatusDto $set_screen_status_dto (required)
@@ -2869,7 +4251,7 @@ class DoohApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerSetStatusWithHttpInfo($id, $set_screen_status_dto, string $contentType = self::contentTypes['screensControllerSetStatus'][0])
     {
@@ -2898,10 +4280,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ScreensControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2909,6 +4368,8 @@ class DoohApi
 
     /**
      * Operation screensControllerSetStatusAsync
+     *
+     * Pause or activate a DOOH screen
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetScreenStatusDto $set_screen_status_dto (required)
@@ -2930,6 +4391,8 @@ class DoohApi
     /**
      * Operation screensControllerSetStatusAsyncWithHttpInfo
      *
+     * Pause or activate a DOOH screen
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetScreenStatusDto $set_screen_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerSetStatus'] to see the possible values for this operation
@@ -2939,14 +4402,27 @@ class DoohApi
      */
     public function screensControllerSetStatusAsyncWithHttpInfo($id, $set_screen_status_dto, string $contentType = self::contentTypes['screensControllerSetStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerSetStatus201Response';
         $request = $this->screensControllerSetStatusRequest($id, $set_screen_status_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3013,7 +4489,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3050,6 +4526,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3075,21 +4560,26 @@ class DoohApi
     /**
      * Operation screensControllerUpdate
      *
+     * Update a DOOH screen
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateScreenDto $update_screen_dto update_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupDoohScreen
      */
     public function screensControllerUpdate($id, $update_screen_dto, string $contentType = self::contentTypes['screensControllerUpdate'][0])
     {
-        $this->screensControllerUpdateWithHttpInfo($id, $update_screen_dto, $contentType);
+        list($response) = $this->screensControllerUpdateWithHttpInfo($id, $update_screen_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation screensControllerUpdateWithHttpInfo
+     *
+     * Update a DOOH screen
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateScreenDto $update_screen_dto (required)
@@ -3097,7 +4587,7 @@ class DoohApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupDoohScreen, HTTP status code, HTTP response headers (array of strings)
      */
     public function screensControllerUpdateWithHttpInfo($id, $update_screen_dto, string $contentType = self::contentTypes['screensControllerUpdate'][0])
     {
@@ -3126,10 +4616,87 @@ class DoohApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupDoohScreen' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupDoohScreen' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupDoohScreen', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupDoohScreen';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupDoohScreen',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3137,6 +4704,8 @@ class DoohApi
 
     /**
      * Operation screensControllerUpdateAsync
+     *
+     * Update a DOOH screen
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateScreenDto $update_screen_dto (required)
@@ -3158,6 +4727,8 @@ class DoohApi
     /**
      * Operation screensControllerUpdateAsyncWithHttpInfo
      *
+     * Update a DOOH screen
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateScreenDto $update_screen_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['screensControllerUpdate'] to see the possible values for this operation
@@ -3167,14 +4738,27 @@ class DoohApi
      */
     public function screensControllerUpdateAsyncWithHttpInfo($id, $update_screen_dto, string $contentType = self::contentTypes['screensControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupDoohScreen';
         $request = $this->screensControllerUpdateRequest($id, $update_screen_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3241,7 +4825,7 @@ class DoohApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3278,6 +4862,15 @@ class DoohApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

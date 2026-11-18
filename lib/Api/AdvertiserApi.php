@@ -305,21 +305,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAddAudienceMembers
      *
+     * Add hashed members to an audience
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\AudienceMembersDto $audience_members_dto audience_members_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAddAudienceMembers'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response
      */
     public function advertiserControllerAddAudienceMembers($id, $audience_members_dto, string $contentType = self::contentTypes['advertiserControllerAddAudienceMembers'][0])
     {
-        $this->advertiserControllerAddAudienceMembersWithHttpInfo($id, $audience_members_dto, $contentType);
+        list($response) = $this->advertiserControllerAddAudienceMembersWithHttpInfo($id, $audience_members_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerAddAudienceMembersWithHttpInfo
+     *
+     * Add hashed members to an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AudienceMembersDto $audience_members_dto (required)
@@ -327,7 +332,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerAddAudienceMembersWithHttpInfo($id, $audience_members_dto, string $contentType = self::contentTypes['advertiserControllerAddAudienceMembers'][0])
     {
@@ -356,10 +361,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -367,6 +449,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerAddAudienceMembersAsync
+     *
+     * Add hashed members to an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AudienceMembersDto $audience_members_dto (required)
@@ -388,6 +472,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAddAudienceMembersAsyncWithHttpInfo
      *
+     * Add hashed members to an audience
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AudienceMembersDto $audience_members_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAddAudienceMembers'] to see the possible values for this operation
@@ -397,14 +483,27 @@ class AdvertiserApi
      */
     public function advertiserControllerAddAudienceMembersAsyncWithHttpInfo($id, $audience_members_dto, string $contentType = self::contentTypes['advertiserControllerAddAudienceMembers'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerAddAudienceMembers201Response';
         $request = $this->advertiserControllerAddAudienceMembersRequest($id, $audience_members_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -471,7 +570,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -508,6 +607,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -533,21 +641,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAddComponent
      *
+     * Add a DCO component to a creative&#39;s pool
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\AddComponentDto $add_component_dto add_component_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAddComponent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerAddComponent201Response
      */
     public function advertiserControllerAddComponent($id, $add_component_dto, string $contentType = self::contentTypes['advertiserControllerAddComponent'][0])
     {
-        $this->advertiserControllerAddComponentWithHttpInfo($id, $add_component_dto, $contentType);
+        list($response) = $this->advertiserControllerAddComponentWithHttpInfo($id, $add_component_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerAddComponentWithHttpInfo
+     *
+     * Add a DCO component to a creative&#39;s pool
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AddComponentDto $add_component_dto (required)
@@ -555,7 +668,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerAddComponent201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerAddComponentWithHttpInfo($id, $add_component_dto, string $contentType = self::contentTypes['advertiserControllerAddComponent'][0])
     {
@@ -584,10 +697,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -595,6 +785,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerAddComponentAsync
+     *
+     * Add a DCO component to a creative&#39;s pool
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AddComponentDto $add_component_dto (required)
@@ -616,6 +808,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAddComponentAsyncWithHttpInfo
      *
+     * Add a DCO component to a creative&#39;s pool
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AddComponentDto $add_component_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAddComponent'] to see the possible values for this operation
@@ -625,14 +819,27 @@ class AdvertiserApi
      */
     public function advertiserControllerAddComponentAsyncWithHttpInfo($id, $add_component_dto, string $contentType = self::contentTypes['advertiserControllerAddComponent'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerAddComponent201Response';
         $request = $this->advertiserControllerAddComponentRequest($id, $add_component_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -699,7 +906,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -736,6 +943,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -761,21 +977,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAttachCreative
      *
+     * Attach a library creative to a campaign
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto attach_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAttachCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response
      */
     public function advertiserControllerAttachCreative($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerAttachCreative'][0])
     {
-        $this->advertiserControllerAttachCreativeWithHttpInfo($id, $attach_creative_dto, $contentType);
+        list($response) = $this->advertiserControllerAttachCreativeWithHttpInfo($id, $attach_creative_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerAttachCreativeWithHttpInfo
+     *
+     * Attach a library creative to a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
@@ -783,7 +1004,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerAttachCreativeWithHttpInfo($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerAttachCreative'][0])
     {
@@ -812,10 +1033,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -823,6 +1121,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerAttachCreativeAsync
+     *
+     * Attach a library creative to a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
@@ -844,6 +1144,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAttachCreativeAsyncWithHttpInfo
      *
+     * Attach a library creative to a campaign
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAttachCreative'] to see the possible values for this operation
@@ -853,14 +1155,27 @@ class AdvertiserApi
      */
     public function advertiserControllerAttachCreativeAsyncWithHttpInfo($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerAttachCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerAttachCreative201Response';
         $request = $this->advertiserControllerAttachCreativeRequest($id, $attach_creative_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -927,7 +1242,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -964,6 +1279,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -989,27 +1313,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAudiencePixel
      *
+     * Get the retargeting pixel snippet for an audience
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudiencePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response
      */
     public function advertiserControllerAudiencePixel($id, string $contentType = self::contentTypes['advertiserControllerAudiencePixel'][0])
     {
-        $this->advertiserControllerAudiencePixelWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerAudiencePixelWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerAudiencePixelWithHttpInfo
+     *
+     * Get the retargeting pixel snippet for an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudiencePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerAudiencePixelWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerAudiencePixel'][0])
     {
@@ -1038,10 +1367,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1049,6 +1455,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerAudiencePixelAsync
+     *
+     * Get the retargeting pixel snippet for an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudiencePixel'] to see the possible values for this operation
@@ -1069,6 +1477,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAudiencePixelAsyncWithHttpInfo
      *
+     * Get the retargeting pixel snippet for an audience
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudiencePixel'] to see the possible values for this operation
      *
@@ -1077,14 +1487,27 @@ class AdvertiserApi
      */
     public function advertiserControllerAudiencePixelAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerAudiencePixel'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerAudiencePixel200Response';
         $request = $this->advertiserControllerAudiencePixelRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1143,7 +1566,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1173,6 +1596,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1198,27 +1630,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAudienceSuggestions
      *
+     * Suggest audiences from pixel activity
+     *
      * @param  string $days days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudienceSuggestions'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response
      */
     public function advertiserControllerAudienceSuggestions($days, string $contentType = self::contentTypes['advertiserControllerAudienceSuggestions'][0])
     {
-        $this->advertiserControllerAudienceSuggestionsWithHttpInfo($days, $contentType);
+        list($response) = $this->advertiserControllerAudienceSuggestionsWithHttpInfo($days, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerAudienceSuggestionsWithHttpInfo
+     *
+     * Suggest audiences from pixel activity
      *
      * @param  string $days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudienceSuggestions'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerAudienceSuggestionsWithHttpInfo($days, string $contentType = self::contentTypes['advertiserControllerAudienceSuggestions'][0])
     {
@@ -1247,10 +1684,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1258,6 +1772,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerAudienceSuggestionsAsync
+     *
+     * Suggest audiences from pixel activity
      *
      * @param  string $days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudienceSuggestions'] to see the possible values for this operation
@@ -1278,6 +1794,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerAudienceSuggestionsAsyncWithHttpInfo
      *
+     * Suggest audiences from pixel activity
+     *
      * @param  string $days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerAudienceSuggestions'] to see the possible values for this operation
      *
@@ -1286,14 +1804,27 @@ class AdvertiserApi
      */
     public function advertiserControllerAudienceSuggestionsAsyncWithHttpInfo($days, string $contentType = self::contentTypes['advertiserControllerAudienceSuggestions'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerAudienceSuggestions200Response';
         $request = $this->advertiserControllerAudienceSuggestionsRequest($days, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1353,7 +1884,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1383,6 +1914,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1408,27 +1948,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreate
      *
+     * Create a campaign (ad set)
+     *
      * @param  \Adviverse\Api\Model\CreateCampaignDto $create_campaign_dto create_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaign
      */
     public function advertiserControllerCreate($create_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreate'][0])
     {
-        $this->advertiserControllerCreateWithHttpInfo($create_campaign_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateWithHttpInfo($create_campaign_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateWithHttpInfo
+     *
+     * Create a campaign (ad set)
      *
      * @param  \Adviverse\Api\Model\CreateCampaignDto $create_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaign, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateWithHttpInfo($create_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreate'][0])
     {
@@ -1457,10 +2002,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvCampaign' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaign' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaign', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaign';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaign',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1468,6 +2090,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateAsync
+     *
+     * Create a campaign (ad set)
      *
      * @param  \Adviverse\Api\Model\CreateCampaignDto $create_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreate'] to see the possible values for this operation
@@ -1488,6 +2112,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateAsyncWithHttpInfo
      *
+     * Create a campaign (ad set)
+     *
      * @param  \Adviverse\Api\Model\CreateCampaignDto $create_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreate'] to see the possible values for this operation
      *
@@ -1496,14 +2122,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateAsyncWithHttpInfo($create_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaign';
         $request = $this->advertiserControllerCreateRequest($create_campaign_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1554,7 +2193,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1591,6 +2230,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1616,27 +2264,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateAudience
      *
+     * Create an audience
+     *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response
      */
     public function advertiserControllerCreateAudience($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerCreateAudience'][0])
     {
-        $this->advertiserControllerCreateAudienceWithHttpInfo($create_audience_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateAudienceWithHttpInfo($create_audience_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateAudienceWithHttpInfo
+     *
+     * Create an audience
      *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateAudienceWithHttpInfo($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerCreateAudience'][0])
     {
@@ -1665,10 +2318,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1676,6 +2406,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateAudienceAsync
+     *
+     * Create an audience
      *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateAudience'] to see the possible values for this operation
@@ -1696,6 +2428,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateAudienceAsyncWithHttpInfo
      *
+     * Create an audience
+     *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateAudience'] to see the possible values for this operation
      *
@@ -1704,14 +2438,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateAudienceAsyncWithHttpInfo($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerCreateAudience'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
         $request = $this->advertiserControllerCreateAudienceRequest($create_audience_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1762,7 +2509,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1799,6 +2546,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1824,27 +2580,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateCreative
      *
+     * Create a creative
+     *
      * @param  \Adviverse\Api\Model\CreateCreativeDto $create_creative_dto create_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCreative
      */
     public function advertiserControllerCreateCreative($create_creative_dto, string $contentType = self::contentTypes['advertiserControllerCreateCreative'][0])
     {
-        $this->advertiserControllerCreateCreativeWithHttpInfo($create_creative_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateCreativeWithHttpInfo($create_creative_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateCreativeWithHttpInfo
+     *
+     * Create a creative
      *
      * @param  \Adviverse\Api\Model\CreateCreativeDto $create_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCreative, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateCreativeWithHttpInfo($create_creative_dto, string $contentType = self::contentTypes['advertiserControllerCreateCreative'][0])
     {
@@ -1873,10 +2634,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvCreative' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCreative' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCreative', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCreative';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCreative',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1884,6 +2722,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateCreativeAsync
+     *
+     * Create a creative
      *
      * @param  \Adviverse\Api\Model\CreateCreativeDto $create_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateCreative'] to see the possible values for this operation
@@ -1904,6 +2744,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateCreativeAsyncWithHttpInfo
      *
+     * Create a creative
+     *
      * @param  \Adviverse\Api\Model\CreateCreativeDto $create_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateCreative'] to see the possible values for this operation
      *
@@ -1912,14 +2754,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateCreativeAsyncWithHttpInfo($create_creative_dto, string $contentType = self::contentTypes['advertiserControllerCreateCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCreative';
         $request = $this->advertiserControllerCreateCreativeRequest($create_creative_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1970,7 +2825,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2007,6 +2862,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2032,21 +2896,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateDestination
      *
+     * Add a sync destination to an audience
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\CreateDestinationDto $create_destination_dto create_destination_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response
      */
     public function advertiserControllerCreateDestination($id, $create_destination_dto, string $contentType = self::contentTypes['advertiserControllerCreateDestination'][0])
     {
-        $this->advertiserControllerCreateDestinationWithHttpInfo($id, $create_destination_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateDestinationWithHttpInfo($id, $create_destination_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateDestinationWithHttpInfo
+     *
+     * Add a sync destination to an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateDestinationDto $create_destination_dto (required)
@@ -2054,7 +2923,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateDestinationWithHttpInfo($id, $create_destination_dto, string $contentType = self::contentTypes['advertiserControllerCreateDestination'][0])
     {
@@ -2083,10 +2952,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2094,6 +3040,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateDestinationAsync
+     *
+     * Add a sync destination to an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateDestinationDto $create_destination_dto (required)
@@ -2115,6 +3063,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateDestinationAsyncWithHttpInfo
      *
+     * Add a sync destination to an audience
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateDestinationDto $create_destination_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateDestination'] to see the possible values for this operation
@@ -2124,14 +3074,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateDestinationAsyncWithHttpInfo($id, $create_destination_dto, string $contentType = self::contentTypes['advertiserControllerCreateDestination'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
         $request = $this->advertiserControllerCreateDestinationRequest($id, $create_destination_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2198,7 +3161,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2235,6 +3198,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2260,27 +3232,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateFeed
      *
+     * Register a product feed
+     *
      * @param  \Adviverse\Api\Model\CreateFeedDto $create_feed_dto create_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvProductFeed
      */
     public function advertiserControllerCreateFeed($create_feed_dto, string $contentType = self::contentTypes['advertiserControllerCreateFeed'][0])
     {
-        $this->advertiserControllerCreateFeedWithHttpInfo($create_feed_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateFeedWithHttpInfo($create_feed_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateFeedWithHttpInfo
+     *
+     * Register a product feed
      *
      * @param  \Adviverse\Api\Model\CreateFeedDto $create_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvProductFeed, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateFeedWithHttpInfo($create_feed_dto, string $contentType = self::contentTypes['advertiserControllerCreateFeed'][0])
     {
@@ -2309,10 +3286,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvProductFeed' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvProductFeed' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvProductFeed', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvProductFeed';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvProductFeed',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2320,6 +3374,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateFeedAsync
+     *
+     * Register a product feed
      *
      * @param  \Adviverse\Api\Model\CreateFeedDto $create_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateFeed'] to see the possible values for this operation
@@ -2340,6 +3396,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateFeedAsyncWithHttpInfo
      *
+     * Register a product feed
+     *
      * @param  \Adviverse\Api\Model\CreateFeedDto $create_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateFeed'] to see the possible values for this operation
      *
@@ -2348,14 +3406,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateFeedAsyncWithHttpInfo($create_feed_dto, string $contentType = self::contentTypes['advertiserControllerCreateFeed'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvProductFeed';
         $request = $this->advertiserControllerCreateFeedRequest($create_feed_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2406,7 +3477,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2443,6 +3514,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2468,27 +3548,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateGroup
      *
+     * Create a campaign group
+     *
      * @param  \Adviverse\Api\Model\CampaignGroupDto $campaign_group_dto campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignGroup
      */
     public function advertiserControllerCreateGroup($campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerCreateGroup'][0])
     {
-        $this->advertiserControllerCreateGroupWithHttpInfo($campaign_group_dto, $contentType);
+        list($response) = $this->advertiserControllerCreateGroupWithHttpInfo($campaign_group_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreateGroupWithHttpInfo
+     *
+     * Create a campaign group
      *
      * @param  \Adviverse\Api\Model\CampaignGroupDto $campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignGroup, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreateGroupWithHttpInfo($campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerCreateGroup'][0])
     {
@@ -2517,10 +3602,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvCampaignGroup' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignGroup' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignGroup', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignGroup',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2528,6 +3690,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreateGroupAsync
+     *
+     * Create a campaign group
      *
      * @param  \Adviverse\Api\Model\CampaignGroupDto $campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateGroup'] to see the possible values for this operation
@@ -2548,6 +3712,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreateGroupAsyncWithHttpInfo
      *
+     * Create a campaign group
+     *
      * @param  \Adviverse\Api\Model\CampaignGroupDto $campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreateGroup'] to see the possible values for this operation
      *
@@ -2556,14 +3722,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreateGroupAsyncWithHttpInfo($campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerCreateGroup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
         $request = $this->advertiserControllerCreateGroupRequest($campaign_group_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2614,7 +3793,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2651,6 +3830,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2676,27 +3864,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreatePromote
      *
+     * Create a sponsored-product promote campaign
+     *
      * @param  \Adviverse\Api\Model\CreatePromoteCampaignDto $create_promote_campaign_dto create_promote_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreatePromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvPromoteCampaign
      */
     public function advertiserControllerCreatePromote($create_promote_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreatePromote'][0])
     {
-        $this->advertiserControllerCreatePromoteWithHttpInfo($create_promote_campaign_dto, $contentType);
+        list($response) = $this->advertiserControllerCreatePromoteWithHttpInfo($create_promote_campaign_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreatePromoteWithHttpInfo
+     *
+     * Create a sponsored-product promote campaign
      *
      * @param  \Adviverse\Api\Model\CreatePromoteCampaignDto $create_promote_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreatePromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvPromoteCampaign, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreatePromoteWithHttpInfo($create_promote_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreatePromote'][0])
     {
@@ -2725,10 +3918,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvPromoteCampaign' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvPromoteCampaign' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvPromoteCampaign', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvPromoteCampaign';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvPromoteCampaign',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2736,6 +4006,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreatePromoteAsync
+     *
+     * Create a sponsored-product promote campaign
      *
      * @param  \Adviverse\Api\Model\CreatePromoteCampaignDto $create_promote_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreatePromote'] to see the possible values for this operation
@@ -2756,6 +4028,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreatePromoteAsyncWithHttpInfo
      *
+     * Create a sponsored-product promote campaign
+     *
      * @param  \Adviverse\Api\Model\CreatePromoteCampaignDto $create_promote_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreatePromote'] to see the possible values for this operation
      *
@@ -2764,14 +4038,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreatePromoteAsyncWithHttpInfo($create_promote_campaign_dto, string $contentType = self::contentTypes['advertiserControllerCreatePromote'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvPromoteCampaign';
         $request = $this->advertiserControllerCreatePromoteRequest($create_promote_campaign_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2822,7 +4109,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2859,6 +4146,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2884,27 +4180,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreativeAssignments
      *
+     * List campaigns a creative is attached to
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreativeAssignments'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCreativeAssignment[]
      */
     public function advertiserControllerCreativeAssignments($id, string $contentType = self::contentTypes['advertiserControllerCreativeAssignments'][0])
     {
-        $this->advertiserControllerCreativeAssignmentsWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerCreativeAssignmentsWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerCreativeAssignmentsWithHttpInfo
+     *
+     * List campaigns a creative is attached to
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreativeAssignments'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCreativeAssignment[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerCreativeAssignmentsWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerCreativeAssignments'][0])
     {
@@ -2933,10 +4234,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCreativeAssignment[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCreativeAssignment[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCreativeAssignment[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCreativeAssignment[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCreativeAssignment[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2944,6 +4322,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerCreativeAssignmentsAsync
+     *
+     * List campaigns a creative is attached to
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreativeAssignments'] to see the possible values for this operation
@@ -2964,6 +4344,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerCreativeAssignmentsAsyncWithHttpInfo
      *
+     * List campaigns a creative is attached to
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerCreativeAssignments'] to see the possible values for this operation
      *
@@ -2972,14 +4354,27 @@ class AdvertiserApi
      */
     public function advertiserControllerCreativeAssignmentsAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerCreativeAssignments'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCreativeAssignment[]';
         $request = $this->advertiserControllerCreativeAssignmentsRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3038,7 +4433,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3068,6 +4463,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3093,21 +4497,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerDetachCreative
      *
+     * Detach a library creative from a campaign
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto attach_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerDetachCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response
      */
     public function advertiserControllerDetachCreative($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerDetachCreative'][0])
     {
-        $this->advertiserControllerDetachCreativeWithHttpInfo($id, $attach_creative_dto, $contentType);
+        list($response) = $this->advertiserControllerDetachCreativeWithHttpInfo($id, $attach_creative_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerDetachCreativeWithHttpInfo
+     *
+     * Detach a library creative from a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
@@ -3115,7 +4524,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerDetachCreativeWithHttpInfo($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerDetachCreative'][0])
     {
@@ -3144,10 +4553,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3155,6 +4641,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerDetachCreativeAsync
+     *
+     * Detach a library creative from a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
@@ -3176,6 +4664,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerDetachCreativeAsyncWithHttpInfo
      *
+     * Detach a library creative from a campaign
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\AttachCreativeDto $attach_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerDetachCreative'] to see the possible values for this operation
@@ -3185,14 +4675,27 @@ class AdvertiserApi
      */
     public function advertiserControllerDetachCreativeAsyncWithHttpInfo($id, $attach_creative_dto, string $contentType = self::contentTypes['advertiserControllerDetachCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerDetachCreative201Response';
         $request = $this->advertiserControllerDetachCreativeRequest($id, $attach_creative_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3259,7 +4762,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3296,6 +4799,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3321,27 +4833,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerEstimateAudience
      *
+     * Estimate the size of an audience rule
+     *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerEstimateAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response
      */
     public function advertiserControllerEstimateAudience($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerEstimateAudience'][0])
     {
-        $this->advertiserControllerEstimateAudienceWithHttpInfo($create_audience_dto, $contentType);
+        list($response) = $this->advertiserControllerEstimateAudienceWithHttpInfo($create_audience_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerEstimateAudienceWithHttpInfo
+     *
+     * Estimate the size of an audience rule
      *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerEstimateAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerEstimateAudienceWithHttpInfo($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerEstimateAudience'][0])
     {
@@ -3370,10 +4887,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3381,6 +4975,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerEstimateAudienceAsync
+     *
+     * Estimate the size of an audience rule
      *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerEstimateAudience'] to see the possible values for this operation
@@ -3401,6 +4997,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerEstimateAudienceAsyncWithHttpInfo
      *
+     * Estimate the size of an audience rule
+     *
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerEstimateAudience'] to see the possible values for this operation
      *
@@ -3409,14 +5007,27 @@ class AdvertiserApi
      */
     public function advertiserControllerEstimateAudienceAsyncWithHttpInfo($create_audience_dto, string $contentType = self::contentTypes['advertiserControllerEstimateAudience'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerEstimateAudience201Response';
         $request = $this->advertiserControllerEstimateAudienceRequest($create_audience_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3467,7 +5078,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3504,6 +5115,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3529,27 +5149,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerFetchFeed
      *
+     * Fetch a product feed now
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerFetchFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response
      */
     public function advertiserControllerFetchFeed($id, string $contentType = self::contentTypes['advertiserControllerFetchFeed'][0])
     {
-        $this->advertiserControllerFetchFeedWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerFetchFeedWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerFetchFeedWithHttpInfo
+     *
+     * Fetch a product feed now
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerFetchFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerFetchFeedWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerFetchFeed'][0])
     {
@@ -3578,10 +5203,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3589,6 +5291,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerFetchFeedAsync
+     *
+     * Fetch a product feed now
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerFetchFeed'] to see the possible values for this operation
@@ -3609,6 +5313,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerFetchFeedAsyncWithHttpInfo
      *
+     * Fetch a product feed now
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerFetchFeed'] to see the possible values for this operation
      *
@@ -3617,14 +5323,27 @@ class AdvertiserApi
      */
     public function advertiserControllerFetchFeedAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerFetchFeed'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerFetchFeed201Response';
         $request = $this->advertiserControllerFetchFeedRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3683,7 +5402,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3713,6 +5432,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3738,27 +5466,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGet
      *
+     * Get a campaign with targeting and creatives
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignDetail
      */
     public function advertiserControllerGet($id, string $contentType = self::contentTypes['advertiserControllerGet'][0])
     {
-        $this->advertiserControllerGetWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerGetWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerGetWithHttpInfo
+     *
+     * Get a campaign with targeting and creatives
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignDetail, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerGetWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGet'][0])
     {
@@ -3787,10 +5520,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignDetail' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignDetail' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignDetail', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignDetail';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignDetail',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3798,6 +5608,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerGetAsync
+     *
+     * Get a campaign with targeting and creatives
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGet'] to see the possible values for this operation
@@ -3818,6 +5630,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetAsyncWithHttpInfo
      *
+     * Get a campaign with targeting and creatives
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGet'] to see the possible values for this operation
      *
@@ -3826,14 +5640,27 @@ class AdvertiserApi
      */
     public function advertiserControllerGetAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignDetail';
         $request = $this->advertiserControllerGetRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3892,7 +5719,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3922,6 +5749,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3947,27 +5783,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetConversionConfig
      *
+     * Get a campaign&#39;s conversion config
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetConversionConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvConversionConfig
      */
     public function advertiserControllerGetConversionConfig($id, string $contentType = self::contentTypes['advertiserControllerGetConversionConfig'][0])
     {
-        $this->advertiserControllerGetConversionConfigWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerGetConversionConfigWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerGetConversionConfigWithHttpInfo
+     *
+     * Get a campaign&#39;s conversion config
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetConversionConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvConversionConfig, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerGetConversionConfigWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetConversionConfig'][0])
     {
@@ -3996,10 +5837,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvConversionConfig' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvConversionConfig' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvConversionConfig', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvConversionConfig';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvConversionConfig',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4007,6 +5925,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerGetConversionConfigAsync
+     *
+     * Get a campaign&#39;s conversion config
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetConversionConfig'] to see the possible values for this operation
@@ -4027,6 +5947,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetConversionConfigAsyncWithHttpInfo
      *
+     * Get a campaign&#39;s conversion config
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetConversionConfig'] to see the possible values for this operation
      *
@@ -4035,14 +5957,27 @@ class AdvertiserApi
      */
     public function advertiserControllerGetConversionConfigAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetConversionConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvConversionConfig';
         $request = $this->advertiserControllerGetConversionConfigRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4101,7 +6036,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4131,6 +6066,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4156,27 +6100,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetCreative
      *
+     * Get a creative
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCreative
      */
     public function advertiserControllerGetCreative($id, string $contentType = self::contentTypes['advertiserControllerGetCreative'][0])
     {
-        $this->advertiserControllerGetCreativeWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerGetCreativeWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerGetCreativeWithHttpInfo
+     *
+     * Get a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCreative, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerGetCreativeWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetCreative'][0])
     {
@@ -4205,10 +6154,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCreative' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCreative' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCreative', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCreative';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCreative',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4216,6 +6242,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerGetCreativeAsync
+     *
+     * Get a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetCreative'] to see the possible values for this operation
@@ -4236,6 +6264,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetCreativeAsyncWithHttpInfo
      *
+     * Get a creative
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetCreative'] to see the possible values for this operation
      *
@@ -4244,14 +6274,27 @@ class AdvertiserApi
      */
     public function advertiserControllerGetCreativeAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCreative';
         $request = $this->advertiserControllerGetCreativeRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4310,7 +6353,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4340,6 +6383,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4365,27 +6417,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetGroup
      *
+     * Get a campaign group
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignGroup
      */
     public function advertiserControllerGetGroup($id, string $contentType = self::contentTypes['advertiserControllerGetGroup'][0])
     {
-        $this->advertiserControllerGetGroupWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerGetGroupWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerGetGroupWithHttpInfo
+     *
+     * Get a campaign group
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignGroup, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerGetGroupWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetGroup'][0])
     {
@@ -4414,10 +6471,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignGroup' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignGroup' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignGroup', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignGroup',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4425,6 +6559,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerGetGroupAsync
+     *
+     * Get a campaign group
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetGroup'] to see the possible values for this operation
@@ -4445,6 +6581,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetGroupAsyncWithHttpInfo
      *
+     * Get a campaign group
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetGroup'] to see the possible values for this operation
      *
@@ -4453,14 +6591,27 @@ class AdvertiserApi
      */
     public function advertiserControllerGetGroupAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetGroup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
         $request = $this->advertiserControllerGetGroupRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4519,7 +6670,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4549,6 +6700,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4574,27 +6734,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetTargeting
      *
+     * Get campaign targeting
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetTargeting'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvTargeting
      */
     public function advertiserControllerGetTargeting($id, string $contentType = self::contentTypes['advertiserControllerGetTargeting'][0])
     {
-        $this->advertiserControllerGetTargetingWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerGetTargetingWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerGetTargetingWithHttpInfo
+     *
+     * Get campaign targeting
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetTargeting'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvTargeting, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerGetTargetingWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetTargeting'][0])
     {
@@ -4623,10 +6788,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvTargeting' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvTargeting' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvTargeting', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvTargeting';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvTargeting',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4634,6 +6876,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerGetTargetingAsync
+     *
+     * Get campaign targeting
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetTargeting'] to see the possible values for this operation
@@ -4654,6 +6898,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerGetTargetingAsyncWithHttpInfo
      *
+     * Get campaign targeting
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerGetTargeting'] to see the possible values for this operation
      *
@@ -4662,14 +6908,27 @@ class AdvertiserApi
      */
     public function advertiserControllerGetTargetingAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerGetTargeting'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvTargeting';
         $request = $this->advertiserControllerGetTargetingRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4728,7 +6987,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4758,6 +7017,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4783,25 +7051,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerList
      *
+     * List campaigns (ad sets)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaign[]
      */
     public function advertiserControllerList(string $contentType = self::contentTypes['advertiserControllerList'][0])
     {
-        $this->advertiserControllerListWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListWithHttpInfo
      *
+     * List campaigns (ad sets)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaign[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerList'][0])
     {
@@ -4830,10 +7103,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaign[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaign[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaign[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaign[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaign[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4841,6 +7191,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListAsync
+     *
+     * List campaigns (ad sets)
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerList'] to see the possible values for this operation
      *
@@ -4860,6 +7212,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListAsyncWithHttpInfo
      *
+     * List campaigns (ad sets)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -4867,14 +7221,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaign[]';
         $request = $this->advertiserControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4917,7 +7284,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4947,6 +7314,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4972,25 +7348,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListAllCreatives
      *
+     * List the creative library
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAllCreatives'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvLibraryCreative[]
      */
     public function advertiserControllerListAllCreatives(string $contentType = self::contentTypes['advertiserControllerListAllCreatives'][0])
     {
-        $this->advertiserControllerListAllCreativesWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListAllCreativesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListAllCreativesWithHttpInfo
      *
+     * List the creative library
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAllCreatives'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvLibraryCreative[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListAllCreativesWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListAllCreatives'][0])
     {
@@ -5019,10 +7400,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvLibraryCreative[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvLibraryCreative[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvLibraryCreative[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvLibraryCreative[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvLibraryCreative[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5030,6 +7488,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListAllCreativesAsync
+     *
+     * List the creative library
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAllCreatives'] to see the possible values for this operation
      *
@@ -5049,6 +7509,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListAllCreativesAsyncWithHttpInfo
      *
+     * List the creative library
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAllCreatives'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -5056,14 +7518,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListAllCreativesAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListAllCreatives'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvLibraryCreative[]';
         $request = $this->advertiserControllerListAllCreativesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5106,7 +7581,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5136,6 +7611,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -5161,25 +7645,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListAudiences
      *
+     * List audiences
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAudiences'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvAudience[]
      */
     public function advertiserControllerListAudiences(string $contentType = self::contentTypes['advertiserControllerListAudiences'][0])
     {
-        $this->advertiserControllerListAudiencesWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListAudiencesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListAudiencesWithHttpInfo
      *
+     * List audiences
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAudiences'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvAudience[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListAudiencesWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListAudiences'][0])
     {
@@ -5208,10 +7697,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvAudience[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvAudience[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvAudience[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvAudience[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvAudience[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5219,6 +7785,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListAudiencesAsync
+     *
+     * List audiences
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAudiences'] to see the possible values for this operation
      *
@@ -5238,6 +7806,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListAudiencesAsyncWithHttpInfo
      *
+     * List audiences
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListAudiences'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -5245,14 +7815,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListAudiencesAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListAudiences'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvAudience[]';
         $request = $this->advertiserControllerListAudiencesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5295,7 +7878,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5325,6 +7908,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -5350,25 +7942,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCatalog
      *
+     * List marketplace catalog items
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCatalogItem[]
      */
     public function advertiserControllerListCatalog(string $contentType = self::contentTypes['advertiserControllerListCatalog'][0])
     {
-        $this->advertiserControllerListCatalogWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListCatalogWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListCatalogWithHttpInfo
      *
+     * List marketplace catalog items
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCatalogItem[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListCatalogWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListCatalog'][0])
     {
@@ -5397,10 +7994,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCatalogItem[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCatalogItem[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCatalogItem[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCatalogItem[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCatalogItem[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5408,6 +8082,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListCatalogAsync
+     *
+     * List marketplace catalog items
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalog'] to see the possible values for this operation
      *
@@ -5427,6 +8103,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCatalogAsyncWithHttpInfo
      *
+     * List marketplace catalog items
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalog'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -5434,14 +8112,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListCatalogAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListCatalog'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCatalogItem[]';
         $request = $this->advertiserControllerListCatalogRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5484,7 +8175,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5514,6 +8205,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -5539,25 +8239,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCatalogFeeds
      *
+     * List scheduled catalog feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalogFeeds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCatalogFeed[]
      */
     public function advertiserControllerListCatalogFeeds(string $contentType = self::contentTypes['advertiserControllerListCatalogFeeds'][0])
     {
-        $this->advertiserControllerListCatalogFeedsWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListCatalogFeedsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListCatalogFeedsWithHttpInfo
      *
+     * List scheduled catalog feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalogFeeds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCatalogFeed[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListCatalogFeedsWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListCatalogFeeds'][0])
     {
@@ -5586,10 +8291,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCatalogFeed[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCatalogFeed[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCatalogFeed[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCatalogFeed[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCatalogFeed[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5597,6 +8379,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListCatalogFeedsAsync
+     *
+     * List scheduled catalog feeds
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalogFeeds'] to see the possible values for this operation
      *
@@ -5616,6 +8400,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCatalogFeedsAsyncWithHttpInfo
      *
+     * List scheduled catalog feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCatalogFeeds'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -5623,14 +8409,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListCatalogFeedsAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListCatalogFeeds'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCatalogFeed[]';
         $request = $this->advertiserControllerListCatalogFeedsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5673,7 +8472,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5703,6 +8502,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -5728,27 +8536,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListComponents
      *
+     * List DCO components for a creative
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListComponents'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCreativeComponent[]
      */
     public function advertiserControllerListComponents($id, string $contentType = self::contentTypes['advertiserControllerListComponents'][0])
     {
-        $this->advertiserControllerListComponentsWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerListComponentsWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListComponentsWithHttpInfo
+     *
+     * List DCO components for a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListComponents'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCreativeComponent[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListComponentsWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListComponents'][0])
     {
@@ -5777,10 +8590,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCreativeComponent[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCreativeComponent[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCreativeComponent[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCreativeComponent[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCreativeComponent[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5788,6 +8678,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListComponentsAsync
+     *
+     * List DCO components for a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListComponents'] to see the possible values for this operation
@@ -5808,6 +8700,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListComponentsAsyncWithHttpInfo
      *
+     * List DCO components for a creative
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListComponents'] to see the possible values for this operation
      *
@@ -5816,14 +8710,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListComponentsAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListComponents'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCreativeComponent[]';
         $request = $this->advertiserControllerListComponentsRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5882,7 +8789,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5912,6 +8819,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -5937,27 +8853,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCreatives
      *
+     * List creatives serving a campaign
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCreatives'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignCreative[]
      */
     public function advertiserControllerListCreatives($id, string $contentType = self::contentTypes['advertiserControllerListCreatives'][0])
     {
-        $this->advertiserControllerListCreativesWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerListCreativesWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListCreativesWithHttpInfo
+     *
+     * List creatives serving a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCreatives'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignCreative[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListCreativesWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListCreatives'][0])
     {
@@ -5986,10 +8907,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignCreative[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignCreative[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignCreative[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignCreative[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignCreative[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -5997,6 +8995,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListCreativesAsync
+     *
+     * List creatives serving a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCreatives'] to see the possible values for this operation
@@ -6017,6 +9017,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListCreativesAsyncWithHttpInfo
      *
+     * List creatives serving a campaign
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListCreatives'] to see the possible values for this operation
      *
@@ -6025,14 +9027,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListCreativesAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListCreatives'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignCreative[]';
         $request = $this->advertiserControllerListCreativesRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -6091,7 +9106,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -6121,6 +9136,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -6146,27 +9170,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListDestinations
      *
+     * List sync destinations for an audience
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListDestinations'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvAudienceDestination[]
      */
     public function advertiserControllerListDestinations($id, string $contentType = self::contentTypes['advertiserControllerListDestinations'][0])
     {
-        $this->advertiserControllerListDestinationsWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerListDestinationsWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListDestinationsWithHttpInfo
+     *
+     * List sync destinations for an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListDestinations'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvAudienceDestination[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListDestinationsWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListDestinations'][0])
     {
@@ -6195,10 +9224,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvAudienceDestination[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvAudienceDestination[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvAudienceDestination[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvAudienceDestination[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvAudienceDestination[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -6206,6 +9312,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListDestinationsAsync
+     *
+     * List sync destinations for an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListDestinations'] to see the possible values for this operation
@@ -6226,6 +9334,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListDestinationsAsyncWithHttpInfo
      *
+     * List sync destinations for an audience
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListDestinations'] to see the possible values for this operation
      *
@@ -6234,14 +9344,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListDestinationsAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerListDestinations'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvAudienceDestination[]';
         $request = $this->advertiserControllerListDestinationsRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -6300,7 +9423,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -6330,6 +9453,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -6355,6 +9487,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListFeedProducts
      *
+     * List products parsed from a feed
+     *
      * @param  string $id id (required)
      * @param  string $limit limit (required)
      * @param  string $offset offset (required)
@@ -6362,15 +9496,18 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response
      */
     public function advertiserControllerListFeedProducts($id, $limit, $offset, string $contentType = self::contentTypes['advertiserControllerListFeedProducts'][0])
     {
-        $this->advertiserControllerListFeedProductsWithHttpInfo($id, $limit, $offset, $contentType);
+        list($response) = $this->advertiserControllerListFeedProductsWithHttpInfo($id, $limit, $offset, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListFeedProductsWithHttpInfo
+     *
+     * List products parsed from a feed
      *
      * @param  string $id (required)
      * @param  string $limit (required)
@@ -6379,7 +9516,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListFeedProductsWithHttpInfo($id, $limit, $offset, string $contentType = self::contentTypes['advertiserControllerListFeedProducts'][0])
     {
@@ -6408,10 +9545,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -6419,6 +9633,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListFeedProductsAsync
+     *
+     * List products parsed from a feed
      *
      * @param  string $id (required)
      * @param  string $limit (required)
@@ -6441,6 +9657,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListFeedProductsAsyncWithHttpInfo
      *
+     * List products parsed from a feed
+     *
      * @param  string $id (required)
      * @param  string $limit (required)
      * @param  string $offset (required)
@@ -6451,14 +9669,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListFeedProductsAsyncWithHttpInfo($id, $limit, $offset, string $contentType = self::contentTypes['advertiserControllerListFeedProducts'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerListFeedProducts200Response';
         $request = $this->advertiserControllerListFeedProductsRequest($id, $limit, $offset, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -6551,7 +9782,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -6581,6 +9812,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -6606,25 +9846,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListFeeds
      *
+     * List product feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListFeeds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvProductFeed[]
      */
     public function advertiserControllerListFeeds(string $contentType = self::contentTypes['advertiserControllerListFeeds'][0])
     {
-        $this->advertiserControllerListFeedsWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListFeedsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListFeedsWithHttpInfo
      *
+     * List product feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListFeeds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvProductFeed[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListFeedsWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListFeeds'][0])
     {
@@ -6653,10 +9898,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvProductFeed[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvProductFeed[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvProductFeed[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvProductFeed[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvProductFeed[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -6664,6 +9986,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListFeedsAsync
+     *
+     * List product feeds
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListFeeds'] to see the possible values for this operation
      *
@@ -6683,6 +10007,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListFeedsAsyncWithHttpInfo
      *
+     * List product feeds
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListFeeds'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -6690,14 +10016,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListFeedsAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListFeeds'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvProductFeed[]';
         $request = $this->advertiserControllerListFeedsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -6740,7 +10079,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -6770,6 +10109,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -6795,25 +10143,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListGroups
      *
+     * List campaign groups with their ad sets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListGroups'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]
      */
     public function advertiserControllerListGroups(string $contentType = self::contentTypes['advertiserControllerListGroups'][0])
     {
-        $this->advertiserControllerListGroupsWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListGroupsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListGroupsWithHttpInfo
      *
+     * List campaign groups with their ad sets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListGroups'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignGroupWithAdSets[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListGroupsWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListGroups'][0])
     {
@@ -6842,10 +10195,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -6853,6 +10283,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListGroupsAsync
+     *
+     * List campaign groups with their ad sets
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListGroups'] to see the possible values for this operation
      *
@@ -6872,6 +10304,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListGroupsAsyncWithHttpInfo
      *
+     * List campaign groups with their ad sets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListGroups'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -6879,14 +10313,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListGroupsAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListGroups'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignGroupWithAdSets[]';
         $request = $this->advertiserControllerListGroupsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -6929,7 +10376,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -6959,6 +10406,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -6984,25 +10440,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListPromote
      *
+     * List sponsored-product promote campaigns
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListPromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvPromoteCampaign[]
      */
     public function advertiserControllerListPromote(string $contentType = self::contentTypes['advertiserControllerListPromote'][0])
     {
-        $this->advertiserControllerListPromoteWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerListPromoteWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerListPromoteWithHttpInfo
      *
+     * List sponsored-product promote campaigns
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListPromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvPromoteCampaign[], HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerListPromoteWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListPromote'][0])
     {
@@ -7031,10 +10492,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvPromoteCampaign[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvPromoteCampaign[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvPromoteCampaign[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvPromoteCampaign[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvPromoteCampaign[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -7042,6 +10580,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerListPromoteAsync
+     *
+     * List sponsored-product promote campaigns
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListPromote'] to see the possible values for this operation
      *
@@ -7061,6 +10601,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerListPromoteAsyncWithHttpInfo
      *
+     * List sponsored-product promote campaigns
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerListPromote'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -7068,14 +10610,27 @@ class AdvertiserApi
      */
     public function advertiserControllerListPromoteAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerListPromote'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvPromoteCampaign[]';
         $request = $this->advertiserControllerListPromoteRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -7118,7 +10673,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -7148,6 +10703,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -7173,21 +10737,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerLookalikeAudience
      *
+     * Create a heuristic lookalike audience
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\LookalikeDto $lookalike_dto lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerLookalikeAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response
      */
     public function advertiserControllerLookalikeAudience($id, $lookalike_dto, string $contentType = self::contentTypes['advertiserControllerLookalikeAudience'][0])
     {
-        $this->advertiserControllerLookalikeAudienceWithHttpInfo($id, $lookalike_dto, $contentType);
+        list($response) = $this->advertiserControllerLookalikeAudienceWithHttpInfo($id, $lookalike_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerLookalikeAudienceWithHttpInfo
+     *
+     * Create a heuristic lookalike audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\LookalikeDto $lookalike_dto (required)
@@ -7195,7 +10764,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerLookalikeAudienceWithHttpInfo($id, $lookalike_dto, string $contentType = self::contentTypes['advertiserControllerLookalikeAudience'][0])
     {
@@ -7224,10 +10793,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -7235,6 +10881,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerLookalikeAudienceAsync
+     *
+     * Create a heuristic lookalike audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\LookalikeDto $lookalike_dto (required)
@@ -7256,6 +10904,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerLookalikeAudienceAsyncWithHttpInfo
      *
+     * Create a heuristic lookalike audience
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\LookalikeDto $lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerLookalikeAudience'] to see the possible values for this operation
@@ -7265,14 +10915,27 @@ class AdvertiserApi
      */
     public function advertiserControllerLookalikeAudienceAsyncWithHttpInfo($id, $lookalike_dto, string $contentType = self::contentTypes['advertiserControllerLookalikeAudience'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerLookalikeAudience201Response';
         $request = $this->advertiserControllerLookalikeAudienceRequest($id, $lookalike_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -7339,7 +11002,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -7376,6 +11039,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -7401,27 +11073,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerModeledLookalike
      *
+     * Create a modeled lookalike audience
+     *
      * @param  \Adviverse\Api\Model\ModeledLookalikeDto $modeled_lookalike_dto modeled_lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalike'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response
      */
     public function advertiserControllerModeledLookalike($modeled_lookalike_dto, string $contentType = self::contentTypes['advertiserControllerModeledLookalike'][0])
     {
-        $this->advertiserControllerModeledLookalikeWithHttpInfo($modeled_lookalike_dto, $contentType);
+        list($response) = $this->advertiserControllerModeledLookalikeWithHttpInfo($modeled_lookalike_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerModeledLookalikeWithHttpInfo
+     *
+     * Create a modeled lookalike audience
      *
      * @param  \Adviverse\Api\Model\ModeledLookalikeDto $modeled_lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalike'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerModeledLookalikeWithHttpInfo($modeled_lookalike_dto, string $contentType = self::contentTypes['advertiserControllerModeledLookalike'][0])
     {
@@ -7450,10 +11127,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -7461,6 +11215,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerModeledLookalikeAsync
+     *
+     * Create a modeled lookalike audience
      *
      * @param  \Adviverse\Api\Model\ModeledLookalikeDto $modeled_lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalike'] to see the possible values for this operation
@@ -7481,6 +11237,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerModeledLookalikeAsyncWithHttpInfo
      *
+     * Create a modeled lookalike audience
+     *
      * @param  \Adviverse\Api\Model\ModeledLookalikeDto $modeled_lookalike_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalike'] to see the possible values for this operation
      *
@@ -7489,14 +11247,27 @@ class AdvertiserApi
      */
     public function advertiserControllerModeledLookalikeAsyncWithHttpInfo($modeled_lookalike_dto, string $contentType = self::contentTypes['advertiserControllerModeledLookalike'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerModeledLookalike201Response';
         $request = $this->advertiserControllerModeledLookalikeRequest($modeled_lookalike_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -7547,7 +11318,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -7584,6 +11355,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -7609,27 +11389,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerModeledLookalikePreview
      *
+     * Preview a modeled lookalike for a seed
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalikePreview'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response
      */
     public function advertiserControllerModeledLookalikePreview($id, string $contentType = self::contentTypes['advertiserControllerModeledLookalikePreview'][0])
     {
-        $this->advertiserControllerModeledLookalikePreviewWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerModeledLookalikePreviewWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerModeledLookalikePreviewWithHttpInfo
+     *
+     * Preview a modeled lookalike for a seed
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalikePreview'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerModeledLookalikePreviewWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerModeledLookalikePreview'][0])
     {
@@ -7658,10 +11443,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -7669,6 +11531,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerModeledLookalikePreviewAsync
+     *
+     * Preview a modeled lookalike for a seed
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalikePreview'] to see the possible values for this operation
@@ -7689,6 +11553,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerModeledLookalikePreviewAsyncWithHttpInfo
      *
+     * Preview a modeled lookalike for a seed
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerModeledLookalikePreview'] to see the possible values for this operation
      *
@@ -7697,14 +11563,27 @@ class AdvertiserApi
      */
     public function advertiserControllerModeledLookalikePreviewAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerModeledLookalikePreview'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerModeledLookalikePreview200Response';
         $request = $this->advertiserControllerModeledLookalikePreviewRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -7763,7 +11642,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -7793,6 +11672,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -7818,21 +11706,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerPromoteStatus
      *
+     * Activate or pause a promote campaign
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\SetPromoteStatusDto $set_promote_status_dto set_promote_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerPromoteStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvStatusResult
      */
     public function advertiserControllerPromoteStatus($id, $set_promote_status_dto, string $contentType = self::contentTypes['advertiserControllerPromoteStatus'][0])
     {
-        $this->advertiserControllerPromoteStatusWithHttpInfo($id, $set_promote_status_dto, $contentType);
+        list($response) = $this->advertiserControllerPromoteStatusWithHttpInfo($id, $set_promote_status_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerPromoteStatusWithHttpInfo
+     *
+     * Activate or pause a promote campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetPromoteStatusDto $set_promote_status_dto (required)
@@ -7840,7 +11733,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvStatusResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerPromoteStatusWithHttpInfo($id, $set_promote_status_dto, string $contentType = self::contentTypes['advertiserControllerPromoteStatus'][0])
     {
@@ -7869,10 +11762,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvStatusResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvStatusResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvStatusResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvStatusResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvStatusResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -7880,6 +11850,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerPromoteStatusAsync
+     *
+     * Activate or pause a promote campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetPromoteStatusDto $set_promote_status_dto (required)
@@ -7901,6 +11873,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerPromoteStatusAsyncWithHttpInfo
      *
+     * Activate or pause a promote campaign
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetPromoteStatusDto $set_promote_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerPromoteStatus'] to see the possible values for this operation
@@ -7910,14 +11884,27 @@ class AdvertiserApi
      */
     public function advertiserControllerPromoteStatusAsyncWithHttpInfo($id, $set_promote_status_dto, string $contentType = self::contentTypes['advertiserControllerPromoteStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvStatusResult';
         $request = $this->advertiserControllerPromoteStatusRequest($id, $set_promote_status_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -7984,7 +11971,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -8021,6 +12008,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -8046,27 +12042,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerReach
      *
+     * Estimate daily reach for targeting
+     *
      * @param  \Adviverse\Api\Model\ReachEstimateDto $reach_estimate_dto reach_estimate_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerReach'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerReach201Response
      */
     public function advertiserControllerReach($reach_estimate_dto, string $contentType = self::contentTypes['advertiserControllerReach'][0])
     {
-        $this->advertiserControllerReachWithHttpInfo($reach_estimate_dto, $contentType);
+        list($response) = $this->advertiserControllerReachWithHttpInfo($reach_estimate_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerReachWithHttpInfo
+     *
+     * Estimate daily reach for targeting
      *
      * @param  \Adviverse\Api\Model\ReachEstimateDto $reach_estimate_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerReach'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerReach201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerReachWithHttpInfo($reach_estimate_dto, string $contentType = self::contentTypes['advertiserControllerReach'][0])
     {
@@ -8095,10 +12096,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerReach201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerReach201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerReach201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerReach201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerReach201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -8106,6 +12184,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerReachAsync
+     *
+     * Estimate daily reach for targeting
      *
      * @param  \Adviverse\Api\Model\ReachEstimateDto $reach_estimate_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerReach'] to see the possible values for this operation
@@ -8126,6 +12206,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerReachAsyncWithHttpInfo
      *
+     * Estimate daily reach for targeting
+     *
      * @param  \Adviverse\Api\Model\ReachEstimateDto $reach_estimate_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerReach'] to see the possible values for this operation
      *
@@ -8134,14 +12216,27 @@ class AdvertiserApi
      */
     public function advertiserControllerReachAsyncWithHttpInfo($reach_estimate_dto, string $contentType = self::contentTypes['advertiserControllerReach'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerReach201Response';
         $request = $this->advertiserControllerReachRequest($reach_estimate_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -8192,7 +12287,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -8229,6 +12324,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -8254,27 +12358,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRegisterCatalogFeed
      *
+     * Register a scheduled catalog feed
+     *
      * @param  \Adviverse\Api\Model\RegisterCatalogFeedDto $register_catalog_feed_dto register_catalog_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRegisterCatalogFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCatalogFeed
      */
     public function advertiserControllerRegisterCatalogFeed($register_catalog_feed_dto, string $contentType = self::contentTypes['advertiserControllerRegisterCatalogFeed'][0])
     {
-        $this->advertiserControllerRegisterCatalogFeedWithHttpInfo($register_catalog_feed_dto, $contentType);
+        list($response) = $this->advertiserControllerRegisterCatalogFeedWithHttpInfo($register_catalog_feed_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRegisterCatalogFeedWithHttpInfo
+     *
+     * Register a scheduled catalog feed
      *
      * @param  \Adviverse\Api\Model\RegisterCatalogFeedDto $register_catalog_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRegisterCatalogFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCatalogFeed, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRegisterCatalogFeedWithHttpInfo($register_catalog_feed_dto, string $contentType = self::contentTypes['advertiserControllerRegisterCatalogFeed'][0])
     {
@@ -8303,10 +12412,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvCatalogFeed' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCatalogFeed' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCatalogFeed', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCatalogFeed';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCatalogFeed',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -8314,6 +12500,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRegisterCatalogFeedAsync
+     *
+     * Register a scheduled catalog feed
      *
      * @param  \Adviverse\Api\Model\RegisterCatalogFeedDto $register_catalog_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRegisterCatalogFeed'] to see the possible values for this operation
@@ -8334,6 +12522,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRegisterCatalogFeedAsyncWithHttpInfo
      *
+     * Register a scheduled catalog feed
+     *
      * @param  \Adviverse\Api\Model\RegisterCatalogFeedDto $register_catalog_feed_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRegisterCatalogFeed'] to see the possible values for this operation
      *
@@ -8342,14 +12532,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRegisterCatalogFeedAsyncWithHttpInfo($register_catalog_feed_dto, string $contentType = self::contentTypes['advertiserControllerRegisterCatalogFeed'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCatalogFeed';
         $request = $this->advertiserControllerRegisterCatalogFeedRequest($register_catalog_feed_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -8400,7 +12603,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -8437,6 +12640,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -8462,27 +12674,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemove
      *
+     * Delete a campaign
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemove($id, string $contentType = self::contentTypes['advertiserControllerRemove'][0])
     {
-        $this->advertiserControllerRemoveWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerRemoveWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveWithHttpInfo
+     *
+     * Delete a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemove'][0])
     {
@@ -8511,10 +12728,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -8522,6 +12816,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveAsync
+     *
+     * Delete a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemove'] to see the possible values for this operation
@@ -8542,6 +12838,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveAsyncWithHttpInfo
      *
+     * Delete a campaign
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemove'] to see the possible values for this operation
      *
@@ -8550,14 +12848,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemove'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -8616,7 +12927,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -8646,6 +12957,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -8671,27 +12991,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveAudience
      *
+     * Delete an audience
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveAudience($id, string $contentType = self::contentTypes['advertiserControllerRemoveAudience'][0])
     {
-        $this->advertiserControllerRemoveAudienceWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerRemoveAudienceWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveAudienceWithHttpInfo
+     *
+     * Delete an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveAudienceWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveAudience'][0])
     {
@@ -8720,10 +13045,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -8731,6 +13133,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveAudienceAsync
+     *
+     * Delete an audience
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveAudience'] to see the possible values for this operation
@@ -8751,6 +13155,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveAudienceAsyncWithHttpInfo
      *
+     * Delete an audience
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveAudience'] to see the possible values for this operation
      *
@@ -8759,14 +13165,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveAudienceAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveAudience'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveAudienceRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -8825,7 +13244,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -8855,6 +13274,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -8880,27 +13308,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveCatalogFeed
      *
+     * Delete a scheduled catalog feed
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCatalogFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveCatalogFeed($id, string $contentType = self::contentTypes['advertiserControllerRemoveCatalogFeed'][0])
     {
-        $this->advertiserControllerRemoveCatalogFeedWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerRemoveCatalogFeedWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveCatalogFeedWithHttpInfo
+     *
+     * Delete a scheduled catalog feed
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCatalogFeed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveCatalogFeedWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveCatalogFeed'][0])
     {
@@ -8929,10 +13362,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -8940,6 +13450,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveCatalogFeedAsync
+     *
+     * Delete a scheduled catalog feed
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCatalogFeed'] to see the possible values for this operation
@@ -8960,6 +13472,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveCatalogFeedAsyncWithHttpInfo
      *
+     * Delete a scheduled catalog feed
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCatalogFeed'] to see the possible values for this operation
      *
@@ -8968,14 +13482,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveCatalogFeedAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveCatalogFeed'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveCatalogFeedRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -9034,7 +13561,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -9064,6 +13591,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -9089,21 +13625,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveComponent
      *
+     * Delete a DCO component
+     *
      * @param  string $id id (required)
      * @param  string $cid cid (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveComponent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveComponent($id, $cid, string $contentType = self::contentTypes['advertiserControllerRemoveComponent'][0])
     {
-        $this->advertiserControllerRemoveComponentWithHttpInfo($id, $cid, $contentType);
+        list($response) = $this->advertiserControllerRemoveComponentWithHttpInfo($id, $cid, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveComponentWithHttpInfo
+     *
+     * Delete a DCO component
      *
      * @param  string $id (required)
      * @param  string $cid (required)
@@ -9111,7 +13652,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveComponentWithHttpInfo($id, $cid, string $contentType = self::contentTypes['advertiserControllerRemoveComponent'][0])
     {
@@ -9140,10 +13681,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -9151,6 +13769,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveComponentAsync
+     *
+     * Delete a DCO component
      *
      * @param  string $id (required)
      * @param  string $cid (required)
@@ -9172,6 +13792,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveComponentAsyncWithHttpInfo
      *
+     * Delete a DCO component
+     *
      * @param  string $id (required)
      * @param  string $cid (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveComponent'] to see the possible values for this operation
@@ -9181,14 +13803,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveComponentAsyncWithHttpInfo($id, $cid, string $contentType = self::contentTypes['advertiserControllerRemoveComponent'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveComponentRequest($id, $cid, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -9263,7 +13898,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -9293,6 +13928,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -9318,27 +13962,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveCreative
      *
+     * Delete a creative
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveCreative($id, string $contentType = self::contentTypes['advertiserControllerRemoveCreative'][0])
     {
-        $this->advertiserControllerRemoveCreativeWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerRemoveCreativeWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveCreativeWithHttpInfo
+     *
+     * Delete a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveCreativeWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveCreative'][0])
     {
@@ -9367,10 +14016,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -9378,6 +14104,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveCreativeAsync
+     *
+     * Delete a creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCreative'] to see the possible values for this operation
@@ -9398,6 +14126,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveCreativeAsyncWithHttpInfo
      *
+     * Delete a creative
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveCreative'] to see the possible values for this operation
      *
@@ -9406,14 +14136,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveCreativeAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveCreativeRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -9472,7 +14215,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -9502,6 +14245,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -9527,27 +14279,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveDestination
      *
+     * Delete a sync destination
+     *
      * @param  string $did did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveDestination($did, string $contentType = self::contentTypes['advertiserControllerRemoveDestination'][0])
     {
-        $this->advertiserControllerRemoveDestinationWithHttpInfo($did, $contentType);
+        list($response) = $this->advertiserControllerRemoveDestinationWithHttpInfo($did, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveDestinationWithHttpInfo
+     *
+     * Delete a sync destination
      *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveDestinationWithHttpInfo($did, string $contentType = self::contentTypes['advertiserControllerRemoveDestination'][0])
     {
@@ -9576,10 +14333,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -9587,6 +14421,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveDestinationAsync
+     *
+     * Delete a sync destination
      *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveDestination'] to see the possible values for this operation
@@ -9607,6 +14443,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveDestinationAsyncWithHttpInfo
      *
+     * Delete a sync destination
+     *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveDestination'] to see the possible values for this operation
      *
@@ -9615,14 +14453,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveDestinationAsyncWithHttpInfo($did, string $contentType = self::contentTypes['advertiserControllerRemoveDestination'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveDestinationRequest($did, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -9681,7 +14532,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -9711,6 +14562,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -9736,27 +14596,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveGroup
      *
+     * Delete a campaign group
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvDeleted
      */
     public function advertiserControllerRemoveGroup($id, string $contentType = self::contentTypes['advertiserControllerRemoveGroup'][0])
     {
-        $this->advertiserControllerRemoveGroupWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerRemoveGroupWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerRemoveGroupWithHttpInfo
+     *
+     * Delete a campaign group
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvDeleted, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerRemoveGroupWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveGroup'][0])
     {
@@ -9785,10 +14650,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvDeleted' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvDeleted' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvDeleted', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvDeleted';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvDeleted',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -9796,6 +14738,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerRemoveGroupAsync
+     *
+     * Delete a campaign group
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveGroup'] to see the possible values for this operation
@@ -9816,6 +14760,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerRemoveGroupAsyncWithHttpInfo
      *
+     * Delete a campaign group
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerRemoveGroup'] to see the possible values for this operation
      *
@@ -9824,14 +14770,27 @@ class AdvertiserApi
      */
     public function advertiserControllerRemoveGroupAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerRemoveGroup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvDeleted';
         $request = $this->advertiserControllerRemoveGroupRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -9890,7 +14849,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -9920,6 +14879,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -9945,21 +14913,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSetDco
      *
+     * Set DCO and product-ad flags on a creative
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\SetDcoDto $set_dco_dto set_dco_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSetDco'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerSetDco200Response
      */
     public function advertiserControllerSetDco($id, $set_dco_dto, string $contentType = self::contentTypes['advertiserControllerSetDco'][0])
     {
-        $this->advertiserControllerSetDcoWithHttpInfo($id, $set_dco_dto, $contentType);
+        list($response) = $this->advertiserControllerSetDcoWithHttpInfo($id, $set_dco_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerSetDcoWithHttpInfo
+     *
+     * Set DCO and product-ad flags on a creative
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetDcoDto $set_dco_dto (required)
@@ -9967,7 +14940,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerSetDco200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerSetDcoWithHttpInfo($id, $set_dco_dto, string $contentType = self::contentTypes['advertiserControllerSetDco'][0])
     {
@@ -9996,10 +14969,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerSetDco200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerSetDco200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerSetDco200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerSetDco200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerSetDco200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -10007,6 +15057,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerSetDcoAsync
+     *
+     * Set DCO and product-ad flags on a creative
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetDcoDto $set_dco_dto (required)
@@ -10028,6 +15080,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSetDcoAsyncWithHttpInfo
      *
+     * Set DCO and product-ad flags on a creative
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetDcoDto $set_dco_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSetDco'] to see the possible values for this operation
@@ -10037,14 +15091,27 @@ class AdvertiserApi
      */
     public function advertiserControllerSetDcoAsyncWithHttpInfo($id, $set_dco_dto, string $contentType = self::contentTypes['advertiserControllerSetDco'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerSetDco200Response';
         $request = $this->advertiserControllerSetDcoRequest($id, $set_dco_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -10111,7 +15178,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -10148,6 +15215,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -10173,27 +15249,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerStatus
      *
+     * Activate or pause a campaign
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvStatusResult
      */
     public function advertiserControllerStatus($id, string $contentType = self::contentTypes['advertiserControllerStatus'][0])
     {
-        $this->advertiserControllerStatusWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerStatusWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerStatusWithHttpInfo
+     *
+     * Activate or pause a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvStatusResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerStatusWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerStatus'][0])
     {
@@ -10222,10 +15303,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvStatusResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvStatusResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvStatusResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvStatusResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvStatusResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -10233,6 +15391,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerStatusAsync
+     *
+     * Activate or pause a campaign
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerStatus'] to see the possible values for this operation
@@ -10253,6 +15413,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerStatusAsyncWithHttpInfo
      *
+     * Activate or pause a campaign
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerStatus'] to see the possible values for this operation
      *
@@ -10261,14 +15423,27 @@ class AdvertiserApi
      */
     public function advertiserControllerStatusAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvStatusResult';
         $request = $this->advertiserControllerStatusRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -10327,7 +15502,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -10357,6 +15532,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -10382,27 +15566,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSubmit
      *
+     * Submit a campaign for moderation review
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvStatusResult
      */
     public function advertiserControllerSubmit($id, string $contentType = self::contentTypes['advertiserControllerSubmit'][0])
     {
-        $this->advertiserControllerSubmitWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerSubmitWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerSubmitWithHttpInfo
+     *
+     * Submit a campaign for moderation review
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvStatusResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerSubmitWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerSubmit'][0])
     {
@@ -10431,10 +15620,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvStatusResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvStatusResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvStatusResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvStatusResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvStatusResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -10442,6 +15708,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerSubmitAsync
+     *
+     * Submit a campaign for moderation review
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmit'] to see the possible values for this operation
@@ -10462,6 +15730,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSubmitAsyncWithHttpInfo
      *
+     * Submit a campaign for moderation review
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmit'] to see the possible values for this operation
      *
@@ -10470,14 +15740,27 @@ class AdvertiserApi
      */
     public function advertiserControllerSubmitAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerSubmit'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvStatusResult';
         $request = $this->advertiserControllerSubmitRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -10536,7 +15819,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -10566,6 +15849,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -10591,27 +15883,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSubmitPromote
      *
+     * Submit a promote campaign for review
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmitPromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvStatusResult
      */
     public function advertiserControllerSubmitPromote($id, string $contentType = self::contentTypes['advertiserControllerSubmitPromote'][0])
     {
-        $this->advertiserControllerSubmitPromoteWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerSubmitPromoteWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerSubmitPromoteWithHttpInfo
+     *
+     * Submit a promote campaign for review
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmitPromote'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvStatusResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerSubmitPromoteWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerSubmitPromote'][0])
     {
@@ -10640,10 +15937,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvStatusResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvStatusResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvStatusResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvStatusResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvStatusResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -10651,6 +16025,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerSubmitPromoteAsync
+     *
+     * Submit a promote campaign for review
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmitPromote'] to see the possible values for this operation
@@ -10671,6 +16047,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSubmitPromoteAsyncWithHttpInfo
      *
+     * Submit a promote campaign for review
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSubmitPromote'] to see the possible values for this operation
      *
@@ -10679,14 +16057,27 @@ class AdvertiserApi
      */
     public function advertiserControllerSubmitPromoteAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerSubmitPromote'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvStatusResult';
         $request = $this->advertiserControllerSubmitPromoteRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -10745,7 +16136,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -10775,6 +16166,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -10800,27 +16200,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSyncDestination
      *
+     * Sync a destination now
+     *
      * @param  string $did did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSyncDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response
      */
     public function advertiserControllerSyncDestination($did, string $contentType = self::contentTypes['advertiserControllerSyncDestination'][0])
     {
-        $this->advertiserControllerSyncDestinationWithHttpInfo($did, $contentType);
+        list($response) = $this->advertiserControllerSyncDestinationWithHttpInfo($did, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerSyncDestinationWithHttpInfo
+     *
+     * Sync a destination now
      *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSyncDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerSyncDestinationWithHttpInfo($did, string $contentType = self::contentTypes['advertiserControllerSyncDestination'][0])
     {
@@ -10849,10 +16254,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -10860,6 +16342,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerSyncDestinationAsync
+     *
+     * Sync a destination now
      *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSyncDestination'] to see the possible values for this operation
@@ -10880,6 +16364,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerSyncDestinationAsyncWithHttpInfo
      *
+     * Sync a destination now
+     *
      * @param  string $did (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerSyncDestination'] to see the possible values for this operation
      *
@@ -10888,14 +16374,27 @@ class AdvertiserApi
      */
     public function advertiserControllerSyncDestinationAsyncWithHttpInfo($did, string $contentType = self::contentTypes['advertiserControllerSyncDestination'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerSyncDestination201Response';
         $request = $this->advertiserControllerSyncDestinationRequest($did, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -10954,7 +16453,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -10984,6 +16483,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -11009,27 +16517,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerTranscodeCreative
      *
+     * Queue HLS transcoding for a video creative
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerTranscodeCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response
      */
     public function advertiserControllerTranscodeCreative($id, string $contentType = self::contentTypes['advertiserControllerTranscodeCreative'][0])
     {
-        $this->advertiserControllerTranscodeCreativeWithHttpInfo($id, $contentType);
+        list($response) = $this->advertiserControllerTranscodeCreativeWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerTranscodeCreativeWithHttpInfo
+     *
+     * Queue HLS transcoding for a video creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerTranscodeCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerTranscodeCreativeWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerTranscodeCreative'][0])
     {
@@ -11058,10 +16571,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -11069,6 +16659,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerTranscodeCreativeAsync
+     *
+     * Queue HLS transcoding for a video creative
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerTranscodeCreative'] to see the possible values for this operation
@@ -11089,6 +16681,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerTranscodeCreativeAsyncWithHttpInfo
      *
+     * Queue HLS transcoding for a video creative
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerTranscodeCreative'] to see the possible values for this operation
      *
@@ -11097,14 +16691,27 @@ class AdvertiserApi
      */
     public function advertiserControllerTranscodeCreativeAsyncWithHttpInfo($id, string $contentType = self::contentTypes['advertiserControllerTranscodeCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerTranscodeCreative201Response';
         $request = $this->advertiserControllerTranscodeCreativeRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -11163,7 +16770,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -11193,6 +16800,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -11218,21 +16834,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdate
      *
+     * Update a campaign
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignDto $update_campaign_dto update_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignDetail
      */
     public function advertiserControllerUpdate($id, $update_campaign_dto, string $contentType = self::contentTypes['advertiserControllerUpdate'][0])
     {
-        $this->advertiserControllerUpdateWithHttpInfo($id, $update_campaign_dto, $contentType);
+        list($response) = $this->advertiserControllerUpdateWithHttpInfo($id, $update_campaign_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpdateWithHttpInfo
+     *
+     * Update a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignDto $update_campaign_dto (required)
@@ -11240,7 +16861,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignDetail, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpdateWithHttpInfo($id, $update_campaign_dto, string $contentType = self::contentTypes['advertiserControllerUpdate'][0])
     {
@@ -11269,10 +16890,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignDetail' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignDetail' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignDetail', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignDetail';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignDetail',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -11280,6 +16978,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpdateAsync
+     *
+     * Update a campaign
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignDto $update_campaign_dto (required)
@@ -11301,6 +17001,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateAsyncWithHttpInfo
      *
+     * Update a campaign
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignDto $update_campaign_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdate'] to see the possible values for this operation
@@ -11310,14 +17012,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpdateAsyncWithHttpInfo($id, $update_campaign_dto, string $contentType = self::contentTypes['advertiserControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignDetail';
         $request = $this->advertiserControllerUpdateRequest($id, $update_campaign_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -11384,7 +17099,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -11421,6 +17136,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -11446,21 +17170,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateAudience
      *
+     * Update an audience
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response
      */
     public function advertiserControllerUpdateAudience($id, $create_audience_dto, string $contentType = self::contentTypes['advertiserControllerUpdateAudience'][0])
     {
-        $this->advertiserControllerUpdateAudienceWithHttpInfo($id, $create_audience_dto, $contentType);
+        list($response) = $this->advertiserControllerUpdateAudienceWithHttpInfo($id, $create_audience_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpdateAudienceWithHttpInfo
+     *
+     * Update an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
@@ -11468,7 +17197,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpdateAudienceWithHttpInfo($id, $create_audience_dto, string $contentType = self::contentTypes['advertiserControllerUpdateAudience'][0])
     {
@@ -11497,10 +17226,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -11508,6 +17314,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpdateAudienceAsync
+     *
+     * Update an audience
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
@@ -11529,6 +17337,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateAudienceAsyncWithHttpInfo
      *
+     * Update an audience
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\CreateAudienceDto $create_audience_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateAudience'] to see the possible values for this operation
@@ -11538,14 +17348,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpdateAudienceAsyncWithHttpInfo($id, $create_audience_dto, string $contentType = self::contentTypes['advertiserControllerUpdateAudience'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
         $request = $this->advertiserControllerUpdateAudienceRequest($id, $create_audience_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -11612,7 +17435,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -11649,6 +17472,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -11674,21 +17506,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateCreative
      *
+     * Update a creative
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateCreativeDto $update_creative_dto update_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCreative
      */
     public function advertiserControllerUpdateCreative($id, $update_creative_dto, string $contentType = self::contentTypes['advertiserControllerUpdateCreative'][0])
     {
-        $this->advertiserControllerUpdateCreativeWithHttpInfo($id, $update_creative_dto, $contentType);
+        list($response) = $this->advertiserControllerUpdateCreativeWithHttpInfo($id, $update_creative_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpdateCreativeWithHttpInfo
+     *
+     * Update a creative
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCreativeDto $update_creative_dto (required)
@@ -11696,7 +17533,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCreative, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpdateCreativeWithHttpInfo($id, $update_creative_dto, string $contentType = self::contentTypes['advertiserControllerUpdateCreative'][0])
     {
@@ -11725,10 +17562,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCreative' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCreative' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCreative', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCreative';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCreative',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -11736,6 +17650,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpdateCreativeAsync
+     *
+     * Update a creative
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCreativeDto $update_creative_dto (required)
@@ -11757,6 +17673,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateCreativeAsyncWithHttpInfo
      *
+     * Update a creative
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCreativeDto $update_creative_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateCreative'] to see the possible values for this operation
@@ -11766,14 +17684,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpdateCreativeAsyncWithHttpInfo($id, $update_creative_dto, string $contentType = self::contentTypes['advertiserControllerUpdateCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCreative';
         $request = $this->advertiserControllerUpdateCreativeRequest($id, $update_creative_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -11840,7 +17771,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -11877,6 +17808,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -11902,21 +17842,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateDestination
      *
+     * Update a sync destination
+     *
      * @param  string $did did (required)
      * @param  \Adviverse\Api\Model\UpdateDestinationDto $update_destination_dto update_destination_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateDestination'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response
      */
     public function advertiserControllerUpdateDestination($did, $update_destination_dto, string $contentType = self::contentTypes['advertiserControllerUpdateDestination'][0])
     {
-        $this->advertiserControllerUpdateDestinationWithHttpInfo($did, $update_destination_dto, $contentType);
+        list($response) = $this->advertiserControllerUpdateDestinationWithHttpInfo($did, $update_destination_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpdateDestinationWithHttpInfo
+     *
+     * Update a sync destination
      *
      * @param  string $did (required)
      * @param  \Adviverse\Api\Model\UpdateDestinationDto $update_destination_dto (required)
@@ -11924,7 +17869,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpdateDestinationWithHttpInfo($did, $update_destination_dto, string $contentType = self::contentTypes['advertiserControllerUpdateDestination'][0])
     {
@@ -11953,10 +17898,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -11964,6 +17986,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpdateDestinationAsync
+     *
+     * Update a sync destination
      *
      * @param  string $did (required)
      * @param  \Adviverse\Api\Model\UpdateDestinationDto $update_destination_dto (required)
@@ -11985,6 +18009,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateDestinationAsyncWithHttpInfo
      *
+     * Update a sync destination
+     *
      * @param  string $did (required)
      * @param  \Adviverse\Api\Model\UpdateDestinationDto $update_destination_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateDestination'] to see the possible values for this operation
@@ -11994,14 +18020,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpdateDestinationAsyncWithHttpInfo($did, $update_destination_dto, string $contentType = self::contentTypes['advertiserControllerUpdateDestination'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerCreateAudience201Response';
         $request = $this->advertiserControllerUpdateDestinationRequest($did, $update_destination_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -12068,7 +18107,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -12105,6 +18144,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -12130,21 +18178,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateGroup
      *
+     * Update a campaign group
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignGroupDto $update_campaign_group_dto update_campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateGroup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvCampaignGroup
      */
     public function advertiserControllerUpdateGroup($id, $update_campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerUpdateGroup'][0])
     {
-        $this->advertiserControllerUpdateGroupWithHttpInfo($id, $update_campaign_group_dto, $contentType);
+        list($response) = $this->advertiserControllerUpdateGroupWithHttpInfo($id, $update_campaign_group_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpdateGroupWithHttpInfo
+     *
+     * Update a campaign group
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignGroupDto $update_campaign_group_dto (required)
@@ -12152,7 +18205,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvCampaignGroup, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpdateGroupWithHttpInfo($id, $update_campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerUpdateGroup'][0])
     {
@@ -12181,10 +18234,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdvCampaignGroup' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvCampaignGroup' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvCampaignGroup', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvCampaignGroup',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -12192,6 +18322,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpdateGroupAsync
+     *
+     * Update a campaign group
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignGroupDto $update_campaign_group_dto (required)
@@ -12213,6 +18345,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpdateGroupAsyncWithHttpInfo
      *
+     * Update a campaign group
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateCampaignGroupDto $update_campaign_group_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpdateGroup'] to see the possible values for this operation
@@ -12222,14 +18356,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpdateGroupAsyncWithHttpInfo($id, $update_campaign_group_dto, string $contentType = self::contentTypes['advertiserControllerUpdateGroup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvCampaignGroup';
         $request = $this->advertiserControllerUpdateGroupRequest($id, $update_campaign_group_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -12296,7 +18443,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -12333,6 +18480,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -12358,25 +18514,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUploadCreative
      *
+     * Upload a creative asset file
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response
      */
     public function advertiserControllerUploadCreative(string $contentType = self::contentTypes['advertiserControllerUploadCreative'][0])
     {
-        $this->advertiserControllerUploadCreativeWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerUploadCreativeWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUploadCreativeWithHttpInfo
      *
+     * Upload a creative asset file
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadCreative'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUploadCreativeWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerUploadCreative'][0])
     {
@@ -12405,10 +18566,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -12416,6 +18654,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUploadCreativeAsync
+     *
+     * Upload a creative asset file
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadCreative'] to see the possible values for this operation
      *
@@ -12435,6 +18675,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUploadCreativeAsyncWithHttpInfo
      *
+     * Upload a creative asset file
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadCreative'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -12442,14 +18684,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUploadCreativeAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerUploadCreative'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerUploadCreative201Response';
         $request = $this->advertiserControllerUploadCreativeRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -12492,7 +18747,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -12522,6 +18777,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -12547,25 +18811,30 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUploadPlayable
      *
+     * Upload a playable (HTML5) ZIP bundle
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadPlayable'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response
      */
     public function advertiserControllerUploadPlayable(string $contentType = self::contentTypes['advertiserControllerUploadPlayable'][0])
     {
-        $this->advertiserControllerUploadPlayableWithHttpInfo($contentType);
+        list($response) = $this->advertiserControllerUploadPlayableWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUploadPlayableWithHttpInfo
      *
+     * Upload a playable (HTML5) ZIP bundle
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadPlayable'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUploadPlayableWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerUploadPlayable'][0])
     {
@@ -12594,10 +18863,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -12605,6 +18951,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUploadPlayableAsync
+     *
+     * Upload a playable (HTML5) ZIP bundle
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadPlayable'] to see the possible values for this operation
      *
@@ -12624,6 +18972,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUploadPlayableAsyncWithHttpInfo
      *
+     * Upload a playable (HTML5) ZIP bundle
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUploadPlayable'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -12631,14 +18981,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUploadPlayableAsyncWithHttpInfo(string $contentType = self::contentTypes['advertiserControllerUploadPlayable'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerUploadPlayable201Response';
         $request = $this->advertiserControllerUploadPlayableRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -12681,7 +19044,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -12711,6 +19074,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -12736,27 +19108,32 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpsertCatalog
      *
+     * Bulk upsert marketplace catalog items
+     *
      * @param  \Adviverse\Api\Model\BulkUpsertCatalogDto $bulk_upsert_catalog_dto bulk_upsert_catalog_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response
      */
     public function advertiserControllerUpsertCatalog($bulk_upsert_catalog_dto, string $contentType = self::contentTypes['advertiserControllerUpsertCatalog'][0])
     {
-        $this->advertiserControllerUpsertCatalogWithHttpInfo($bulk_upsert_catalog_dto, $contentType);
+        list($response) = $this->advertiserControllerUpsertCatalogWithHttpInfo($bulk_upsert_catalog_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpsertCatalogWithHttpInfo
+     *
+     * Bulk upsert marketplace catalog items
      *
      * @param  \Adviverse\Api\Model\BulkUpsertCatalogDto $bulk_upsert_catalog_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpsertCatalogWithHttpInfo($bulk_upsert_catalog_dto, string $contentType = self::contentTypes['advertiserControllerUpsertCatalog'][0])
     {
@@ -12785,10 +19162,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -12796,6 +19250,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpsertCatalogAsync
+     *
+     * Bulk upsert marketplace catalog items
      *
      * @param  \Adviverse\Api\Model\BulkUpsertCatalogDto $bulk_upsert_catalog_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertCatalog'] to see the possible values for this operation
@@ -12816,6 +19272,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpsertCatalogAsyncWithHttpInfo
      *
+     * Bulk upsert marketplace catalog items
+     *
      * @param  \Adviverse\Api\Model\BulkUpsertCatalogDto $bulk_upsert_catalog_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertCatalog'] to see the possible values for this operation
      *
@@ -12824,14 +19282,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpsertCatalogAsyncWithHttpInfo($bulk_upsert_catalog_dto, string $contentType = self::contentTypes['advertiserControllerUpsertCatalog'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvertiserControllerUpsertCatalog201Response';
         $request = $this->advertiserControllerUpsertCatalogRequest($bulk_upsert_catalog_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -12882,7 +19353,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -12919,6 +19390,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -12944,21 +19424,26 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpsertConversionConfig
      *
+     * Create or replace a campaign&#39;s conversion config
+     *
      * @param  string $id id (required)
      * @param  object $body body (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertConversionConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdvConversionConfig
      */
     public function advertiserControllerUpsertConversionConfig($id, $body, string $contentType = self::contentTypes['advertiserControllerUpsertConversionConfig'][0])
     {
-        $this->advertiserControllerUpsertConversionConfigWithHttpInfo($id, $body, $contentType);
+        list($response) = $this->advertiserControllerUpsertConversionConfigWithHttpInfo($id, $body, $contentType);
+        return $response;
     }
 
     /**
      * Operation advertiserControllerUpsertConversionConfigWithHttpInfo
+     *
+     * Create or replace a campaign&#39;s conversion config
      *
      * @param  string $id (required)
      * @param  object $body (required)
@@ -12966,7 +19451,7 @@ class AdvertiserApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdvConversionConfig, HTTP status code, HTTP response headers (array of strings)
      */
     public function advertiserControllerUpsertConversionConfigWithHttpInfo($id, $body, string $contentType = self::contentTypes['advertiserControllerUpsertConversionConfig'][0])
     {
@@ -12995,10 +19480,87 @@ class AdvertiserApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdvConversionConfig' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdvConversionConfig' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdvConversionConfig', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdvConversionConfig';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdvConversionConfig',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -13006,6 +19568,8 @@ class AdvertiserApi
 
     /**
      * Operation advertiserControllerUpsertConversionConfigAsync
+     *
+     * Create or replace a campaign&#39;s conversion config
      *
      * @param  string $id (required)
      * @param  object $body (required)
@@ -13027,6 +19591,8 @@ class AdvertiserApi
     /**
      * Operation advertiserControllerUpsertConversionConfigAsyncWithHttpInfo
      *
+     * Create or replace a campaign&#39;s conversion config
+     *
      * @param  string $id (required)
      * @param  object $body (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['advertiserControllerUpsertConversionConfig'] to see the possible values for this operation
@@ -13036,14 +19602,27 @@ class AdvertiserApi
      */
     public function advertiserControllerUpsertConversionConfigAsyncWithHttpInfo($id, $body, string $contentType = self::contentTypes['advertiserControllerUpsertConversionConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdvConversionConfig';
         $request = $this->advertiserControllerUpsertConversionConfigRequest($id, $body, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -13110,7 +19689,7 @@ class AdvertiserApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -13147,6 +19726,15 @@ class AdvertiserApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

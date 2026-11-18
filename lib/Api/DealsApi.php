@@ -143,27 +143,32 @@ class DealsApi
     /**
      * Operation dealsControllerAccept
      *
+     * Accept a deal offered to you
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerAccept'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DealsControllerClaim201Response
      */
     public function dealsControllerAccept($id, string $contentType = self::contentTypes['dealsControllerAccept'][0])
     {
-        $this->dealsControllerAcceptWithHttpInfo($id, $contentType);
+        list($response) = $this->dealsControllerAcceptWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerAcceptWithHttpInfo
+     *
+     * Accept a deal offered to you
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerAccept'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DealsControllerClaim201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerAcceptWithHttpInfo($id, string $contentType = self::contentTypes['dealsControllerAccept'][0])
     {
@@ -192,10 +197,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\DealsControllerClaim201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DealsControllerClaim201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DealsControllerClaim201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DealsControllerClaim201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DealsControllerClaim201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -203,6 +285,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerAcceptAsync
+     *
+     * Accept a deal offered to you
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerAccept'] to see the possible values for this operation
@@ -223,6 +307,8 @@ class DealsApi
     /**
      * Operation dealsControllerAcceptAsyncWithHttpInfo
      *
+     * Accept a deal offered to you
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerAccept'] to see the possible values for this operation
      *
@@ -231,14 +317,27 @@ class DealsApi
      */
     public function dealsControllerAcceptAsyncWithHttpInfo($id, string $contentType = self::contentTypes['dealsControllerAccept'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DealsControllerClaim201Response';
         $request = $this->dealsControllerAcceptRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -297,7 +396,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -327,6 +426,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -352,27 +460,32 @@ class DealsApi
     /**
      * Operation dealsControllerClaim
      *
+     * Claim an open deal
+     *
      * @param  string $token token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DealsControllerClaim201Response
      */
     public function dealsControllerClaim($token, string $contentType = self::contentTypes['dealsControllerClaim'][0])
     {
-        $this->dealsControllerClaimWithHttpInfo($token, $contentType);
+        list($response) = $this->dealsControllerClaimWithHttpInfo($token, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerClaimWithHttpInfo
+     *
+     * Claim an open deal
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DealsControllerClaim201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerClaimWithHttpInfo($token, string $contentType = self::contentTypes['dealsControllerClaim'][0])
     {
@@ -401,10 +514,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\DealsControllerClaim201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DealsControllerClaim201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DealsControllerClaim201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DealsControllerClaim201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DealsControllerClaim201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -412,6 +602,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerClaimAsync
+     *
+     * Claim an open deal
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerClaim'] to see the possible values for this operation
@@ -432,6 +624,8 @@ class DealsApi
     /**
      * Operation dealsControllerClaimAsyncWithHttpInfo
      *
+     * Claim an open deal
+     *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerClaim'] to see the possible values for this operation
      *
@@ -440,14 +634,27 @@ class DealsApi
      */
     public function dealsControllerClaimAsyncWithHttpInfo($token, string $contentType = self::contentTypes['dealsControllerClaim'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DealsControllerClaim201Response';
         $request = $this->dealsControllerClaimRequest($token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -506,7 +713,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -536,6 +743,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -561,27 +777,32 @@ class DealsApi
     /**
      * Operation dealsControllerCreate
      *
+     * Create a deal
+     *
      * @param  \Adviverse\Api\Model\CreateDealDto $create_deal_dto create_deal_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Deal
      */
     public function dealsControllerCreate($create_deal_dto, string $contentType = self::contentTypes['dealsControllerCreate'][0])
     {
-        $this->dealsControllerCreateWithHttpInfo($create_deal_dto, $contentType);
+        list($response) = $this->dealsControllerCreateWithHttpInfo($create_deal_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerCreateWithHttpInfo
+     *
+     * Create a deal
      *
      * @param  \Adviverse\Api\Model\CreateDealDto $create_deal_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Deal, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerCreateWithHttpInfo($create_deal_dto, string $contentType = self::contentTypes['dealsControllerCreate'][0])
     {
@@ -610,10 +831,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\Deal' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Deal' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Deal', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Deal';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Deal',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -621,6 +919,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerCreateAsync
+     *
+     * Create a deal
      *
      * @param  \Adviverse\Api\Model\CreateDealDto $create_deal_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerCreate'] to see the possible values for this operation
@@ -641,6 +941,8 @@ class DealsApi
     /**
      * Operation dealsControllerCreateAsyncWithHttpInfo
      *
+     * Create a deal
+     *
      * @param  \Adviverse\Api\Model\CreateDealDto $create_deal_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerCreate'] to see the possible values for this operation
      *
@@ -649,14 +951,27 @@ class DealsApi
      */
     public function dealsControllerCreateAsyncWithHttpInfo($create_deal_dto, string $contentType = self::contentTypes['dealsControllerCreate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Deal';
         $request = $this->dealsControllerCreateRequest($create_deal_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -707,7 +1022,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -744,6 +1059,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -769,25 +1093,30 @@ class DealsApi
     /**
      * Operation dealsControllerList
      *
+     * List deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Deal[]
      */
     public function dealsControllerList(string $contentType = self::contentTypes['dealsControllerList'][0])
     {
-        $this->dealsControllerListWithHttpInfo($contentType);
+        list($response) = $this->dealsControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerListWithHttpInfo
      *
+     * List deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Deal[], HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerListWithHttpInfo(string $contentType = self::contentTypes['dealsControllerList'][0])
     {
@@ -816,10 +1145,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\Deal[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Deal[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Deal[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Deal[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Deal[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -827,6 +1233,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerListAsync
+     *
+     * List deals
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerList'] to see the possible values for this operation
      *
@@ -846,6 +1254,8 @@ class DealsApi
     /**
      * Operation dealsControllerListAsyncWithHttpInfo
      *
+     * List deals
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -853,14 +1263,27 @@ class DealsApi
      */
     public function dealsControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['dealsControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Deal[]';
         $request = $this->dealsControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -903,7 +1326,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -933,6 +1356,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -958,27 +1390,32 @@ class DealsApi
     /**
      * Operation dealsControllerLookupAdvertiser
      *
+     * Find an advertiser by email
+     *
      * @param  string $email email (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerLookupAdvertiser'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response
      */
     public function dealsControllerLookupAdvertiser($email, string $contentType = self::contentTypes['dealsControllerLookupAdvertiser'][0])
     {
-        $this->dealsControllerLookupAdvertiserWithHttpInfo($email, $contentType);
+        list($response) = $this->dealsControllerLookupAdvertiserWithHttpInfo($email, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerLookupAdvertiserWithHttpInfo
+     *
+     * Find an advertiser by email
      *
      * @param  string $email (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerLookupAdvertiser'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerLookupAdvertiserWithHttpInfo($email, string $contentType = self::contentTypes['dealsControllerLookupAdvertiser'][0])
     {
@@ -1007,10 +1444,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1018,6 +1532,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerLookupAdvertiserAsync
+     *
+     * Find an advertiser by email
      *
      * @param  string $email (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerLookupAdvertiser'] to see the possible values for this operation
@@ -1038,6 +1554,8 @@ class DealsApi
     /**
      * Operation dealsControllerLookupAdvertiserAsyncWithHttpInfo
      *
+     * Find an advertiser by email
+     *
      * @param  string $email (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerLookupAdvertiser'] to see the possible values for this operation
      *
@@ -1046,14 +1564,27 @@ class DealsApi
      */
     public function dealsControllerLookupAdvertiserAsyncWithHttpInfo($email, string $contentType = self::contentTypes['dealsControllerLookupAdvertiser'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DealsControllerLookupAdvertiser200Response';
         $request = $this->dealsControllerLookupAdvertiserRequest($email, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1113,7 +1644,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1143,6 +1674,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1168,27 +1708,32 @@ class DealsApi
     /**
      * Operation dealsControllerPreviewClaim
      *
+     * Preview an open deal from its claim link
+     *
      * @param  string $token token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerPreviewClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DealsControllerPreviewClaim200Response
      */
     public function dealsControllerPreviewClaim($token, string $contentType = self::contentTypes['dealsControllerPreviewClaim'][0])
     {
-        $this->dealsControllerPreviewClaimWithHttpInfo($token, $contentType);
+        list($response) = $this->dealsControllerPreviewClaimWithHttpInfo($token, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerPreviewClaimWithHttpInfo
+     *
+     * Preview an open deal from its claim link
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerPreviewClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DealsControllerPreviewClaim200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerPreviewClaimWithHttpInfo($token, string $contentType = self::contentTypes['dealsControllerPreviewClaim'][0])
     {
@@ -1217,10 +1762,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\DealsControllerPreviewClaim200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DealsControllerPreviewClaim200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DealsControllerPreviewClaim200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DealsControllerPreviewClaim200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DealsControllerPreviewClaim200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1228,6 +1850,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerPreviewClaimAsync
+     *
+     * Preview an open deal from its claim link
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerPreviewClaim'] to see the possible values for this operation
@@ -1248,6 +1872,8 @@ class DealsApi
     /**
      * Operation dealsControllerPreviewClaimAsyncWithHttpInfo
      *
+     * Preview an open deal from its claim link
+     *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerPreviewClaim'] to see the possible values for this operation
      *
@@ -1256,14 +1882,27 @@ class DealsApi
      */
     public function dealsControllerPreviewClaimAsyncWithHttpInfo($token, string $contentType = self::contentTypes['dealsControllerPreviewClaim'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DealsControllerPreviewClaim200Response';
         $request = $this->dealsControllerPreviewClaimRequest($token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1322,7 +1961,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1352,6 +1991,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1377,27 +2025,32 @@ class DealsApi
     /**
      * Operation dealsControllerStatus
      *
+     * Change a deal&#39;s status
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\DealsControllerStatus201Response
      */
     public function dealsControllerStatus($id, string $contentType = self::contentTypes['dealsControllerStatus'][0])
     {
-        $this->dealsControllerStatusWithHttpInfo($id, $contentType);
+        list($response) = $this->dealsControllerStatusWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation dealsControllerStatusWithHttpInfo
+     *
+     * Change a deal&#39;s status
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\DealsControllerStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function dealsControllerStatusWithHttpInfo($id, string $contentType = self::contentTypes['dealsControllerStatus'][0])
     {
@@ -1426,10 +2079,87 @@ class DealsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\DealsControllerStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\DealsControllerStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\DealsControllerStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\DealsControllerStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\DealsControllerStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1437,6 +2167,8 @@ class DealsApi
 
     /**
      * Operation dealsControllerStatusAsync
+     *
+     * Change a deal&#39;s status
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerStatus'] to see the possible values for this operation
@@ -1457,6 +2189,8 @@ class DealsApi
     /**
      * Operation dealsControllerStatusAsyncWithHttpInfo
      *
+     * Change a deal&#39;s status
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['dealsControllerStatus'] to see the possible values for this operation
      *
@@ -1465,14 +2199,27 @@ class DealsApi
      */
     public function dealsControllerStatusAsyncWithHttpInfo($id, string $contentType = self::contentTypes['dealsControllerStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\DealsControllerStatus201Response';
         $request = $this->dealsControllerStatusRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1531,7 +2278,7 @@ class DealsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1561,6 +2308,15 @@ class DealsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

@@ -164,25 +164,30 @@ class FinanceApi
     /**
      * Operation financeControllerBalance
      *
+     * Get the caller&#39;s available and held balance
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerBalance'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinBalance
      */
     public function financeControllerBalance(string $contentType = self::contentTypes['financeControllerBalance'][0])
     {
-        $this->financeControllerBalanceWithHttpInfo($contentType);
+        list($response) = $this->financeControllerBalanceWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerBalanceWithHttpInfo
      *
+     * Get the caller&#39;s available and held balance
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerBalance'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinBalance, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerBalanceWithHttpInfo(string $contentType = self::contentTypes['financeControllerBalance'][0])
     {
@@ -211,10 +216,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinBalance' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinBalance' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinBalance', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinBalance';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinBalance',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -222,6 +304,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerBalanceAsync
+     *
+     * Get the caller&#39;s available and held balance
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerBalance'] to see the possible values for this operation
      *
@@ -241,6 +325,8 @@ class FinanceApi
     /**
      * Operation financeControllerBalanceAsyncWithHttpInfo
      *
+     * Get the caller&#39;s available and held balance
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerBalance'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -248,14 +334,27 @@ class FinanceApi
      */
     public function financeControllerBalanceAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerBalance'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinBalance';
         $request = $this->financeControllerBalanceRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -298,7 +397,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -328,6 +427,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -353,27 +461,32 @@ class FinanceApi
     /**
      * Operation financeControllerCryptoWebhook
      *
+     * Receive OxaPay crypto webhooks
+     *
      * @param  string $hmac hmac (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCryptoWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function financeControllerCryptoWebhook($hmac, string $contentType = self::contentTypes['financeControllerCryptoWebhook'][0])
     {
-        $this->financeControllerCryptoWebhookWithHttpInfo($hmac, $contentType);
+        list($response) = $this->financeControllerCryptoWebhookWithHttpInfo($hmac, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerCryptoWebhookWithHttpInfo
+     *
+     * Receive OxaPay crypto webhooks
      *
      * @param  string $hmac (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCryptoWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerCryptoWebhookWithHttpInfo($hmac, string $contentType = self::contentTypes['financeControllerCryptoWebhook'][0])
     {
@@ -402,10 +515,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -413,6 +603,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerCryptoWebhookAsync
+     *
+     * Receive OxaPay crypto webhooks
      *
      * @param  string $hmac (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCryptoWebhook'] to see the possible values for this operation
@@ -433,6 +625,8 @@ class FinanceApi
     /**
      * Operation financeControllerCryptoWebhookAsyncWithHttpInfo
      *
+     * Receive OxaPay crypto webhooks
+     *
      * @param  string $hmac (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCryptoWebhook'] to see the possible values for this operation
      *
@@ -441,14 +635,27 @@ class FinanceApi
      */
     public function financeControllerCryptoWebhookAsyncWithHttpInfo($hmac, string $contentType = self::contentTypes['financeControllerCryptoWebhook'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->financeControllerCryptoWebhookRequest($hmac, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -503,7 +710,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/plain', ],
             $contentType,
             $multipart
         );
@@ -558,25 +765,30 @@ class FinanceApi
     /**
      * Operation financeControllerCurrencies
      *
+     * List registered currencies and token rates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCurrencies'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinCurrencyRate[]
      */
     public function financeControllerCurrencies(string $contentType = self::contentTypes['financeControllerCurrencies'][0])
     {
-        $this->financeControllerCurrenciesWithHttpInfo($contentType);
+        list($response) = $this->financeControllerCurrenciesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerCurrenciesWithHttpInfo
      *
+     * List registered currencies and token rates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCurrencies'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinCurrencyRate[], HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerCurrenciesWithHttpInfo(string $contentType = self::contentTypes['financeControllerCurrencies'][0])
     {
@@ -605,10 +817,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinCurrencyRate[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinCurrencyRate[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinCurrencyRate[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinCurrencyRate[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinCurrencyRate[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -616,6 +905,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerCurrenciesAsync
+     *
+     * List registered currencies and token rates
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCurrencies'] to see the possible values for this operation
      *
@@ -635,6 +926,8 @@ class FinanceApi
     /**
      * Operation financeControllerCurrenciesAsyncWithHttpInfo
      *
+     * List registered currencies and token rates
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerCurrencies'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -642,14 +935,27 @@ class FinanceApi
      */
     public function financeControllerCurrenciesAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerCurrencies'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinCurrencyRate[]';
         $request = $this->financeControllerCurrenciesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -692,7 +998,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -722,6 +1028,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -747,27 +1062,32 @@ class FinanceApi
     /**
      * Operation financeControllerDeposit
      *
+     * Start a deposit
+     *
      * @param  \Adviverse\Api\Model\DepositDto $deposit_dto deposit_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinDepositResult
      */
     public function financeControllerDeposit($deposit_dto, string $contentType = self::contentTypes['financeControllerDeposit'][0])
     {
-        $this->financeControllerDepositWithHttpInfo($deposit_dto, $contentType);
+        list($response) = $this->financeControllerDepositWithHttpInfo($deposit_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerDepositWithHttpInfo
+     *
+     * Start a deposit
      *
      * @param  \Adviverse\Api\Model\DepositDto $deposit_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinDepositResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerDepositWithHttpInfo($deposit_dto, string $contentType = self::contentTypes['financeControllerDeposit'][0])
     {
@@ -796,10 +1116,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinDepositResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinDepositResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinDepositResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinDepositResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinDepositResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -807,6 +1204,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerDepositAsync
+     *
+     * Start a deposit
      *
      * @param  \Adviverse\Api\Model\DepositDto $deposit_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposit'] to see the possible values for this operation
@@ -827,6 +1226,8 @@ class FinanceApi
     /**
      * Operation financeControllerDepositAsyncWithHttpInfo
      *
+     * Start a deposit
+     *
      * @param  \Adviverse\Api\Model\DepositDto $deposit_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposit'] to see the possible values for this operation
      *
@@ -835,14 +1236,27 @@ class FinanceApi
      */
     public function financeControllerDepositAsyncWithHttpInfo($deposit_dto, string $contentType = self::contentTypes['financeControllerDeposit'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinDepositResult';
         $request = $this->financeControllerDepositRequest($deposit_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -893,7 +1307,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -930,6 +1344,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -955,25 +1378,30 @@ class FinanceApi
     /**
      * Operation financeControllerDeposits
      *
+     * List the caller&#39;s deposits
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposits'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinDeposit[]
      */
     public function financeControllerDeposits(string $contentType = self::contentTypes['financeControllerDeposits'][0])
     {
-        $this->financeControllerDepositsWithHttpInfo($contentType);
+        list($response) = $this->financeControllerDepositsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerDepositsWithHttpInfo
      *
+     * List the caller&#39;s deposits
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposits'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinDeposit[], HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerDepositsWithHttpInfo(string $contentType = self::contentTypes['financeControllerDeposits'][0])
     {
@@ -1002,10 +1430,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinDeposit[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinDeposit[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinDeposit[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinDeposit[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinDeposit[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1013,6 +1518,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerDepositsAsync
+     *
+     * List the caller&#39;s deposits
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposits'] to see the possible values for this operation
      *
@@ -1032,6 +1539,8 @@ class FinanceApi
     /**
      * Operation financeControllerDepositsAsyncWithHttpInfo
      *
+     * List the caller&#39;s deposits
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerDeposits'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1039,14 +1548,27 @@ class FinanceApi
      */
     public function financeControllerDepositsAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerDeposits'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinDeposit[]';
         $request = $this->financeControllerDepositsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1089,7 +1611,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1119,6 +1641,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1144,25 +1675,30 @@ class FinanceApi
     /**
      * Operation financeControllerHistory
      *
+     * List the caller&#39;s ledger entries
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerHistory'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinLedgerEntry[]
      */
     public function financeControllerHistory(string $contentType = self::contentTypes['financeControllerHistory'][0])
     {
-        $this->financeControllerHistoryWithHttpInfo($contentType);
+        list($response) = $this->financeControllerHistoryWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerHistoryWithHttpInfo
      *
+     * List the caller&#39;s ledger entries
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerHistory'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinLedgerEntry[], HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerHistoryWithHttpInfo(string $contentType = self::contentTypes['financeControllerHistory'][0])
     {
@@ -1191,10 +1727,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinLedgerEntry[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinLedgerEntry[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinLedgerEntry[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinLedgerEntry[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinLedgerEntry[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1202,6 +1815,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerHistoryAsync
+     *
+     * List the caller&#39;s ledger entries
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerHistory'] to see the possible values for this operation
      *
@@ -1221,6 +1836,8 @@ class FinanceApi
     /**
      * Operation financeControllerHistoryAsyncWithHttpInfo
      *
+     * List the caller&#39;s ledger entries
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerHistory'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1228,14 +1845,27 @@ class FinanceApi
      */
     public function financeControllerHistoryAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerHistory'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinLedgerEntry[]';
         $request = $this->financeControllerHistoryRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1278,7 +1908,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1308,6 +1938,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1333,25 +1972,30 @@ class FinanceApi
     /**
      * Operation financeControllerMethods
      *
+     * List configured deposit and payout rails
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerMethods'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinanceControllerMethods200Response
      */
     public function financeControllerMethods(string $contentType = self::contentTypes['financeControllerMethods'][0])
     {
-        $this->financeControllerMethodsWithHttpInfo($contentType);
+        list($response) = $this->financeControllerMethodsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerMethodsWithHttpInfo
      *
+     * List configured deposit and payout rails
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerMethods'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinanceControllerMethods200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerMethodsWithHttpInfo(string $contentType = self::contentTypes['financeControllerMethods'][0])
     {
@@ -1380,10 +2024,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinanceControllerMethods200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinanceControllerMethods200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinanceControllerMethods200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinanceControllerMethods200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinanceControllerMethods200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1391,6 +2112,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerMethodsAsync
+     *
+     * List configured deposit and payout rails
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerMethods'] to see the possible values for this operation
      *
@@ -1410,6 +2133,8 @@ class FinanceApi
     /**
      * Operation financeControllerMethodsAsyncWithHttpInfo
      *
+     * List configured deposit and payout rails
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerMethods'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1417,14 +2142,27 @@ class FinanceApi
      */
     public function financeControllerMethodsAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerMethods'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinanceControllerMethods200Response';
         $request = $this->financeControllerMethodsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1467,7 +2205,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1497,6 +2235,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1522,27 +2269,32 @@ class FinanceApi
     /**
      * Operation financeControllerPayout
      *
+     * Request a payout
+     *
      * @param  \Adviverse\Api\Model\PayoutDto $payout_dto payout_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayout'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinanceControllerPayout201Response
      */
     public function financeControllerPayout($payout_dto, string $contentType = self::contentTypes['financeControllerPayout'][0])
     {
-        $this->financeControllerPayoutWithHttpInfo($payout_dto, $contentType);
+        list($response) = $this->financeControllerPayoutWithHttpInfo($payout_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerPayoutWithHttpInfo
+     *
+     * Request a payout
      *
      * @param  \Adviverse\Api\Model\PayoutDto $payout_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayout'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinanceControllerPayout201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerPayoutWithHttpInfo($payout_dto, string $contentType = self::contentTypes['financeControllerPayout'][0])
     {
@@ -1571,10 +2323,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinanceControllerPayout201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinanceControllerPayout201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinanceControllerPayout201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinanceControllerPayout201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinanceControllerPayout201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1582,6 +2411,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerPayoutAsync
+     *
+     * Request a payout
      *
      * @param  \Adviverse\Api\Model\PayoutDto $payout_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayout'] to see the possible values for this operation
@@ -1602,6 +2433,8 @@ class FinanceApi
     /**
      * Operation financeControllerPayoutAsyncWithHttpInfo
      *
+     * Request a payout
+     *
      * @param  \Adviverse\Api\Model\PayoutDto $payout_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayout'] to see the possible values for this operation
      *
@@ -1610,14 +2443,27 @@ class FinanceApi
      */
     public function financeControllerPayoutAsyncWithHttpInfo($payout_dto, string $contentType = self::contentTypes['financeControllerPayout'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinanceControllerPayout201Response';
         $request = $this->financeControllerPayoutRequest($payout_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1668,7 +2514,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1705,6 +2551,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1730,25 +2585,30 @@ class FinanceApi
     /**
      * Operation financeControllerPayouts
      *
+     * List the caller&#39;s payouts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayouts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinPayout[]
      */
     public function financeControllerPayouts(string $contentType = self::contentTypes['financeControllerPayouts'][0])
     {
-        $this->financeControllerPayoutsWithHttpInfo($contentType);
+        list($response) = $this->financeControllerPayoutsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerPayoutsWithHttpInfo
      *
+     * List the caller&#39;s payouts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayouts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinPayout[], HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerPayoutsWithHttpInfo(string $contentType = self::contentTypes['financeControllerPayouts'][0])
     {
@@ -1777,10 +2637,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinPayout[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinPayout[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinPayout[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinPayout[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinPayout[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1788,6 +2725,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerPayoutsAsync
+     *
+     * List the caller&#39;s payouts
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayouts'] to see the possible values for this operation
      *
@@ -1807,6 +2746,8 @@ class FinanceApi
     /**
      * Operation financeControllerPayoutsAsyncWithHttpInfo
      *
+     * List the caller&#39;s payouts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerPayouts'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1814,14 +2755,27 @@ class FinanceApi
      */
     public function financeControllerPayoutsAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerPayouts'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinPayout[]';
         $request = $this->financeControllerPayoutsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1864,7 +2818,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1894,6 +2848,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1919,6 +2882,8 @@ class FinanceApi
     /**
      * Operation financeControllerPaypalWebhook
      *
+     * Receive PayPal order webhooks
+     *
      * @param  string $paypal_transmission_id paypal_transmission_id (required)
      * @param  string $paypal_transmission_time paypal_transmission_time (required)
      * @param  string $paypal_cert_url paypal_cert_url (required)
@@ -1928,15 +2893,18 @@ class FinanceApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response
      */
     public function financeControllerPaypalWebhook($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, string $contentType = self::contentTypes['financeControllerPaypalWebhook'][0])
     {
-        $this->financeControllerPaypalWebhookWithHttpInfo($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, $contentType);
+        list($response) = $this->financeControllerPaypalWebhookWithHttpInfo($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerPaypalWebhookWithHttpInfo
+     *
+     * Receive PayPal order webhooks
      *
      * @param  string $paypal_transmission_id (required)
      * @param  string $paypal_transmission_time (required)
@@ -1947,7 +2915,7 @@ class FinanceApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerPaypalWebhookWithHttpInfo($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, string $contentType = self::contentTypes['financeControllerPaypalWebhook'][0])
     {
@@ -1976,10 +2944,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1987,6 +3032,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerPaypalWebhookAsync
+     *
+     * Receive PayPal order webhooks
      *
      * @param  string $paypal_transmission_id (required)
      * @param  string $paypal_transmission_time (required)
@@ -2011,6 +3058,8 @@ class FinanceApi
     /**
      * Operation financeControllerPaypalWebhookAsyncWithHttpInfo
      *
+     * Receive PayPal order webhooks
+     *
      * @param  string $paypal_transmission_id (required)
      * @param  string $paypal_transmission_time (required)
      * @param  string $paypal_cert_url (required)
@@ -2023,14 +3072,27 @@ class FinanceApi
      */
     public function financeControllerPaypalWebhookAsyncWithHttpInfo($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, string $contentType = self::contentTypes['financeControllerPaypalWebhook'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinanceControllerPaypalWebhook201Response';
         $request = $this->financeControllerPaypalWebhookRequest($paypal_transmission_id, $paypal_transmission_time, $paypal_cert_url, $paypal_auth_algo, $paypal_transmission_sig, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2133,7 +3195,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2188,27 +3250,32 @@ class FinanceApi
     /**
      * Operation financeControllerStripeWebhook
      *
+     * Receive Stripe payment webhooks
+     *
      * @param  string $stripe_signature stripe_signature (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerStripeWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinanceControllerStripeWebhook201Response
      */
     public function financeControllerStripeWebhook($stripe_signature, string $contentType = self::contentTypes['financeControllerStripeWebhook'][0])
     {
-        $this->financeControllerStripeWebhookWithHttpInfo($stripe_signature, $contentType);
+        list($response) = $this->financeControllerStripeWebhookWithHttpInfo($stripe_signature, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerStripeWebhookWithHttpInfo
+     *
+     * Receive Stripe payment webhooks
      *
      * @param  string $stripe_signature (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerStripeWebhook'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinanceControllerStripeWebhook201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerStripeWebhookWithHttpInfo($stripe_signature, string $contentType = self::contentTypes['financeControllerStripeWebhook'][0])
     {
@@ -2237,10 +3304,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2248,6 +3392,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerStripeWebhookAsync
+     *
+     * Receive Stripe payment webhooks
      *
      * @param  string $stripe_signature (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerStripeWebhook'] to see the possible values for this operation
@@ -2268,6 +3414,8 @@ class FinanceApi
     /**
      * Operation financeControllerStripeWebhookAsyncWithHttpInfo
      *
+     * Receive Stripe payment webhooks
+     *
      * @param  string $stripe_signature (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerStripeWebhook'] to see the possible values for this operation
      *
@@ -2276,14 +3424,27 @@ class FinanceApi
      */
     public function financeControllerStripeWebhookAsyncWithHttpInfo($stripe_signature, string $contentType = self::contentTypes['financeControllerStripeWebhook'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinanceControllerStripeWebhook201Response';
         $request = $this->financeControllerStripeWebhookRequest($stripe_signature, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2338,7 +3499,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2393,27 +3554,32 @@ class FinanceApi
     /**
      * Operation financeControllerSubmitTaxForm
      *
+     * Submit or replace the tax form
+     *
      * @param  \Adviverse\Api\Model\TaxFormDto $tax_form_dto tax_form_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerSubmitTaxForm'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinTaxForm
      */
     public function financeControllerSubmitTaxForm($tax_form_dto, string $contentType = self::contentTypes['financeControllerSubmitTaxForm'][0])
     {
-        $this->financeControllerSubmitTaxFormWithHttpInfo($tax_form_dto, $contentType);
+        list($response) = $this->financeControllerSubmitTaxFormWithHttpInfo($tax_form_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerSubmitTaxFormWithHttpInfo
+     *
+     * Submit or replace the tax form
      *
      * @param  \Adviverse\Api\Model\TaxFormDto $tax_form_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerSubmitTaxForm'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinTaxForm, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerSubmitTaxFormWithHttpInfo($tax_form_dto, string $contentType = self::contentTypes['financeControllerSubmitTaxForm'][0])
     {
@@ -2442,10 +3608,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinTaxForm' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinTaxForm' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinTaxForm', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinTaxForm';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinTaxForm',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2453,6 +3696,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerSubmitTaxFormAsync
+     *
+     * Submit or replace the tax form
      *
      * @param  \Adviverse\Api\Model\TaxFormDto $tax_form_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerSubmitTaxForm'] to see the possible values for this operation
@@ -2473,6 +3718,8 @@ class FinanceApi
     /**
      * Operation financeControllerSubmitTaxFormAsyncWithHttpInfo
      *
+     * Submit or replace the tax form
+     *
      * @param  \Adviverse\Api\Model\TaxFormDto $tax_form_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerSubmitTaxForm'] to see the possible values for this operation
      *
@@ -2481,14 +3728,27 @@ class FinanceApi
      */
     public function financeControllerSubmitTaxFormAsyncWithHttpInfo($tax_form_dto, string $contentType = self::contentTypes['financeControllerSubmitTaxForm'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinTaxForm';
         $request = $this->financeControllerSubmitTaxFormRequest($tax_form_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2539,7 +3799,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2576,6 +3836,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2601,25 +3870,30 @@ class FinanceApi
     /**
      * Operation financeControllerTaxForm
      *
+     * Get the caller&#39;s tax form (masked)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerTaxForm'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinTaxForm
      */
     public function financeControllerTaxForm(string $contentType = self::contentTypes['financeControllerTaxForm'][0])
     {
-        $this->financeControllerTaxFormWithHttpInfo($contentType);
+        list($response) = $this->financeControllerTaxFormWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerTaxFormWithHttpInfo
      *
+     * Get the caller&#39;s tax form (masked)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerTaxForm'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinTaxForm, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerTaxFormWithHttpInfo(string $contentType = self::contentTypes['financeControllerTaxForm'][0])
     {
@@ -2648,10 +3922,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\FinTaxForm' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinTaxForm' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinTaxForm', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinTaxForm';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinTaxForm',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2659,6 +4010,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerTaxFormAsync
+     *
+     * Get the caller&#39;s tax form (masked)
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerTaxForm'] to see the possible values for this operation
      *
@@ -2678,6 +4031,8 @@ class FinanceApi
     /**
      * Operation financeControllerTaxFormAsyncWithHttpInfo
      *
+     * Get the caller&#39;s tax form (masked)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerTaxForm'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2685,14 +4040,27 @@ class FinanceApi
      */
     public function financeControllerTaxFormAsyncWithHttpInfo(string $contentType = self::contentTypes['financeControllerTaxForm'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinTaxForm';
         $request = $this->financeControllerTaxFormRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2735,7 +4103,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2765,6 +4133,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2790,27 +4167,32 @@ class FinanceApi
     /**
      * Operation financeControllerUpsertCurrency
      *
+     * Register or update the caller&#39;s token rate
+     *
      * @param  \Adviverse\Api\Model\CurrencyDto $currency_dto currency_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerUpsertCurrency'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\FinCurrencyRate
      */
     public function financeControllerUpsertCurrency($currency_dto, string $contentType = self::contentTypes['financeControllerUpsertCurrency'][0])
     {
-        $this->financeControllerUpsertCurrencyWithHttpInfo($currency_dto, $contentType);
+        list($response) = $this->financeControllerUpsertCurrencyWithHttpInfo($currency_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation financeControllerUpsertCurrencyWithHttpInfo
+     *
+     * Register or update the caller&#39;s token rate
      *
      * @param  \Adviverse\Api\Model\CurrencyDto $currency_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerUpsertCurrency'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\FinCurrencyRate, HTTP status code, HTTP response headers (array of strings)
      */
     public function financeControllerUpsertCurrencyWithHttpInfo($currency_dto, string $contentType = self::contentTypes['financeControllerUpsertCurrency'][0])
     {
@@ -2839,10 +4221,87 @@ class FinanceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\FinCurrencyRate' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\FinCurrencyRate' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\FinCurrencyRate', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\FinCurrencyRate';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\FinCurrencyRate',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2850,6 +4309,8 @@ class FinanceApi
 
     /**
      * Operation financeControllerUpsertCurrencyAsync
+     *
+     * Register or update the caller&#39;s token rate
      *
      * @param  \Adviverse\Api\Model\CurrencyDto $currency_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerUpsertCurrency'] to see the possible values for this operation
@@ -2870,6 +4331,8 @@ class FinanceApi
     /**
      * Operation financeControllerUpsertCurrencyAsyncWithHttpInfo
      *
+     * Register or update the caller&#39;s token rate
+     *
      * @param  \Adviverse\Api\Model\CurrencyDto $currency_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['financeControllerUpsertCurrency'] to see the possible values for this operation
      *
@@ -2878,14 +4341,27 @@ class FinanceApi
      */
     public function financeControllerUpsertCurrencyAsyncWithHttpInfo($currency_dto, string $contentType = self::contentTypes['financeControllerUpsertCurrency'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\FinCurrencyRate';
         $request = $this->financeControllerUpsertCurrencyRequest($currency_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2936,7 +4412,7 @@ class FinanceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2973,6 +4449,15 @@ class FinanceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

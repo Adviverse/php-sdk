@@ -68,7 +68,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => 'bool',
         'floor_fallback' => 'bool',
         'floor_auto' => 'bool',
-        'floor_soft' => 'float'
+        'floor_soft' => 'float',
+        'auto_ads' => 'object'
     ];
 
     /**
@@ -90,7 +91,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => null,
         'floor_fallback' => null,
         'floor_auto' => null,
-        'floor_soft' => null
+        'floor_soft' => null,
+        'auto_ads' => null
     ];
 
     /**
@@ -110,7 +112,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => false,
         'floor_fallback' => false,
         'floor_auto' => false,
-        'floor_soft' => false
+        'floor_soft' => false,
+        'auto_ads' => true
     ];
 
     /**
@@ -210,7 +213,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => 'houseBackfill',
         'floor_fallback' => 'floorFallback',
         'floor_auto' => 'floorAuto',
-        'floor_soft' => 'floorSoft'
+        'floor_soft' => 'floorSoft',
+        'auto_ads' => 'autoAds'
     ];
 
     /**
@@ -230,7 +234,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => 'setHouseBackfill',
         'floor_fallback' => 'setFloorFallback',
         'floor_auto' => 'setFloorAuto',
-        'floor_soft' => 'setFloorSoft'
+        'floor_soft' => 'setFloorSoft',
+        'auto_ads' => 'setAutoAds'
     ];
 
     /**
@@ -250,7 +255,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'house_backfill' => 'getHouseBackfill',
         'floor_fallback' => 'getFloorFallback',
         'floor_auto' => 'getFloorAuto',
-        'floor_soft' => 'getFloorSoft'
+        'floor_soft' => 'getFloorSoft',
+        'auto_ads' => 'getAutoAds'
     ];
 
     /**
@@ -322,6 +328,7 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         $this->setIfExists('floor_fallback', $data ?? [], null);
         $this->setIfExists('floor_auto', $data ?? [], null);
         $this->setIfExists('floor_soft', $data ?? [], null);
+        $this->setIfExists('auto_ads', $data ?? [], null);
     }
 
     /**
@@ -720,6 +727,40 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         }
 
         $this->container['floor_soft'] = $floor_soft;
+
+        return $this;
+    }
+
+    /**
+     * Gets auto_ads
+     *
+     * @return object|null
+     */
+    public function getAutoAds()
+    {
+        return $this->container['auto_ads'];
+    }
+
+    /**
+     * Sets auto_ads
+     *
+     * @param object|null $auto_ads auto_ads
+     *
+     * @return self
+     */
+    public function setAutoAds($auto_ads)
+    {
+        if (is_null($auto_ads)) {
+            array_push($this->openAPINullablesSetToNull, 'auto_ads');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('auto_ads', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['auto_ads'] = $auto_ads;
 
         return $this;
     }

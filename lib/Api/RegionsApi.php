@@ -137,27 +137,32 @@ class RegionsApi
     /**
      * Operation regionsControllerCreate
      *
+     * Create a serving region
+     *
      * @param  \Adviverse\Api\Model\CreateRegionDto $create_region_dto create_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewRegion
      */
     public function regionsControllerCreate($create_region_dto, string $contentType = self::contentTypes['regionsControllerCreate'][0])
     {
-        $this->regionsControllerCreateWithHttpInfo($create_region_dto, $contentType);
+        list($response) = $this->regionsControllerCreateWithHttpInfo($create_region_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation regionsControllerCreateWithHttpInfo
+     *
+     * Create a serving region
      *
      * @param  \Adviverse\Api\Model\CreateRegionDto $create_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewRegion, HTTP status code, HTTP response headers (array of strings)
      */
     public function regionsControllerCreateWithHttpInfo($create_region_dto, string $contentType = self::contentTypes['regionsControllerCreate'][0])
     {
@@ -186,10 +191,87 @@ class RegionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\RewRegion' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewRegion' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewRegion', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewRegion';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewRegion',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -197,6 +279,8 @@ class RegionsApi
 
     /**
      * Operation regionsControllerCreateAsync
+     *
+     * Create a serving region
      *
      * @param  \Adviverse\Api\Model\CreateRegionDto $create_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerCreate'] to see the possible values for this operation
@@ -217,6 +301,8 @@ class RegionsApi
     /**
      * Operation regionsControllerCreateAsyncWithHttpInfo
      *
+     * Create a serving region
+     *
      * @param  \Adviverse\Api\Model\CreateRegionDto $create_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerCreate'] to see the possible values for this operation
      *
@@ -225,14 +311,27 @@ class RegionsApi
      */
     public function regionsControllerCreateAsyncWithHttpInfo($create_region_dto, string $contentType = self::contentTypes['regionsControllerCreate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewRegion';
         $request = $this->regionsControllerCreateRequest($create_region_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -283,7 +382,7 @@ class RegionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -320,6 +419,15 @@ class RegionsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -345,25 +453,30 @@ class RegionsApi
     /**
      * Operation regionsControllerHealth
      *
+     * Get per-region engine health
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerHealth'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]
      */
     public function regionsControllerHealth(string $contentType = self::contentTypes['regionsControllerHealth'][0])
     {
-        $this->regionsControllerHealthWithHttpInfo($contentType);
+        list($response) = $this->regionsControllerHealthWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation regionsControllerHealthWithHttpInfo
      *
+     * Get per-region engine health
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerHealth'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function regionsControllerHealthWithHttpInfo(string $contentType = self::contentTypes['regionsControllerHealth'][0])
     {
@@ -392,10 +505,87 @@ class RegionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -403,6 +593,8 @@ class RegionsApi
 
     /**
      * Operation regionsControllerHealthAsync
+     *
+     * Get per-region engine health
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerHealth'] to see the possible values for this operation
      *
@@ -422,6 +614,8 @@ class RegionsApi
     /**
      * Operation regionsControllerHealthAsyncWithHttpInfo
      *
+     * Get per-region engine health
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerHealth'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -429,14 +623,27 @@ class RegionsApi
      */
     public function regionsControllerHealthAsyncWithHttpInfo(string $contentType = self::contentTypes['regionsControllerHealth'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RegionsControllerHealth200ResponseInner[]';
         $request = $this->regionsControllerHealthRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -479,7 +686,7 @@ class RegionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -534,25 +741,30 @@ class RegionsApi
     /**
      * Operation regionsControllerList
      *
+     * List active serving regions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewRegion[]
      */
     public function regionsControllerList(string $contentType = self::contentTypes['regionsControllerList'][0])
     {
-        $this->regionsControllerListWithHttpInfo($contentType);
+        list($response) = $this->regionsControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation regionsControllerListWithHttpInfo
      *
+     * List active serving regions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewRegion[], HTTP status code, HTTP response headers (array of strings)
      */
     public function regionsControllerListWithHttpInfo(string $contentType = self::contentTypes['regionsControllerList'][0])
     {
@@ -581,10 +793,87 @@ class RegionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewRegion[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewRegion[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewRegion[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewRegion[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewRegion[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -592,6 +881,8 @@ class RegionsApi
 
     /**
      * Operation regionsControllerListAsync
+     *
+     * List active serving regions
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerList'] to see the possible values for this operation
      *
@@ -611,6 +902,8 @@ class RegionsApi
     /**
      * Operation regionsControllerListAsyncWithHttpInfo
      *
+     * List active serving regions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -618,14 +911,27 @@ class RegionsApi
      */
     public function regionsControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['regionsControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewRegion[]';
         $request = $this->regionsControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -668,7 +974,7 @@ class RegionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -723,6 +1029,8 @@ class RegionsApi
     /**
      * Operation regionsControllerNearest
      *
+     * Resolve the best serving region
+     *
      * @param  string $country country (required)
      * @param  string $lat lat (required)
      * @param  string $lng lng (required)
@@ -730,15 +1038,18 @@ class RegionsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RegionsControllerNearest200Response
      */
     public function regionsControllerNearest($country, $lat, $lng, string $contentType = self::contentTypes['regionsControllerNearest'][0])
     {
-        $this->regionsControllerNearestWithHttpInfo($country, $lat, $lng, $contentType);
+        list($response) = $this->regionsControllerNearestWithHttpInfo($country, $lat, $lng, $contentType);
+        return $response;
     }
 
     /**
      * Operation regionsControllerNearestWithHttpInfo
+     *
+     * Resolve the best serving region
      *
      * @param  string $country (required)
      * @param  string $lat (required)
@@ -747,7 +1058,7 @@ class RegionsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RegionsControllerNearest200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function regionsControllerNearestWithHttpInfo($country, $lat, $lng, string $contentType = self::contentTypes['regionsControllerNearest'][0])
     {
@@ -776,10 +1087,87 @@ class RegionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RegionsControllerNearest200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RegionsControllerNearest200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RegionsControllerNearest200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RegionsControllerNearest200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RegionsControllerNearest200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -787,6 +1175,8 @@ class RegionsApi
 
     /**
      * Operation regionsControllerNearestAsync
+     *
+     * Resolve the best serving region
      *
      * @param  string $country (required)
      * @param  string $lat (required)
@@ -809,6 +1199,8 @@ class RegionsApi
     /**
      * Operation regionsControllerNearestAsyncWithHttpInfo
      *
+     * Resolve the best serving region
+     *
      * @param  string $country (required)
      * @param  string $lat (required)
      * @param  string $lng (required)
@@ -819,14 +1211,27 @@ class RegionsApi
      */
     public function regionsControllerNearestAsyncWithHttpInfo($country, $lat, $lng, string $contentType = self::contentTypes['regionsControllerNearest'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RegionsControllerNearest200Response';
         $request = $this->regionsControllerNearestRequest($country, $lat, $lng, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -920,7 +1325,7 @@ class RegionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -975,21 +1380,26 @@ class RegionsApi
     /**
      * Operation regionsControllerUpdate
      *
+     * Update a serving region
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateRegionDto $update_region_dto update_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewRegion
      */
     public function regionsControllerUpdate($id, $update_region_dto, string $contentType = self::contentTypes['regionsControllerUpdate'][0])
     {
-        $this->regionsControllerUpdateWithHttpInfo($id, $update_region_dto, $contentType);
+        list($response) = $this->regionsControllerUpdateWithHttpInfo($id, $update_region_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation regionsControllerUpdateWithHttpInfo
+     *
+     * Update a serving region
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateRegionDto $update_region_dto (required)
@@ -997,7 +1407,7 @@ class RegionsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewRegion, HTTP status code, HTTP response headers (array of strings)
      */
     public function regionsControllerUpdateWithHttpInfo($id, $update_region_dto, string $contentType = self::contentTypes['regionsControllerUpdate'][0])
     {
@@ -1026,10 +1436,87 @@ class RegionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewRegion' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewRegion' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewRegion', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewRegion';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewRegion',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1037,6 +1524,8 @@ class RegionsApi
 
     /**
      * Operation regionsControllerUpdateAsync
+     *
+     * Update a serving region
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateRegionDto $update_region_dto (required)
@@ -1058,6 +1547,8 @@ class RegionsApi
     /**
      * Operation regionsControllerUpdateAsyncWithHttpInfo
      *
+     * Update a serving region
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateRegionDto $update_region_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['regionsControllerUpdate'] to see the possible values for this operation
@@ -1067,14 +1558,27 @@ class RegionsApi
      */
     public function regionsControllerUpdateAsyncWithHttpInfo($id, $update_region_dto, string $contentType = self::contentTypes['regionsControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewRegion';
         $request = $this->regionsControllerUpdateRequest($id, $update_region_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1141,7 +1645,7 @@ class RegionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1178,6 +1682,15 @@ class RegionsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

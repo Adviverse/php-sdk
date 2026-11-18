@@ -155,21 +155,26 @@ class SettingsApi
     /**
      * Operation settingsControllerBidRec
      *
+     * Get a bid recommendation
+     *
      * @param  string $format format (required)
      * @param  string $geo geo (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerBidRec'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerBidRec200Response
      */
     public function settingsControllerBidRec($format, $geo, string $contentType = self::contentTypes['settingsControllerBidRec'][0])
     {
-        $this->settingsControllerBidRecWithHttpInfo($format, $geo, $contentType);
+        list($response) = $this->settingsControllerBidRecWithHttpInfo($format, $geo, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerBidRecWithHttpInfo
+     *
+     * Get a bid recommendation
      *
      * @param  string $format (required)
      * @param  string $geo (required)
@@ -177,7 +182,7 @@ class SettingsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerBidRec200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerBidRecWithHttpInfo($format, $geo, string $contentType = self::contentTypes['settingsControllerBidRec'][0])
     {
@@ -206,10 +211,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SettingsControllerBidRec200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerBidRec200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerBidRec200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerBidRec200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerBidRec200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -217,6 +299,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerBidRecAsync
+     *
+     * Get a bid recommendation
      *
      * @param  string $format (required)
      * @param  string $geo (required)
@@ -238,6 +322,8 @@ class SettingsApi
     /**
      * Operation settingsControllerBidRecAsyncWithHttpInfo
      *
+     * Get a bid recommendation
+     *
      * @param  string $format (required)
      * @param  string $geo (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerBidRec'] to see the possible values for this operation
@@ -247,14 +333,27 @@ class SettingsApi
      */
     public function settingsControllerBidRecAsyncWithHttpInfo($format, $geo, string $contentType = self::contentTypes['settingsControllerBidRec'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerBidRec200Response';
         $request = $this->settingsControllerBidRecRequest($format, $geo, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -331,7 +430,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -361,6 +460,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -386,21 +494,26 @@ class SettingsApi
     /**
      * Operation settingsControllerBrandSafety
      *
+     * Set campaign brand-safety controls
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\BrandSafetyDto $brand_safety_dto brand_safety_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerBrandSafety'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
      */
     public function settingsControllerBrandSafety($id, $brand_safety_dto, string $contentType = self::contentTypes['settingsControllerBrandSafety'][0])
     {
-        $this->settingsControllerBrandSafetyWithHttpInfo($id, $brand_safety_dto, $contentType);
+        list($response) = $this->settingsControllerBrandSafetyWithHttpInfo($id, $brand_safety_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerBrandSafetyWithHttpInfo
+     *
+     * Set campaign brand-safety controls
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\BrandSafetyDto $brand_safety_dto (required)
@@ -408,7 +521,7 @@ class SettingsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerBrandSafetyWithHttpInfo($id, $brand_safety_dto, string $contentType = self::contentTypes['settingsControllerBrandSafety'][0])
     {
@@ -437,10 +550,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -448,6 +638,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerBrandSafetyAsync
+     *
+     * Set campaign brand-safety controls
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\BrandSafetyDto $brand_safety_dto (required)
@@ -469,6 +661,8 @@ class SettingsApi
     /**
      * Operation settingsControllerBrandSafetyAsyncWithHttpInfo
      *
+     * Set campaign brand-safety controls
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\BrandSafetyDto $brand_safety_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerBrandSafety'] to see the possible values for this operation
@@ -478,14 +672,27 @@ class SettingsApi
      */
     public function settingsControllerBrandSafetyAsyncWithHttpInfo($id, $brand_safety_dto, string $contentType = self::contentTypes['settingsControllerBrandSafety'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
         $request = $this->settingsControllerBrandSafetyRequest($id, $brand_safety_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -552,7 +759,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -589,6 +796,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -614,27 +830,32 @@ class SettingsApi
     /**
      * Operation settingsControllerCreateKey
      *
+     * Create an API key
+     *
      * @param  \Adviverse\Api\Model\CreateKeyDto $create_key_dto create_key_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateKey'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ApiKeyCreated
      */
     public function settingsControllerCreateKey($create_key_dto, string $contentType = self::contentTypes['settingsControllerCreateKey'][0])
     {
-        $this->settingsControllerCreateKeyWithHttpInfo($create_key_dto, $contentType);
+        list($response) = $this->settingsControllerCreateKeyWithHttpInfo($create_key_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerCreateKeyWithHttpInfo
+     *
+     * Create an API key
      *
      * @param  \Adviverse\Api\Model\CreateKeyDto $create_key_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateKey'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ApiKeyCreated, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerCreateKeyWithHttpInfo($create_key_dto, string $contentType = self::contentTypes['settingsControllerCreateKey'][0])
     {
@@ -663,10 +884,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ApiKeyCreated' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ApiKeyCreated' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ApiKeyCreated', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ApiKeyCreated';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ApiKeyCreated',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -674,6 +972,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerCreateKeyAsync
+     *
+     * Create an API key
      *
      * @param  \Adviverse\Api\Model\CreateKeyDto $create_key_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateKey'] to see the possible values for this operation
@@ -694,6 +994,8 @@ class SettingsApi
     /**
      * Operation settingsControllerCreateKeyAsyncWithHttpInfo
      *
+     * Create an API key
+     *
      * @param  \Adviverse\Api\Model\CreateKeyDto $create_key_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateKey'] to see the possible values for this operation
      *
@@ -702,14 +1004,27 @@ class SettingsApi
      */
     public function settingsControllerCreateKeyAsyncWithHttpInfo($create_key_dto, string $contentType = self::contentTypes['settingsControllerCreateKey'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ApiKeyCreated';
         $request = $this->settingsControllerCreateKeyRequest($create_key_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -760,7 +1075,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -797,6 +1112,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -822,27 +1146,32 @@ class SettingsApi
     /**
      * Operation settingsControllerCreateTerminalToken
      *
+     * Create a terminal serve token
+     *
      * @param  \Adviverse\Api\Model\CreateTerminalTokenDto $create_terminal_token_dto create_terminal_token_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response
      */
     public function settingsControllerCreateTerminalToken($create_terminal_token_dto, string $contentType = self::contentTypes['settingsControllerCreateTerminalToken'][0])
     {
-        $this->settingsControllerCreateTerminalTokenWithHttpInfo($create_terminal_token_dto, $contentType);
+        list($response) = $this->settingsControllerCreateTerminalTokenWithHttpInfo($create_terminal_token_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerCreateTerminalTokenWithHttpInfo
+     *
+     * Create a terminal serve token
      *
      * @param  \Adviverse\Api\Model\CreateTerminalTokenDto $create_terminal_token_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerCreateTerminalTokenWithHttpInfo($create_terminal_token_dto, string $contentType = self::contentTypes['settingsControllerCreateTerminalToken'][0])
     {
@@ -871,10 +1200,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -882,6 +1288,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerCreateTerminalTokenAsync
+     *
+     * Create a terminal serve token
      *
      * @param  \Adviverse\Api\Model\CreateTerminalTokenDto $create_terminal_token_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateTerminalToken'] to see the possible values for this operation
@@ -902,6 +1310,8 @@ class SettingsApi
     /**
      * Operation settingsControllerCreateTerminalTokenAsyncWithHttpInfo
      *
+     * Create a terminal serve token
+     *
      * @param  \Adviverse\Api\Model\CreateTerminalTokenDto $create_terminal_token_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerCreateTerminalToken'] to see the possible values for this operation
      *
@@ -910,14 +1320,27 @@ class SettingsApi
      */
     public function settingsControllerCreateTerminalTokenAsyncWithHttpInfo($create_terminal_token_dto, string $contentType = self::contentTypes['settingsControllerCreateTerminalToken'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerCreateTerminalToken201Response';
         $request = $this->settingsControllerCreateTerminalTokenRequest($create_terminal_token_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -968,7 +1391,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1005,6 +1428,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1030,25 +1462,30 @@ class SettingsApi
     /**
      * Operation settingsControllerListKeys
      *
+     * List API keys
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListKeys'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ApiKey[]
      */
     public function settingsControllerListKeys(string $contentType = self::contentTypes['settingsControllerListKeys'][0])
     {
-        $this->settingsControllerListKeysWithHttpInfo($contentType);
+        list($response) = $this->settingsControllerListKeysWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerListKeysWithHttpInfo
      *
+     * List API keys
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListKeys'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ApiKey[], HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerListKeysWithHttpInfo(string $contentType = self::contentTypes['settingsControllerListKeys'][0])
     {
@@ -1077,10 +1514,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ApiKey[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ApiKey[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ApiKey[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ApiKey[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ApiKey[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1088,6 +1602,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerListKeysAsync
+     *
+     * List API keys
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListKeys'] to see the possible values for this operation
      *
@@ -1107,6 +1623,8 @@ class SettingsApi
     /**
      * Operation settingsControllerListKeysAsyncWithHttpInfo
      *
+     * List API keys
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListKeys'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1114,14 +1632,27 @@ class SettingsApi
      */
     public function settingsControllerListKeysAsyncWithHttpInfo(string $contentType = self::contentTypes['settingsControllerListKeys'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ApiKey[]';
         $request = $this->settingsControllerListKeysRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1164,7 +1695,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1194,6 +1725,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1219,25 +1759,30 @@ class SettingsApi
     /**
      * Operation settingsControllerListTerminalTokens
      *
+     * List terminal serve tokens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListTerminalTokens'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]
      */
     public function settingsControllerListTerminalTokens(string $contentType = self::contentTypes['settingsControllerListTerminalTokens'][0])
     {
-        $this->settingsControllerListTerminalTokensWithHttpInfo($contentType);
+        list($response) = $this->settingsControllerListTerminalTokensWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerListTerminalTokensWithHttpInfo
      *
+     * List terminal serve tokens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListTerminalTokens'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerListTerminalTokensWithHttpInfo(string $contentType = self::contentTypes['settingsControllerListTerminalTokens'][0])
     {
@@ -1266,10 +1811,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1277,6 +1899,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerListTerminalTokensAsync
+     *
+     * List terminal serve tokens
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListTerminalTokens'] to see the possible values for this operation
      *
@@ -1296,6 +1920,8 @@ class SettingsApi
     /**
      * Operation settingsControllerListTerminalTokensAsyncWithHttpInfo
      *
+     * List terminal serve tokens
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerListTerminalTokens'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1303,14 +1929,27 @@ class SettingsApi
      */
     public function settingsControllerListTerminalTokensAsyncWithHttpInfo(string $contentType = self::contentTypes['settingsControllerListTerminalTokens'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerListTerminalTokens200ResponseInner[]';
         $request = $this->settingsControllerListTerminalTokensRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1353,7 +1992,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1383,6 +2022,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1408,27 +2056,32 @@ class SettingsApi
     /**
      * Operation settingsControllerRevokeKey
      *
+     * Revoke an API key
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeKey'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerRevokeKey200Response
      */
     public function settingsControllerRevokeKey($id, string $contentType = self::contentTypes['settingsControllerRevokeKey'][0])
     {
-        $this->settingsControllerRevokeKeyWithHttpInfo($id, $contentType);
+        list($response) = $this->settingsControllerRevokeKeyWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerRevokeKeyWithHttpInfo
+     *
+     * Revoke an API key
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeKey'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerRevokeKey200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerRevokeKeyWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRevokeKey'][0])
     {
@@ -1457,10 +2110,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SettingsControllerRevokeKey200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerRevokeKey200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerRevokeKey200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerRevokeKey200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerRevokeKey200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1468,6 +2198,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerRevokeKeyAsync
+     *
+     * Revoke an API key
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeKey'] to see the possible values for this operation
@@ -1488,6 +2220,8 @@ class SettingsApi
     /**
      * Operation settingsControllerRevokeKeyAsyncWithHttpInfo
      *
+     * Revoke an API key
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeKey'] to see the possible values for this operation
      *
@@ -1496,14 +2230,27 @@ class SettingsApi
      */
     public function settingsControllerRevokeKeyAsyncWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRevokeKey'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerRevokeKey200Response';
         $request = $this->settingsControllerRevokeKeyRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1562,7 +2309,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1592,6 +2339,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1617,27 +2373,32 @@ class SettingsApi
     /**
      * Operation settingsControllerRevokeTerminalToken
      *
+     * Revoke a terminal serve token
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerRevoke201Response
      */
     public function settingsControllerRevokeTerminalToken($id, string $contentType = self::contentTypes['settingsControllerRevokeTerminalToken'][0])
     {
-        $this->settingsControllerRevokeTerminalTokenWithHttpInfo($id, $contentType);
+        list($response) = $this->settingsControllerRevokeTerminalTokenWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerRevokeTerminalTokenWithHttpInfo
+     *
+     * Revoke a terminal serve token
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerRevoke201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerRevokeTerminalTokenWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRevokeTerminalToken'][0])
     {
@@ -1666,10 +2427,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerRevoke201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerRevoke201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerRevoke201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerRevoke201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerRevoke201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1677,6 +2515,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerRevokeTerminalTokenAsync
+     *
+     * Revoke a terminal serve token
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeTerminalToken'] to see the possible values for this operation
@@ -1697,6 +2537,8 @@ class SettingsApi
     /**
      * Operation settingsControllerRevokeTerminalTokenAsyncWithHttpInfo
      *
+     * Revoke a terminal serve token
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRevokeTerminalToken'] to see the possible values for this operation
      *
@@ -1705,14 +2547,27 @@ class SettingsApi
      */
     public function settingsControllerRevokeTerminalTokenAsyncWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRevokeTerminalToken'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerRevoke201Response';
         $request = $this->settingsControllerRevokeTerminalTokenRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1771,7 +2626,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1801,6 +2656,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1826,27 +2690,32 @@ class SettingsApi
     /**
      * Operation settingsControllerRotateTerminalToken
      *
+     * Rotate a terminal serve token
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRotateTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response
      */
     public function settingsControllerRotateTerminalToken($id, string $contentType = self::contentTypes['settingsControllerRotateTerminalToken'][0])
     {
-        $this->settingsControllerRotateTerminalTokenWithHttpInfo($id, $contentType);
+        list($response) = $this->settingsControllerRotateTerminalTokenWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerRotateTerminalTokenWithHttpInfo
+     *
+     * Rotate a terminal serve token
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRotateTerminalToken'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerRotateTerminalTokenWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRotateTerminalToken'][0])
     {
@@ -1875,10 +2744,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1886,6 +2832,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerRotateTerminalTokenAsync
+     *
+     * Rotate a terminal serve token
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRotateTerminalToken'] to see the possible values for this operation
@@ -1906,6 +2854,8 @@ class SettingsApi
     /**
      * Operation settingsControllerRotateTerminalTokenAsyncWithHttpInfo
      *
+     * Rotate a terminal serve token
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerRotateTerminalToken'] to see the possible values for this operation
      *
@@ -1914,14 +2864,27 @@ class SettingsApi
      */
     public function settingsControllerRotateTerminalTokenAsyncWithHttpInfo($id, string $contentType = self::contentTypes['settingsControllerRotateTerminalToken'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerRotateTerminalToken201Response';
         $request = $this->settingsControllerRotateTerminalTokenRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1980,7 +2943,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2010,6 +2973,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2035,21 +3007,26 @@ class SettingsApi
     /**
      * Operation settingsControllerSetTerminalTokenPolicy
      *
+     * Update a terminal token switch policy
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\TerminalSwitchDto $terminal_switch_dto terminal_switch_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerSetTerminalTokenPolicy'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response
      */
     public function settingsControllerSetTerminalTokenPolicy($id, $terminal_switch_dto, string $contentType = self::contentTypes['settingsControllerSetTerminalTokenPolicy'][0])
     {
-        $this->settingsControllerSetTerminalTokenPolicyWithHttpInfo($id, $terminal_switch_dto, $contentType);
+        list($response) = $this->settingsControllerSetTerminalTokenPolicyWithHttpInfo($id, $terminal_switch_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerSetTerminalTokenPolicyWithHttpInfo
+     *
+     * Update a terminal token switch policy
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\TerminalSwitchDto $terminal_switch_dto (required)
@@ -2057,7 +3034,7 @@ class SettingsApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerSetTerminalTokenPolicyWithHttpInfo($id, $terminal_switch_dto, string $contentType = self::contentTypes['settingsControllerSetTerminalTokenPolicy'][0])
     {
@@ -2086,10 +3063,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2097,6 +3151,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerSetTerminalTokenPolicyAsync
+     *
+     * Update a terminal token switch policy
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\TerminalSwitchDto $terminal_switch_dto (required)
@@ -2118,6 +3174,8 @@ class SettingsApi
     /**
      * Operation settingsControllerSetTerminalTokenPolicyAsyncWithHttpInfo
      *
+     * Update a terminal token switch policy
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\TerminalSwitchDto $terminal_switch_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerSetTerminalTokenPolicy'] to see the possible values for this operation
@@ -2127,14 +3185,27 @@ class SettingsApi
      */
     public function settingsControllerSetTerminalTokenPolicyAsyncWithHttpInfo($id, $terminal_switch_dto, string $contentType = self::contentTypes['settingsControllerSetTerminalTokenPolicy'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerSetTerminalTokenPolicy200Response';
         $request = $this->settingsControllerSetTerminalTokenPolicyRequest($id, $terminal_switch_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2201,7 +3272,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2238,6 +3309,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2263,27 +3343,32 @@ class SettingsApi
     /**
      * Operation settingsControllerUpdateNetwork
      *
+     * Update network membership and cross-fill
+     *
      * @param  \Adviverse\Api\Model\NetworkSettingsDto $network_settings_dto network_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerUpdateNetwork'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response
      */
     public function settingsControllerUpdateNetwork($network_settings_dto, string $contentType = self::contentTypes['settingsControllerUpdateNetwork'][0])
     {
-        $this->settingsControllerUpdateNetworkWithHttpInfo($network_settings_dto, $contentType);
+        list($response) = $this->settingsControllerUpdateNetworkWithHttpInfo($network_settings_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation settingsControllerUpdateNetworkWithHttpInfo
+     *
+     * Update network membership and cross-fill
      *
      * @param  \Adviverse\Api\Model\NetworkSettingsDto $network_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerUpdateNetwork'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function settingsControllerUpdateNetworkWithHttpInfo($network_settings_dto, string $contentType = self::contentTypes['settingsControllerUpdateNetwork'][0])
     {
@@ -2312,10 +3397,87 @@ class SettingsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2323,6 +3485,8 @@ class SettingsApi
 
     /**
      * Operation settingsControllerUpdateNetworkAsync
+     *
+     * Update network membership and cross-fill
      *
      * @param  \Adviverse\Api\Model\NetworkSettingsDto $network_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerUpdateNetwork'] to see the possible values for this operation
@@ -2343,6 +3507,8 @@ class SettingsApi
     /**
      * Operation settingsControllerUpdateNetworkAsyncWithHttpInfo
      *
+     * Update network membership and cross-fill
+     *
      * @param  \Adviverse\Api\Model\NetworkSettingsDto $network_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['settingsControllerUpdateNetwork'] to see the possible values for this operation
      *
@@ -2351,14 +3517,27 @@ class SettingsApi
      */
     public function settingsControllerUpdateNetworkAsyncWithHttpInfo($network_settings_dto, string $contentType = self::contentTypes['settingsControllerUpdateNetwork'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SettingsControllerUpdateNetwork200Response';
         $request = $this->settingsControllerUpdateNetworkRequest($network_settings_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2409,7 +3588,7 @@ class SettingsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2446,6 +3625,15 @@ class SettingsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

@@ -149,21 +149,26 @@ class WebhooksApi
     /**
      * Operation webhooksControllerDeliveries
      *
+     * List recent deliveries
+     *
      * @param  string $id id (required)
      * @param  float $limit limit (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerDeliveries'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookDelivery[]
      */
     public function webhooksControllerDeliveries($id, $limit = null, string $contentType = self::contentTypes['webhooksControllerDeliveries'][0])
     {
-        $this->webhooksControllerDeliveriesWithHttpInfo($id, $limit, $contentType);
+        list($response) = $this->webhooksControllerDeliveriesWithHttpInfo($id, $limit, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerDeliveriesWithHttpInfo
+     *
+     * List recent deliveries
      *
      * @param  string $id (required)
      * @param  float $limit (optional)
@@ -171,7 +176,7 @@ class WebhooksApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookDelivery[], HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerDeliveriesWithHttpInfo($id, $limit = null, string $contentType = self::contentTypes['webhooksControllerDeliveries'][0])
     {
@@ -200,10 +205,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\WebhookDelivery[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookDelivery[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookDelivery[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookDelivery[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookDelivery[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -211,6 +293,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerDeliveriesAsync
+     *
+     * List recent deliveries
      *
      * @param  string $id (required)
      * @param  float $limit (optional)
@@ -232,6 +316,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerDeliveriesAsyncWithHttpInfo
      *
+     * List recent deliveries
+     *
      * @param  string $id (required)
      * @param  float $limit (optional)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerDeliveries'] to see the possible values for this operation
@@ -241,14 +327,27 @@ class WebhooksApi
      */
     public function webhooksControllerDeliveriesAsyncWithHttpInfo($id, $limit = null, string $contentType = self::contentTypes['webhooksControllerDeliveries'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookDelivery[]';
         $request = $this->webhooksControllerDeliveriesRequest($id, $limit, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -324,7 +423,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -354,6 +453,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -379,25 +487,30 @@ class WebhooksApi
     /**
      * Operation webhooksControllerEvents
      *
+     * List webhook event types
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerEvents'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhooksControllerEvents200Response
      */
     public function webhooksControllerEvents(string $contentType = self::contentTypes['webhooksControllerEvents'][0])
     {
-        $this->webhooksControllerEventsWithHttpInfo($contentType);
+        list($response) = $this->webhooksControllerEventsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerEventsWithHttpInfo
      *
+     * List webhook event types
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerEvents'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhooksControllerEvents200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerEventsWithHttpInfo(string $contentType = self::contentTypes['webhooksControllerEvents'][0])
     {
@@ -426,10 +539,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\WebhooksControllerEvents200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhooksControllerEvents200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhooksControllerEvents200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhooksControllerEvents200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhooksControllerEvents200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -437,6 +627,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerEventsAsync
+     *
+     * List webhook event types
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerEvents'] to see the possible values for this operation
      *
@@ -456,6 +648,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerEventsAsyncWithHttpInfo
      *
+     * List webhook event types
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerEvents'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -463,14 +657,27 @@ class WebhooksApi
      */
     public function webhooksControllerEventsAsyncWithHttpInfo(string $contentType = self::contentTypes['webhooksControllerEvents'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhooksControllerEvents200Response';
         $request = $this->webhooksControllerEventsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -513,7 +720,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -543,6 +750,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -568,25 +784,30 @@ class WebhooksApi
     /**
      * Operation webhooksControllerList
      *
+     * List webhook endpoints
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookEndpoint[]
      */
     public function webhooksControllerList(string $contentType = self::contentTypes['webhooksControllerList'][0])
     {
-        $this->webhooksControllerListWithHttpInfo($contentType);
+        list($response) = $this->webhooksControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerListWithHttpInfo
      *
+     * List webhook endpoints
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookEndpoint[], HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerListWithHttpInfo(string $contentType = self::contentTypes['webhooksControllerList'][0])
     {
@@ -615,10 +836,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\WebhookEndpoint[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookEndpoint[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookEndpoint[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookEndpoint[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookEndpoint[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -626,6 +924,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerListAsync
+     *
+     * List webhook endpoints
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerList'] to see the possible values for this operation
      *
@@ -645,6 +945,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerListAsyncWithHttpInfo
      *
+     * List webhook endpoints
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -652,14 +954,27 @@ class WebhooksApi
      */
     public function webhooksControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['webhooksControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookEndpoint[]';
         $request = $this->webhooksControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -702,7 +1017,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -732,6 +1047,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -757,27 +1081,32 @@ class WebhooksApi
     /**
      * Operation webhooksControllerPing
      *
+     * Send a test ping
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerPing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookDeliveryResult
      */
     public function webhooksControllerPing($id, string $contentType = self::contentTypes['webhooksControllerPing'][0])
     {
-        $this->webhooksControllerPingWithHttpInfo($id, $contentType);
+        list($response) = $this->webhooksControllerPingWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerPingWithHttpInfo
+     *
+     * Send a test ping
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerPing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookDeliveryResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerPingWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerPing'][0])
     {
@@ -806,10 +1135,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\WebhookDeliveryResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookDeliveryResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookDeliveryResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookDeliveryResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookDeliveryResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -817,6 +1223,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerPingAsync
+     *
+     * Send a test ping
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerPing'] to see the possible values for this operation
@@ -837,6 +1245,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerPingAsyncWithHttpInfo
      *
+     * Send a test ping
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerPing'] to see the possible values for this operation
      *
@@ -845,14 +1255,27 @@ class WebhooksApi
      */
     public function webhooksControllerPingAsyncWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerPing'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookDeliveryResult';
         $request = $this->webhooksControllerPingRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -911,7 +1334,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -941,6 +1364,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -966,27 +1398,32 @@ class WebhooksApi
     /**
      * Operation webhooksControllerRedeliver
      *
+     * Redeliver a past webhook
+     *
      * @param  string $delivery_id delivery_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRedeliver'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookDeliveryResult
      */
     public function webhooksControllerRedeliver($delivery_id, string $contentType = self::contentTypes['webhooksControllerRedeliver'][0])
     {
-        $this->webhooksControllerRedeliverWithHttpInfo($delivery_id, $contentType);
+        list($response) = $this->webhooksControllerRedeliverWithHttpInfo($delivery_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerRedeliverWithHttpInfo
+     *
+     * Redeliver a past webhook
      *
      * @param  string $delivery_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRedeliver'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookDeliveryResult, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerRedeliverWithHttpInfo($delivery_id, string $contentType = self::contentTypes['webhooksControllerRedeliver'][0])
     {
@@ -1015,10 +1452,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\WebhookDeliveryResult' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookDeliveryResult' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookDeliveryResult', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookDeliveryResult';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookDeliveryResult',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1026,6 +1540,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerRedeliverAsync
+     *
+     * Redeliver a past webhook
      *
      * @param  string $delivery_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRedeliver'] to see the possible values for this operation
@@ -1046,6 +1562,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerRedeliverAsyncWithHttpInfo
      *
+     * Redeliver a past webhook
+     *
      * @param  string $delivery_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRedeliver'] to see the possible values for this operation
      *
@@ -1054,14 +1572,27 @@ class WebhooksApi
      */
     public function webhooksControllerRedeliverAsyncWithHttpInfo($delivery_id, string $contentType = self::contentTypes['webhooksControllerRedeliver'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookDeliveryResult';
         $request = $this->webhooksControllerRedeliverRequest($delivery_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1120,7 +1651,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1150,6 +1681,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1175,27 +1715,32 @@ class WebhooksApi
     /**
      * Operation webhooksControllerRotateSecret
      *
+     * Rotate a webhook signing secret
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRotateSecret'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookEndpoint
      */
     public function webhooksControllerRotateSecret($id, string $contentType = self::contentTypes['webhooksControllerRotateSecret'][0])
     {
-        $this->webhooksControllerRotateSecretWithHttpInfo($id, $contentType);
+        list($response) = $this->webhooksControllerRotateSecretWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerRotateSecretWithHttpInfo
+     *
+     * Rotate a webhook signing secret
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRotateSecret'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookEndpoint, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerRotateSecretWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerRotateSecret'][0])
     {
@@ -1224,10 +1769,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\WebhookEndpoint' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookEndpoint' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookEndpoint', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookEndpoint',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1235,6 +1857,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerRotateSecretAsync
+     *
+     * Rotate a webhook signing secret
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRotateSecret'] to see the possible values for this operation
@@ -1255,6 +1879,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerRotateSecretAsyncWithHttpInfo
      *
+     * Rotate a webhook signing secret
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerRotateSecret'] to see the possible values for this operation
      *
@@ -1263,14 +1889,27 @@ class WebhooksApi
      */
     public function webhooksControllerRotateSecretAsyncWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerRotateSecret'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
         $request = $this->webhooksControllerRotateSecretRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1329,7 +1968,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1359,6 +1998,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1384,27 +2032,32 @@ class WebhooksApi
     /**
      * Operation webhooksControllerSubscribe
      *
+     * Create a webhook endpoint
+     *
      * @param  \Adviverse\Api\Model\SubscribeWebhookDto $subscribe_webhook_dto subscribe_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerSubscribe'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookEndpoint
      */
     public function webhooksControllerSubscribe($subscribe_webhook_dto, string $contentType = self::contentTypes['webhooksControllerSubscribe'][0])
     {
-        $this->webhooksControllerSubscribeWithHttpInfo($subscribe_webhook_dto, $contentType);
+        list($response) = $this->webhooksControllerSubscribeWithHttpInfo($subscribe_webhook_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerSubscribeWithHttpInfo
+     *
+     * Create a webhook endpoint
      *
      * @param  \Adviverse\Api\Model\SubscribeWebhookDto $subscribe_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerSubscribe'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookEndpoint, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerSubscribeWithHttpInfo($subscribe_webhook_dto, string $contentType = self::contentTypes['webhooksControllerSubscribe'][0])
     {
@@ -1433,10 +2086,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\WebhookEndpoint' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookEndpoint' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookEndpoint', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookEndpoint',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1444,6 +2174,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerSubscribeAsync
+     *
+     * Create a webhook endpoint
      *
      * @param  \Adviverse\Api\Model\SubscribeWebhookDto $subscribe_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerSubscribe'] to see the possible values for this operation
@@ -1464,6 +2196,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerSubscribeAsyncWithHttpInfo
      *
+     * Create a webhook endpoint
+     *
      * @param  \Adviverse\Api\Model\SubscribeWebhookDto $subscribe_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerSubscribe'] to see the possible values for this operation
      *
@@ -1472,14 +2206,27 @@ class WebhooksApi
      */
     public function webhooksControllerSubscribeAsyncWithHttpInfo($subscribe_webhook_dto, string $contentType = self::contentTypes['webhooksControllerSubscribe'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
         $request = $this->webhooksControllerSubscribeRequest($subscribe_webhook_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1530,7 +2277,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1567,6 +2314,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1592,27 +2348,32 @@ class WebhooksApi
     /**
      * Operation webhooksControllerUnsubscribe
      *
+     * Delete a webhook endpoint
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUnsubscribe'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response
      */
     public function webhooksControllerUnsubscribe($id, string $contentType = self::contentTypes['webhooksControllerUnsubscribe'][0])
     {
-        $this->webhooksControllerUnsubscribeWithHttpInfo($id, $contentType);
+        list($response) = $this->webhooksControllerUnsubscribeWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerUnsubscribeWithHttpInfo
+     *
+     * Delete a webhook endpoint
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUnsubscribe'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerUnsubscribeWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerUnsubscribe'][0])
     {
@@ -1641,10 +2402,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1652,6 +2490,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerUnsubscribeAsync
+     *
+     * Delete a webhook endpoint
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUnsubscribe'] to see the possible values for this operation
@@ -1672,6 +2512,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerUnsubscribeAsyncWithHttpInfo
      *
+     * Delete a webhook endpoint
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUnsubscribe'] to see the possible values for this operation
      *
@@ -1680,14 +2522,27 @@ class WebhooksApi
      */
     public function webhooksControllerUnsubscribeAsyncWithHttpInfo($id, string $contentType = self::contentTypes['webhooksControllerUnsubscribe'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhooksControllerUnsubscribe200Response';
         $request = $this->webhooksControllerUnsubscribeRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1746,7 +2601,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1776,6 +2631,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1801,21 +2665,26 @@ class WebhooksApi
     /**
      * Operation webhooksControllerUpdate
      *
+     * Update a webhook endpoint
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateWebhookDto $update_webhook_dto update_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\WebhookEndpoint
      */
     public function webhooksControllerUpdate($id, $update_webhook_dto, string $contentType = self::contentTypes['webhooksControllerUpdate'][0])
     {
-        $this->webhooksControllerUpdateWithHttpInfo($id, $update_webhook_dto, $contentType);
+        list($response) = $this->webhooksControllerUpdateWithHttpInfo($id, $update_webhook_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation webhooksControllerUpdateWithHttpInfo
+     *
+     * Update a webhook endpoint
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateWebhookDto $update_webhook_dto (required)
@@ -1823,7 +2692,7 @@ class WebhooksApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\WebhookEndpoint, HTTP status code, HTTP response headers (array of strings)
      */
     public function webhooksControllerUpdateWithHttpInfo($id, $update_webhook_dto, string $contentType = self::contentTypes['webhooksControllerUpdate'][0])
     {
@@ -1852,10 +2721,87 @@ class WebhooksApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\WebhookEndpoint' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\WebhookEndpoint' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\WebhookEndpoint', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\WebhookEndpoint',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1863,6 +2809,8 @@ class WebhooksApi
 
     /**
      * Operation webhooksControllerUpdateAsync
+     *
+     * Update a webhook endpoint
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateWebhookDto $update_webhook_dto (required)
@@ -1884,6 +2832,8 @@ class WebhooksApi
     /**
      * Operation webhooksControllerUpdateAsyncWithHttpInfo
      *
+     * Update a webhook endpoint
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateWebhookDto $update_webhook_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['webhooksControllerUpdate'] to see the possible values for this operation
@@ -1893,14 +2843,27 @@ class WebhooksApi
      */
     public function webhooksControllerUpdateAsyncWithHttpInfo($id, $update_webhook_dto, string $contentType = self::contentTypes['webhooksControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\WebhookEndpoint';
         $request = $this->webhooksControllerUpdateRequest($id, $update_webhook_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1967,7 +2930,7 @@ class WebhooksApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2004,6 +2967,15 @@ class WebhooksApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

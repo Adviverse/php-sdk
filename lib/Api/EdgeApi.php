@@ -125,27 +125,32 @@ class EdgeApi
     /**
      * Operation edgeControllerDomainAllowed
      *
+     * Check whether the edge may issue TLS for a domain
+     *
      * @param  string $domain domain (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['edgeControllerDomainAllowed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function edgeControllerDomainAllowed($domain, string $contentType = self::contentTypes['edgeControllerDomainAllowed'][0])
     {
-        $this->edgeControllerDomainAllowedWithHttpInfo($domain, $contentType);
+        list($response) = $this->edgeControllerDomainAllowedWithHttpInfo($domain, $contentType);
+        return $response;
     }
 
     /**
      * Operation edgeControllerDomainAllowedWithHttpInfo
+     *
+     * Check whether the edge may issue TLS for a domain
      *
      * @param  string $domain (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['edgeControllerDomainAllowed'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function edgeControllerDomainAllowedWithHttpInfo($domain, string $contentType = self::contentTypes['edgeControllerDomainAllowed'][0])
     {
@@ -174,10 +179,87 @@ class EdgeApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -185,6 +267,8 @@ class EdgeApi
 
     /**
      * Operation edgeControllerDomainAllowedAsync
+     *
+     * Check whether the edge may issue TLS for a domain
      *
      * @param  string $domain (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['edgeControllerDomainAllowed'] to see the possible values for this operation
@@ -205,6 +289,8 @@ class EdgeApi
     /**
      * Operation edgeControllerDomainAllowedAsyncWithHttpInfo
      *
+     * Check whether the edge may issue TLS for a domain
+     *
      * @param  string $domain (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['edgeControllerDomainAllowed'] to see the possible values for this operation
      *
@@ -213,14 +299,27 @@ class EdgeApi
      */
     public function edgeControllerDomainAllowedAsyncWithHttpInfo($domain, string $contentType = self::contentTypes['edgeControllerDomainAllowed'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->edgeControllerDomainAllowedRequest($domain, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -280,7 +379,7 @@ class EdgeApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/html', ],
             $contentType,
             $multipart
         );

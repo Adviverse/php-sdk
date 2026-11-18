@@ -158,25 +158,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerCatalog
      *
+     * Get the targetable interest catalog
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudienceCatalogEntry[]
      */
     public function segmentsControllerCatalog(string $contentType = self::contentTypes['segmentsControllerCatalog'][0])
     {
-        $this->segmentsControllerCatalogWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerCatalogWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerCatalogWithHttpInfo
      *
+     * Get the targetable interest catalog
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerCatalog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudienceCatalogEntry[], HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerCatalogWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerCatalog'][0])
     {
@@ -205,10 +210,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudienceCatalogEntry[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudienceCatalogEntry[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudienceCatalogEntry[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudienceCatalogEntry[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudienceCatalogEntry[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -216,6 +298,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerCatalogAsync
+     *
+     * Get the targetable interest catalog
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerCatalog'] to see the possible values for this operation
      *
@@ -235,6 +319,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerCatalogAsyncWithHttpInfo
      *
+     * Get the targetable interest catalog
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerCatalog'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -242,14 +328,27 @@ class SegmentsApi
      */
     public function segmentsControllerCatalogAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerCatalog'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudienceCatalogEntry[]';
         $request = $this->segmentsControllerCatalogRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -292,7 +391,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -322,6 +421,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -347,25 +455,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerContribute
      *
+     * Contribute an audience to the co-op
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContribute'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerContribute201Response
      */
     public function segmentsControllerContribute(string $contentType = self::contentTypes['segmentsControllerContribute'][0])
     {
-        $this->segmentsControllerContributeWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerContributeWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerContributeWithHttpInfo
      *
+     * Contribute an audience to the co-op
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContribute'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerContribute201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerContributeWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerContribute'][0])
     {
@@ -394,10 +507,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SegmentsControllerContribute201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerContribute201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerContribute201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerContribute201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerContribute201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -405,6 +595,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerContributeAsync
+     *
+     * Contribute an audience to the co-op
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContribute'] to see the possible values for this operation
      *
@@ -424,6 +616,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerContributeAsyncWithHttpInfo
      *
+     * Contribute an audience to the co-op
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContribute'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -431,14 +625,27 @@ class SegmentsApi
      */
     public function segmentsControllerContributeAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerContribute'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerContribute201Response';
         $request = $this->segmentsControllerContributeRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -481,7 +688,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -511,6 +718,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -536,25 +752,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerContributions
      *
+     * List your co-op contributions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContributions'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]
      */
     public function segmentsControllerContributions(string $contentType = self::contentTypes['segmentsControllerContributions'][0])
     {
-        $this->segmentsControllerContributionsWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerContributionsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerContributionsWithHttpInfo
      *
+     * List your co-op contributions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContributions'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerContributionsWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerContributions'][0])
     {
@@ -583,10 +804,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -594,6 +892,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerContributionsAsync
+     *
+     * List your co-op contributions
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContributions'] to see the possible values for this operation
      *
@@ -613,6 +913,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerContributionsAsyncWithHttpInfo
      *
+     * List your co-op contributions
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerContributions'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -620,14 +922,27 @@ class SegmentsApi
      */
     public function segmentsControllerContributionsAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerContributions'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerContributions200ResponseInner[]';
         $request = $this->segmentsControllerContributionsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -670,7 +985,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -700,6 +1015,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -725,27 +1049,32 @@ class SegmentsApi
     /**
      * Operation segmentsControllerDetectNiche
      *
+     * Detect an audience&#39;s interest niche
+     *
      * @param  string $audience_id audience_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerDetectNiche'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerDetectNiche200Response
      */
     public function segmentsControllerDetectNiche($audience_id, string $contentType = self::contentTypes['segmentsControllerDetectNiche'][0])
     {
-        $this->segmentsControllerDetectNicheWithHttpInfo($audience_id, $contentType);
+        list($response) = $this->segmentsControllerDetectNicheWithHttpInfo($audience_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerDetectNicheWithHttpInfo
+     *
+     * Detect an audience&#39;s interest niche
      *
      * @param  string $audience_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerDetectNiche'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerDetectNiche200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerDetectNicheWithHttpInfo($audience_id, string $contentType = self::contentTypes['segmentsControllerDetectNiche'][0])
     {
@@ -774,10 +1103,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -785,6 +1191,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerDetectNicheAsync
+     *
+     * Detect an audience&#39;s interest niche
      *
      * @param  string $audience_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerDetectNiche'] to see the possible values for this operation
@@ -805,6 +1213,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerDetectNicheAsyncWithHttpInfo
      *
+     * Detect an audience&#39;s interest niche
+     *
      * @param  string $audience_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerDetectNiche'] to see the possible values for this operation
      *
@@ -813,14 +1223,27 @@ class SegmentsApi
      */
     public function segmentsControllerDetectNicheAsyncWithHttpInfo($audience_id, string $contentType = self::contentTypes['segmentsControllerDetectNiche'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerDetectNiche200Response';
         $request = $this->segmentsControllerDetectNicheRequest($audience_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -880,7 +1303,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -910,6 +1333,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -935,25 +1367,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerEarnings
      *
+     * Co-op data-fee statement
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerEarnings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerEarnings200Response
      */
     public function segmentsControllerEarnings(string $contentType = self::contentTypes['segmentsControllerEarnings'][0])
     {
-        $this->segmentsControllerEarningsWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerEarningsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerEarningsWithHttpInfo
      *
+     * Co-op data-fee statement
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerEarnings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerEarnings200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerEarningsWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerEarnings'][0])
     {
@@ -982,10 +1419,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerEarnings200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerEarnings200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerEarnings200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerEarnings200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerEarnings200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -993,6 +1507,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerEarningsAsync
+     *
+     * Co-op data-fee statement
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerEarnings'] to see the possible values for this operation
      *
@@ -1012,6 +1528,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerEarningsAsyncWithHttpInfo
      *
+     * Co-op data-fee statement
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerEarnings'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1019,14 +1537,27 @@ class SegmentsApi
      */
     public function segmentsControllerEarningsAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerEarnings'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerEarnings200Response';
         $request = $this->segmentsControllerEarningsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1069,7 +1600,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1099,6 +1630,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1124,27 +1664,32 @@ class SegmentsApi
     /**
      * Operation segmentsControllerLicense
      *
+     * License a co-op, preset or in-market segment
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicense'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerLicense201Response
      */
     public function segmentsControllerLicense($id, string $contentType = self::contentTypes['segmentsControllerLicense'][0])
     {
-        $this->segmentsControllerLicenseWithHttpInfo($id, $contentType);
+        list($response) = $this->segmentsControllerLicenseWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerLicenseWithHttpInfo
+     *
+     * License a co-op, preset or in-market segment
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicense'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerLicense201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerLicenseWithHttpInfo($id, string $contentType = self::contentTypes['segmentsControllerLicense'][0])
     {
@@ -1173,10 +1718,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SegmentsControllerLicense201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerLicense201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerLicense201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerLicense201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerLicense201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1184,6 +1806,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerLicenseAsync
+     *
+     * License a co-op, preset or in-market segment
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicense'] to see the possible values for this operation
@@ -1204,6 +1828,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerLicenseAsyncWithHttpInfo
      *
+     * License a co-op, preset or in-market segment
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicense'] to see the possible values for this operation
      *
@@ -1212,14 +1838,27 @@ class SegmentsApi
      */
     public function segmentsControllerLicenseAsyncWithHttpInfo($id, string $contentType = self::contentTypes['segmentsControllerLicense'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerLicense201Response';
         $request = $this->segmentsControllerLicenseRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1278,7 +1917,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1308,6 +1947,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1333,25 +1981,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerLicenses
      *
+     * List licensed segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicenses'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]
      */
     public function segmentsControllerLicenses(string $contentType = self::contentTypes['segmentsControllerLicenses'][0])
     {
-        $this->segmentsControllerLicensesWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerLicensesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerLicensesWithHttpInfo
      *
+     * List licensed segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicenses'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerLicensesWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerLicenses'][0])
     {
@@ -1380,10 +2033,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1391,6 +2121,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerLicensesAsync
+     *
+     * List licensed segments
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicenses'] to see the possible values for this operation
      *
@@ -1410,6 +2142,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerLicensesAsyncWithHttpInfo
      *
+     * List licensed segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerLicenses'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1417,14 +2151,27 @@ class SegmentsApi
      */
     public function segmentsControllerLicensesAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerLicenses'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerLicenses200ResponseInner[]';
         $request = $this->segmentsControllerLicensesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1467,7 +2214,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1497,6 +2244,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1522,25 +2278,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerOptOut
      *
+     * Opt a user out of all audience segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerOptOut'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerOptOut201Response
      */
     public function segmentsControllerOptOut(string $contentType = self::contentTypes['segmentsControllerOptOut'][0])
     {
-        $this->segmentsControllerOptOutWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerOptOutWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerOptOutWithHttpInfo
      *
+     * Opt a user out of all audience segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerOptOut'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerOptOut201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerOptOutWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerOptOut'][0])
     {
@@ -1569,10 +2330,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SegmentsControllerOptOut201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerOptOut201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerOptOut201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerOptOut201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerOptOut201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1580,6 +2418,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerOptOutAsync
+     *
+     * Opt a user out of all audience segments
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerOptOut'] to see the possible values for this operation
      *
@@ -1599,6 +2439,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerOptOutAsyncWithHttpInfo
      *
+     * Opt a user out of all audience segments
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerOptOut'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1606,14 +2448,27 @@ class SegmentsApi
      */
     public function segmentsControllerOptOutAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerOptOut'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerOptOut201Response';
         $request = $this->segmentsControllerOptOutRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1656,7 +2511,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1711,25 +2566,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerRebuild
      *
+     * Force a segment rebuild
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRebuild'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerRebuild201Response
      */
     public function segmentsControllerRebuild(string $contentType = self::contentTypes['segmentsControllerRebuild'][0])
     {
-        $this->segmentsControllerRebuildWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerRebuildWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerRebuildWithHttpInfo
      *
+     * Force a segment rebuild
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRebuild'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerRebuild201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerRebuildWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerRebuild'][0])
     {
@@ -1758,10 +2618,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SegmentsControllerRebuild201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerRebuild201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerRebuild201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerRebuild201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerRebuild201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1769,6 +2706,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerRebuildAsync
+     *
+     * Force a segment rebuild
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRebuild'] to see the possible values for this operation
      *
@@ -1788,6 +2727,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerRebuildAsyncWithHttpInfo
      *
+     * Force a segment rebuild
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRebuild'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1795,14 +2736,27 @@ class SegmentsApi
      */
     public function segmentsControllerRebuildAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerRebuild'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerRebuild201Response';
         $request = $this->segmentsControllerRebuildRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1845,7 +2799,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1875,6 +2829,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1900,27 +2863,32 @@ class SegmentsApi
     /**
      * Operation segmentsControllerRevoke
      *
+     * Stop sharing a contributed segment
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRevoke'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerRevoke201Response
      */
     public function segmentsControllerRevoke($id, string $contentType = self::contentTypes['segmentsControllerRevoke'][0])
     {
-        $this->segmentsControllerRevokeWithHttpInfo($id, $contentType);
+        list($response) = $this->segmentsControllerRevokeWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerRevokeWithHttpInfo
+     *
+     * Stop sharing a contributed segment
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRevoke'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerRevoke201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerRevokeWithHttpInfo($id, string $contentType = self::contentTypes['segmentsControllerRevoke'][0])
     {
@@ -1949,10 +2917,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SegmentsControllerRevoke201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerRevoke201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerRevoke201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerRevoke201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerRevoke201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1960,6 +3005,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerRevokeAsync
+     *
+     * Stop sharing a contributed segment
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRevoke'] to see the possible values for this operation
@@ -1980,6 +3027,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerRevokeAsyncWithHttpInfo
      *
+     * Stop sharing a contributed segment
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerRevoke'] to see the possible values for this operation
      *
@@ -1988,14 +3037,27 @@ class SegmentsApi
      */
     public function segmentsControllerRevokeAsyncWithHttpInfo($id, string $contentType = self::contentTypes['segmentsControllerRevoke'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerRevoke201Response';
         $request = $this->segmentsControllerRevokeRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2054,7 +3116,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2084,6 +3146,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2109,25 +3180,30 @@ class SegmentsApi
     /**
      * Operation segmentsControllerTaxonomy
      *
+     * Get the interest taxonomy
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerTaxonomy'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudienceTaxonomyNode[]
      */
     public function segmentsControllerTaxonomy(string $contentType = self::contentTypes['segmentsControllerTaxonomy'][0])
     {
-        $this->segmentsControllerTaxonomyWithHttpInfo($contentType);
+        list($response) = $this->segmentsControllerTaxonomyWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerTaxonomyWithHttpInfo
      *
+     * Get the interest taxonomy
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerTaxonomy'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudienceTaxonomyNode[], HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerTaxonomyWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerTaxonomy'][0])
     {
@@ -2156,10 +3232,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudienceTaxonomyNode[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudienceTaxonomyNode[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudienceTaxonomyNode[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudienceTaxonomyNode[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudienceTaxonomyNode[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2167,6 +3320,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerTaxonomyAsync
+     *
+     * Get the interest taxonomy
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerTaxonomy'] to see the possible values for this operation
      *
@@ -2186,6 +3341,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerTaxonomyAsyncWithHttpInfo
      *
+     * Get the interest taxonomy
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerTaxonomy'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2193,14 +3350,27 @@ class SegmentsApi
      */
     public function segmentsControllerTaxonomyAsyncWithHttpInfo(string $contentType = self::contentTypes['segmentsControllerTaxonomy'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudienceTaxonomyNode[]';
         $request = $this->segmentsControllerTaxonomyRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2243,7 +3413,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2273,6 +3443,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2298,27 +3477,32 @@ class SegmentsApi
     /**
      * Operation segmentsControllerUserSegments
      *
+     * List the segments containing an id
+     *
      * @param  string $id_hash id_hash (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerUserSegments'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SegmentsControllerUserSegments200Response
      */
     public function segmentsControllerUserSegments($id_hash, string $contentType = self::contentTypes['segmentsControllerUserSegments'][0])
     {
-        $this->segmentsControllerUserSegmentsWithHttpInfo($id_hash, $contentType);
+        list($response) = $this->segmentsControllerUserSegmentsWithHttpInfo($id_hash, $contentType);
+        return $response;
     }
 
     /**
      * Operation segmentsControllerUserSegmentsWithHttpInfo
+     *
+     * List the segments containing an id
      *
      * @param  string $id_hash (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerUserSegments'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SegmentsControllerUserSegments200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function segmentsControllerUserSegmentsWithHttpInfo($id_hash, string $contentType = self::contentTypes['segmentsControllerUserSegments'][0])
     {
@@ -2347,10 +3531,87 @@ class SegmentsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SegmentsControllerUserSegments200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SegmentsControllerUserSegments200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SegmentsControllerUserSegments200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SegmentsControllerUserSegments200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SegmentsControllerUserSegments200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2358,6 +3619,8 @@ class SegmentsApi
 
     /**
      * Operation segmentsControllerUserSegmentsAsync
+     *
+     * List the segments containing an id
      *
      * @param  string $id_hash (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerUserSegments'] to see the possible values for this operation
@@ -2378,6 +3641,8 @@ class SegmentsApi
     /**
      * Operation segmentsControllerUserSegmentsAsyncWithHttpInfo
      *
+     * List the segments containing an id
+     *
      * @param  string $id_hash (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['segmentsControllerUserSegments'] to see the possible values for this operation
      *
@@ -2386,14 +3651,27 @@ class SegmentsApi
      */
     public function segmentsControllerUserSegmentsAsyncWithHttpInfo($id_hash, string $contentType = self::contentTypes['segmentsControllerUserSegments'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SegmentsControllerUserSegments200Response';
         $request = $this->segmentsControllerUserSegmentsRequest($id_hash, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2452,7 +3730,7 @@ class SegmentsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2482,6 +3760,15 @@ class SegmentsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

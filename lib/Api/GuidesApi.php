@@ -149,27 +149,32 @@ class GuidesApi
     /**
      * Operation guidesControllerAdminList
      *
+     * List all guides
+     *
      * @param  string $locale locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerAdminList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Guide[]
      */
     public function guidesControllerAdminList($locale, string $contentType = self::contentTypes['guidesControllerAdminList'][0])
     {
-        $this->guidesControllerAdminListWithHttpInfo($locale, $contentType);
+        list($response) = $this->guidesControllerAdminListWithHttpInfo($locale, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerAdminListWithHttpInfo
+     *
+     * List all guides
      *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerAdminList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Guide[], HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerAdminListWithHttpInfo($locale, string $contentType = self::contentTypes['guidesControllerAdminList'][0])
     {
@@ -198,10 +203,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\Guide[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Guide[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Guide[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Guide[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Guide[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -209,6 +291,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerAdminListAsync
+     *
+     * List all guides
      *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerAdminList'] to see the possible values for this operation
@@ -229,6 +313,8 @@ class GuidesApi
     /**
      * Operation guidesControllerAdminListAsyncWithHttpInfo
      *
+     * List all guides
+     *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerAdminList'] to see the possible values for this operation
      *
@@ -237,14 +323,27 @@ class GuidesApi
      */
     public function guidesControllerAdminListAsyncWithHttpInfo($locale, string $contentType = self::contentTypes['guidesControllerAdminList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Guide[]';
         $request = $this->guidesControllerAdminListRequest($locale, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -304,7 +403,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -334,6 +433,15 @@ class GuidesApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -359,27 +467,32 @@ class GuidesApi
     /**
      * Operation guidesControllerCreate
      *
+     * Create or replace a guide
+     *
      * @param  \Adviverse\Api\Model\CreateGuideDto $create_guide_dto create_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Guide
      */
     public function guidesControllerCreate($create_guide_dto, string $contentType = self::contentTypes['guidesControllerCreate'][0])
     {
-        $this->guidesControllerCreateWithHttpInfo($create_guide_dto, $contentType);
+        list($response) = $this->guidesControllerCreateWithHttpInfo($create_guide_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerCreateWithHttpInfo
+     *
+     * Create or replace a guide
      *
      * @param  \Adviverse\Api\Model\CreateGuideDto $create_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Guide, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerCreateWithHttpInfo($create_guide_dto, string $contentType = self::contentTypes['guidesControllerCreate'][0])
     {
@@ -408,10 +521,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\Guide' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Guide' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Guide', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Guide';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Guide',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -419,6 +609,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerCreateAsync
+     *
+     * Create or replace a guide
      *
      * @param  \Adviverse\Api\Model\CreateGuideDto $create_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerCreate'] to see the possible values for this operation
@@ -439,6 +631,8 @@ class GuidesApi
     /**
      * Operation guidesControllerCreateAsyncWithHttpInfo
      *
+     * Create or replace a guide
+     *
      * @param  \Adviverse\Api\Model\CreateGuideDto $create_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerCreate'] to see the possible values for this operation
      *
@@ -447,14 +641,27 @@ class GuidesApi
      */
     public function guidesControllerCreateAsyncWithHttpInfo($create_guide_dto, string $contentType = self::contentTypes['guidesControllerCreate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Guide';
         $request = $this->guidesControllerCreateRequest($create_guide_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -505,7 +712,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -542,6 +749,15 @@ class GuidesApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -567,21 +783,26 @@ class GuidesApi
     /**
      * Operation guidesControllerGet
      *
+     * Get a published guide
+     *
      * @param  string $slug slug (required)
      * @param  string $locale locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\GuidesControllerGet200Response
      */
     public function guidesControllerGet($slug, $locale, string $contentType = self::contentTypes['guidesControllerGet'][0])
     {
-        $this->guidesControllerGetWithHttpInfo($slug, $locale, $contentType);
+        list($response) = $this->guidesControllerGetWithHttpInfo($slug, $locale, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerGetWithHttpInfo
+     *
+     * Get a published guide
      *
      * @param  string $slug (required)
      * @param  string $locale (required)
@@ -589,7 +810,7 @@ class GuidesApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\GuidesControllerGet200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerGetWithHttpInfo($slug, $locale, string $contentType = self::contentTypes['guidesControllerGet'][0])
     {
@@ -618,10 +839,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\GuidesControllerGet200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\GuidesControllerGet200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\GuidesControllerGet200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\GuidesControllerGet200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\GuidesControllerGet200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -629,6 +927,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerGetAsync
+     *
+     * Get a published guide
      *
      * @param  string $slug (required)
      * @param  string $locale (required)
@@ -650,6 +950,8 @@ class GuidesApi
     /**
      * Operation guidesControllerGetAsyncWithHttpInfo
      *
+     * Get a published guide
+     *
      * @param  string $slug (required)
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerGet'] to see the possible values for this operation
@@ -659,14 +961,27 @@ class GuidesApi
      */
     public function guidesControllerGetAsyncWithHttpInfo($slug, $locale, string $contentType = self::contentTypes['guidesControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\GuidesControllerGet200Response';
         $request = $this->guidesControllerGetRequest($slug, $locale, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -742,7 +1057,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -797,25 +1112,30 @@ class GuidesApi
     /**
      * Operation guidesControllerIndexHtml
      *
+     * Render the public docs index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function guidesControllerIndexHtml(string $contentType = self::contentTypes['guidesControllerIndexHtml'][0])
     {
-        $this->guidesControllerIndexHtmlWithHttpInfo($contentType);
+        list($response) = $this->guidesControllerIndexHtmlWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerIndexHtmlWithHttpInfo
      *
+     * Render the public docs index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerIndexHtmlWithHttpInfo(string $contentType = self::contentTypes['guidesControllerIndexHtml'][0])
     {
@@ -844,10 +1164,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -855,6 +1252,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerIndexHtmlAsync
+     *
+     * Render the public docs index page
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerIndexHtml'] to see the possible values for this operation
      *
@@ -874,6 +1273,8 @@ class GuidesApi
     /**
      * Operation guidesControllerIndexHtmlAsyncWithHttpInfo
      *
+     * Render the public docs index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -881,14 +1282,27 @@ class GuidesApi
      */
     public function guidesControllerIndexHtmlAsyncWithHttpInfo(string $contentType = self::contentTypes['guidesControllerIndexHtml'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->guidesControllerIndexHtmlRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -931,7 +1345,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/html', ],
             $contentType,
             $multipart
         );
@@ -986,21 +1400,26 @@ class GuidesApi
     /**
      * Operation guidesControllerList
      *
+     * List published guides
+     *
      * @param  string $locale locale (required)
      * @param  string $category category (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Guide[]
      */
     public function guidesControllerList($locale, $category, string $contentType = self::contentTypes['guidesControllerList'][0])
     {
-        $this->guidesControllerListWithHttpInfo($locale, $category, $contentType);
+        list($response) = $this->guidesControllerListWithHttpInfo($locale, $category, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerListWithHttpInfo
+     *
+     * List published guides
      *
      * @param  string $locale (required)
      * @param  string $category (required)
@@ -1008,7 +1427,7 @@ class GuidesApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Guide[], HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerListWithHttpInfo($locale, $category, string $contentType = self::contentTypes['guidesControllerList'][0])
     {
@@ -1037,10 +1456,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\Guide[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Guide[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Guide[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Guide[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Guide[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1048,6 +1544,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerListAsync
+     *
+     * List published guides
      *
      * @param  string $locale (required)
      * @param  string $category (required)
@@ -1069,6 +1567,8 @@ class GuidesApi
     /**
      * Operation guidesControllerListAsyncWithHttpInfo
      *
+     * List published guides
+     *
      * @param  string $locale (required)
      * @param  string $category (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerList'] to see the possible values for this operation
@@ -1078,14 +1578,27 @@ class GuidesApi
      */
     public function guidesControllerListAsyncWithHttpInfo($locale, $category, string $contentType = self::contentTypes['guidesControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Guide[]';
         $request = $this->guidesControllerListRequest($locale, $category, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1162,7 +1675,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1217,27 +1730,32 @@ class GuidesApi
     /**
      * Operation guidesControllerPageHtml
      *
+     * Render a public guide page
+     *
      * @param  string $slug slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerPageHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function guidesControllerPageHtml($slug, string $contentType = self::contentTypes['guidesControllerPageHtml'][0])
     {
-        $this->guidesControllerPageHtmlWithHttpInfo($slug, $contentType);
+        list($response) = $this->guidesControllerPageHtmlWithHttpInfo($slug, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerPageHtmlWithHttpInfo
+     *
+     * Render a public guide page
      *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerPageHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerPageHtmlWithHttpInfo($slug, string $contentType = self::contentTypes['guidesControllerPageHtml'][0])
     {
@@ -1266,10 +1784,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1277,6 +1872,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerPageHtmlAsync
+     *
+     * Render a public guide page
      *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerPageHtml'] to see the possible values for this operation
@@ -1297,6 +1894,8 @@ class GuidesApi
     /**
      * Operation guidesControllerPageHtmlAsyncWithHttpInfo
      *
+     * Render a public guide page
+     *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerPageHtml'] to see the possible values for this operation
      *
@@ -1305,14 +1904,27 @@ class GuidesApi
      */
     public function guidesControllerPageHtmlAsyncWithHttpInfo($slug, string $contentType = self::contentTypes['guidesControllerPageHtml'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->guidesControllerPageHtmlRequest($slug, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1371,7 +1983,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/html', ],
             $contentType,
             $multipart
         );
@@ -1426,27 +2038,32 @@ class GuidesApi
     /**
      * Operation guidesControllerRemove
      *
+     * Delete a guide
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
      */
     public function guidesControllerRemove($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
-        $this->guidesControllerRemoveWithHttpInfo($id, $contentType);
+        list($response) = $this->guidesControllerRemoveWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerRemoveWithHttpInfo
+     *
+     * Delete a guide
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerRemoveWithHttpInfo($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
@@ -1475,10 +2092,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1486,6 +2180,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerRemoveAsync
+     *
+     * Delete a guide
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerRemove'] to see the possible values for this operation
@@ -1506,6 +2202,8 @@ class GuidesApi
     /**
      * Operation guidesControllerRemoveAsyncWithHttpInfo
      *
+     * Delete a guide
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerRemove'] to see the possible values for this operation
      *
@@ -1514,14 +2212,27 @@ class GuidesApi
      */
     public function guidesControllerRemoveAsyncWithHttpInfo($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
         $request = $this->guidesControllerRemoveRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1580,7 +2291,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1610,6 +2321,15 @@ class GuidesApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1635,25 +2355,30 @@ class GuidesApi
     /**
      * Operation guidesControllerSitemap
      *
+     * Get the docs sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerSitemap'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function guidesControllerSitemap(string $contentType = self::contentTypes['guidesControllerSitemap'][0])
     {
-        $this->guidesControllerSitemapWithHttpInfo($contentType);
+        list($response) = $this->guidesControllerSitemapWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerSitemapWithHttpInfo
      *
+     * Get the docs sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerSitemap'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerSitemapWithHttpInfo(string $contentType = self::contentTypes['guidesControllerSitemap'][0])
     {
@@ -1682,10 +2407,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1693,6 +2495,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerSitemapAsync
+     *
+     * Get the docs sitemap
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerSitemap'] to see the possible values for this operation
      *
@@ -1712,6 +2516,8 @@ class GuidesApi
     /**
      * Operation guidesControllerSitemapAsyncWithHttpInfo
      *
+     * Get the docs sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerSitemap'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1719,14 +2525,27 @@ class GuidesApi
      */
     public function guidesControllerSitemapAsyncWithHttpInfo(string $contentType = self::contentTypes['guidesControllerSitemap'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->guidesControllerSitemapRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1769,7 +2588,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/xml', ],
             $contentType,
             $multipart
         );
@@ -1824,21 +2643,26 @@ class GuidesApi
     /**
      * Operation guidesControllerUpdate
      *
+     * Update a guide
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateGuideDto $update_guide_dto update_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\Guide
      */
     public function guidesControllerUpdate($id, $update_guide_dto, string $contentType = self::contentTypes['guidesControllerUpdate'][0])
     {
-        $this->guidesControllerUpdateWithHttpInfo($id, $update_guide_dto, $contentType);
+        list($response) = $this->guidesControllerUpdateWithHttpInfo($id, $update_guide_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation guidesControllerUpdateWithHttpInfo
+     *
+     * Update a guide
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateGuideDto $update_guide_dto (required)
@@ -1846,7 +2670,7 @@ class GuidesApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\Guide, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerUpdateWithHttpInfo($id, $update_guide_dto, string $contentType = self::contentTypes['guidesControllerUpdate'][0])
     {
@@ -1875,10 +2699,87 @@ class GuidesApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\Guide' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\Guide' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\Guide', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\Guide';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\Guide',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1886,6 +2787,8 @@ class GuidesApi
 
     /**
      * Operation guidesControllerUpdateAsync
+     *
+     * Update a guide
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateGuideDto $update_guide_dto (required)
@@ -1907,6 +2810,8 @@ class GuidesApi
     /**
      * Operation guidesControllerUpdateAsyncWithHttpInfo
      *
+     * Update a guide
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateGuideDto $update_guide_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['guidesControllerUpdate'] to see the possible values for this operation
@@ -1916,14 +2821,27 @@ class GuidesApi
      */
     public function guidesControllerUpdateAsyncWithHttpInfo($id, $update_guide_dto, string $contentType = self::contentTypes['guidesControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\Guide';
         $request = $this->guidesControllerUpdateRequest($id, $update_guide_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1990,7 +2908,7 @@ class GuidesApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2027,6 +2945,15 @@ class GuidesApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

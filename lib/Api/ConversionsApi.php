@@ -134,6 +134,8 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackAudience
      *
+     * Retargeting pixel: add the visitor to an audience
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackAudience'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
@@ -147,6 +149,8 @@ class ConversionsApi
 
     /**
      * Operation conversionsControllerTrackAudienceWithHttpInfo
+     *
+     * Retargeting pixel: add the visitor to an audience
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackAudience'] to see the possible values for this operation
      *
@@ -193,6 +197,8 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackAudienceAsync
      *
+     * Retargeting pixel: add the visitor to an audience
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackAudience'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -210,6 +216,8 @@ class ConversionsApi
 
     /**
      * Operation conversionsControllerTrackAudienceAsyncWithHttpInfo
+     *
+     * Retargeting pixel: add the visitor to an audience
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackAudience'] to see the possible values for this operation
      *
@@ -323,25 +331,30 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackGet
      *
+     * Record an S2S conversion postback (GET)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ConversionsControllerTrackGet200Response
      */
     public function conversionsControllerTrackGet(string $contentType = self::contentTypes['conversionsControllerTrackGet'][0])
     {
-        $this->conversionsControllerTrackGetWithHttpInfo($contentType);
+        list($response) = $this->conversionsControllerTrackGetWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation conversionsControllerTrackGetWithHttpInfo
      *
+     * Record an S2S conversion postback (GET)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ConversionsControllerTrackGet200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function conversionsControllerTrackGetWithHttpInfo(string $contentType = self::contentTypes['conversionsControllerTrackGet'][0])
     {
@@ -370,10 +383,87 @@ class ConversionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ConversionsControllerTrackGet200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ConversionsControllerTrackGet200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ConversionsControllerTrackGet200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackGet200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ConversionsControllerTrackGet200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -381,6 +471,8 @@ class ConversionsApi
 
     /**
      * Operation conversionsControllerTrackGetAsync
+     *
+     * Record an S2S conversion postback (GET)
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackGet'] to see the possible values for this operation
      *
@@ -400,6 +492,8 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackGetAsyncWithHttpInfo
      *
+     * Record an S2S conversion postback (GET)
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackGet'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -407,14 +501,27 @@ class ConversionsApi
      */
     public function conversionsControllerTrackGetAsyncWithHttpInfo(string $contentType = self::contentTypes['conversionsControllerTrackGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackGet200Response';
         $request = $this->conversionsControllerTrackGetRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -457,7 +564,7 @@ class ConversionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -512,27 +619,32 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackPost
      *
+     * Record an S2S conversion postback (POST)
+     *
      * @param  \Adviverse\Api\Model\TrackConversionDto $track_conversion_dto track_conversion_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackPost'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ConversionsControllerTrackPost201Response
      */
     public function conversionsControllerTrackPost($track_conversion_dto, string $contentType = self::contentTypes['conversionsControllerTrackPost'][0])
     {
-        $this->conversionsControllerTrackPostWithHttpInfo($track_conversion_dto, $contentType);
+        list($response) = $this->conversionsControllerTrackPostWithHttpInfo($track_conversion_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation conversionsControllerTrackPostWithHttpInfo
+     *
+     * Record an S2S conversion postback (POST)
      *
      * @param  \Adviverse\Api\Model\TrackConversionDto $track_conversion_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackPost'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ConversionsControllerTrackPost201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function conversionsControllerTrackPostWithHttpInfo($track_conversion_dto, string $contentType = self::contentTypes['conversionsControllerTrackPost'][0])
     {
@@ -561,10 +673,87 @@ class ConversionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ConversionsControllerTrackPost201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ConversionsControllerTrackPost201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ConversionsControllerTrackPost201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackPost201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ConversionsControllerTrackPost201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -572,6 +761,8 @@ class ConversionsApi
 
     /**
      * Operation conversionsControllerTrackPostAsync
+     *
+     * Record an S2S conversion postback (POST)
      *
      * @param  \Adviverse\Api\Model\TrackConversionDto $track_conversion_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackPost'] to see the possible values for this operation
@@ -592,6 +783,8 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackPostAsyncWithHttpInfo
      *
+     * Record an S2S conversion postback (POST)
+     *
      * @param  \Adviverse\Api\Model\TrackConversionDto $track_conversion_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackPost'] to see the possible values for this operation
      *
@@ -600,14 +793,27 @@ class ConversionsApi
      */
     public function conversionsControllerTrackPostAsyncWithHttpInfo($track_conversion_dto, string $contentType = self::contentTypes['conversionsControllerTrackPost'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackPost201Response';
         $request = $this->conversionsControllerTrackPostRequest($track_conversion_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -658,7 +864,7 @@ class ConversionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -720,27 +926,32 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackRefund
      *
+     * Report a refund or chargeback for an order
+     *
      * @param  \Adviverse\Api\Model\RefundDto $refund_dto refund_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackRefund'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ConversionsControllerTrackRefund201Response
      */
     public function conversionsControllerTrackRefund($refund_dto, string $contentType = self::contentTypes['conversionsControllerTrackRefund'][0])
     {
-        $this->conversionsControllerTrackRefundWithHttpInfo($refund_dto, $contentType);
+        list($response) = $this->conversionsControllerTrackRefundWithHttpInfo($refund_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation conversionsControllerTrackRefundWithHttpInfo
+     *
+     * Report a refund or chargeback for an order
      *
      * @param  \Adviverse\Api\Model\RefundDto $refund_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackRefund'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ConversionsControllerTrackRefund201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function conversionsControllerTrackRefundWithHttpInfo($refund_dto, string $contentType = self::contentTypes['conversionsControllerTrackRefund'][0])
     {
@@ -769,10 +980,87 @@ class ConversionsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -780,6 +1068,8 @@ class ConversionsApi
 
     /**
      * Operation conversionsControllerTrackRefundAsync
+     *
+     * Report a refund or chargeback for an order
      *
      * @param  \Adviverse\Api\Model\RefundDto $refund_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackRefund'] to see the possible values for this operation
@@ -800,6 +1090,8 @@ class ConversionsApi
     /**
      * Operation conversionsControllerTrackRefundAsyncWithHttpInfo
      *
+     * Report a refund or chargeback for an order
+     *
      * @param  \Adviverse\Api\Model\RefundDto $refund_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['conversionsControllerTrackRefund'] to see the possible values for this operation
      *
@@ -808,14 +1100,27 @@ class ConversionsApi
      */
     public function conversionsControllerTrackRefundAsyncWithHttpInfo($refund_dto, string $contentType = self::contentTypes['conversionsControllerTrackRefund'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ConversionsControllerTrackRefund201Response';
         $request = $this->conversionsControllerTrackRefundRequest($refund_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -866,7 +1171,7 @@ class ConversionsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );

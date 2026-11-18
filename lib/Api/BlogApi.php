@@ -149,27 +149,32 @@ class BlogApi
     /**
      * Operation blogControllerAdminList
      *
+     * List all blog posts
+     *
      * @param  string $locale locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerAdminList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\BlogPost[]
      */
     public function blogControllerAdminList($locale, string $contentType = self::contentTypes['blogControllerAdminList'][0])
     {
-        $this->blogControllerAdminListWithHttpInfo($locale, $contentType);
+        list($response) = $this->blogControllerAdminListWithHttpInfo($locale, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerAdminListWithHttpInfo
+     *
+     * List all blog posts
      *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerAdminList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\BlogPost[], HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerAdminListWithHttpInfo($locale, string $contentType = self::contentTypes['blogControllerAdminList'][0])
     {
@@ -198,10 +203,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\BlogPost[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\BlogPost[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\BlogPost[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\BlogPost[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\BlogPost[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -209,6 +291,8 @@ class BlogApi
 
     /**
      * Operation blogControllerAdminListAsync
+     *
+     * List all blog posts
      *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerAdminList'] to see the possible values for this operation
@@ -229,6 +313,8 @@ class BlogApi
     /**
      * Operation blogControllerAdminListAsyncWithHttpInfo
      *
+     * List all blog posts
+     *
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerAdminList'] to see the possible values for this operation
      *
@@ -237,14 +323,27 @@ class BlogApi
      */
     public function blogControllerAdminListAsyncWithHttpInfo($locale, string $contentType = self::contentTypes['blogControllerAdminList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\BlogPost[]';
         $request = $this->blogControllerAdminListRequest($locale, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -304,7 +403,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -334,6 +433,15 @@ class BlogApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -359,27 +467,32 @@ class BlogApi
     /**
      * Operation blogControllerCreate
      *
+     * Create or replace a blog post
+     *
      * @param  \Adviverse\Api\Model\CreatePostDto $create_post_dto create_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\BlogPost
      */
     public function blogControllerCreate($create_post_dto, string $contentType = self::contentTypes['blogControllerCreate'][0])
     {
-        $this->blogControllerCreateWithHttpInfo($create_post_dto, $contentType);
+        list($response) = $this->blogControllerCreateWithHttpInfo($create_post_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerCreateWithHttpInfo
+     *
+     * Create or replace a blog post
      *
      * @param  \Adviverse\Api\Model\CreatePostDto $create_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerCreate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\BlogPost, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerCreateWithHttpInfo($create_post_dto, string $contentType = self::contentTypes['blogControllerCreate'][0])
     {
@@ -408,10 +521,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\BlogPost' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\BlogPost' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\BlogPost', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\BlogPost';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\BlogPost',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -419,6 +609,8 @@ class BlogApi
 
     /**
      * Operation blogControllerCreateAsync
+     *
+     * Create or replace a blog post
      *
      * @param  \Adviverse\Api\Model\CreatePostDto $create_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerCreate'] to see the possible values for this operation
@@ -439,6 +631,8 @@ class BlogApi
     /**
      * Operation blogControllerCreateAsyncWithHttpInfo
      *
+     * Create or replace a blog post
+     *
      * @param  \Adviverse\Api\Model\CreatePostDto $create_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerCreate'] to see the possible values for this operation
      *
@@ -447,14 +641,27 @@ class BlogApi
      */
     public function blogControllerCreateAsyncWithHttpInfo($create_post_dto, string $contentType = self::contentTypes['blogControllerCreate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\BlogPost';
         $request = $this->blogControllerCreateRequest($create_post_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -505,7 +712,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -542,6 +749,15 @@ class BlogApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -567,21 +783,26 @@ class BlogApi
     /**
      * Operation blogControllerGet
      *
+     * Get a published blog post
+     *
      * @param  string $slug slug (required)
      * @param  string $locale locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\BlogControllerGet200Response
      */
     public function blogControllerGet($slug, $locale, string $contentType = self::contentTypes['blogControllerGet'][0])
     {
-        $this->blogControllerGetWithHttpInfo($slug, $locale, $contentType);
+        list($response) = $this->blogControllerGetWithHttpInfo($slug, $locale, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerGetWithHttpInfo
+     *
+     * Get a published blog post
      *
      * @param  string $slug (required)
      * @param  string $locale (required)
@@ -589,7 +810,7 @@ class BlogApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\BlogControllerGet200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerGetWithHttpInfo($slug, $locale, string $contentType = self::contentTypes['blogControllerGet'][0])
     {
@@ -618,10 +839,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\BlogControllerGet200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\BlogControllerGet200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\BlogControllerGet200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\BlogControllerGet200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\BlogControllerGet200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -629,6 +927,8 @@ class BlogApi
 
     /**
      * Operation blogControllerGetAsync
+     *
+     * Get a published blog post
      *
      * @param  string $slug (required)
      * @param  string $locale (required)
@@ -650,6 +950,8 @@ class BlogApi
     /**
      * Operation blogControllerGetAsyncWithHttpInfo
      *
+     * Get a published blog post
+     *
      * @param  string $slug (required)
      * @param  string $locale (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerGet'] to see the possible values for this operation
@@ -659,14 +961,27 @@ class BlogApi
      */
     public function blogControllerGetAsyncWithHttpInfo($slug, $locale, string $contentType = self::contentTypes['blogControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\BlogControllerGet200Response';
         $request = $this->blogControllerGetRequest($slug, $locale, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -742,7 +1057,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -797,25 +1112,30 @@ class BlogApi
     /**
      * Operation blogControllerIndexHtml
      *
+     * Render the public blog index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function blogControllerIndexHtml(string $contentType = self::contentTypes['blogControllerIndexHtml'][0])
     {
-        $this->blogControllerIndexHtmlWithHttpInfo($contentType);
+        list($response) = $this->blogControllerIndexHtmlWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerIndexHtmlWithHttpInfo
      *
+     * Render the public blog index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerIndexHtmlWithHttpInfo(string $contentType = self::contentTypes['blogControllerIndexHtml'][0])
     {
@@ -844,10 +1164,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -855,6 +1252,8 @@ class BlogApi
 
     /**
      * Operation blogControllerIndexHtmlAsync
+     *
+     * Render the public blog index page
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerIndexHtml'] to see the possible values for this operation
      *
@@ -874,6 +1273,8 @@ class BlogApi
     /**
      * Operation blogControllerIndexHtmlAsyncWithHttpInfo
      *
+     * Render the public blog index page
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerIndexHtml'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -881,14 +1282,27 @@ class BlogApi
      */
     public function blogControllerIndexHtmlAsyncWithHttpInfo(string $contentType = self::contentTypes['blogControllerIndexHtml'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->blogControllerIndexHtmlRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -931,7 +1345,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/html', ],
             $contentType,
             $multipart
         );
@@ -986,21 +1400,26 @@ class BlogApi
     /**
      * Operation blogControllerList
      *
+     * List published blog posts
+     *
      * @param  string $locale locale (required)
      * @param  string $tag tag (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\BlogPost[]
      */
     public function blogControllerList($locale, $tag, string $contentType = self::contentTypes['blogControllerList'][0])
     {
-        $this->blogControllerListWithHttpInfo($locale, $tag, $contentType);
+        list($response) = $this->blogControllerListWithHttpInfo($locale, $tag, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerListWithHttpInfo
+     *
+     * List published blog posts
      *
      * @param  string $locale (required)
      * @param  string $tag (required)
@@ -1008,7 +1427,7 @@ class BlogApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\BlogPost[], HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerListWithHttpInfo($locale, $tag, string $contentType = self::contentTypes['blogControllerList'][0])
     {
@@ -1037,10 +1456,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\BlogPost[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\BlogPost[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\BlogPost[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\BlogPost[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\BlogPost[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1048,6 +1544,8 @@ class BlogApi
 
     /**
      * Operation blogControllerListAsync
+     *
+     * List published blog posts
      *
      * @param  string $locale (required)
      * @param  string $tag (required)
@@ -1069,6 +1567,8 @@ class BlogApi
     /**
      * Operation blogControllerListAsyncWithHttpInfo
      *
+     * List published blog posts
+     *
      * @param  string $locale (required)
      * @param  string $tag (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerList'] to see the possible values for this operation
@@ -1078,14 +1578,27 @@ class BlogApi
      */
     public function blogControllerListAsyncWithHttpInfo($locale, $tag, string $contentType = self::contentTypes['blogControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\BlogPost[]';
         $request = $this->blogControllerListRequest($locale, $tag, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1162,7 +1675,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1217,27 +1730,32 @@ class BlogApi
     /**
      * Operation blogControllerPageHtml
      *
+     * Render a public blog post page
+     *
      * @param  string $slug slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerPageHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function blogControllerPageHtml($slug, string $contentType = self::contentTypes['blogControllerPageHtml'][0])
     {
-        $this->blogControllerPageHtmlWithHttpInfo($slug, $contentType);
+        list($response) = $this->blogControllerPageHtmlWithHttpInfo($slug, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerPageHtmlWithHttpInfo
+     *
+     * Render a public blog post page
      *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerPageHtml'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerPageHtmlWithHttpInfo($slug, string $contentType = self::contentTypes['blogControllerPageHtml'][0])
     {
@@ -1266,10 +1784,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1277,6 +1872,8 @@ class BlogApi
 
     /**
      * Operation blogControllerPageHtmlAsync
+     *
+     * Render a public blog post page
      *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerPageHtml'] to see the possible values for this operation
@@ -1297,6 +1894,8 @@ class BlogApi
     /**
      * Operation blogControllerPageHtmlAsyncWithHttpInfo
      *
+     * Render a public blog post page
+     *
      * @param  string $slug (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerPageHtml'] to see the possible values for this operation
      *
@@ -1305,14 +1904,27 @@ class BlogApi
      */
     public function blogControllerPageHtmlAsyncWithHttpInfo($slug, string $contentType = self::contentTypes['blogControllerPageHtml'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->blogControllerPageHtmlRequest($slug, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1371,7 +1983,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/html', ],
             $contentType,
             $multipart
         );
@@ -1426,27 +2038,32 @@ class BlogApi
     /**
      * Operation blogControllerRemove
      *
+     * Delete a blog post
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
      */
     public function blogControllerRemove($id, string $contentType = self::contentTypes['blogControllerRemove'][0])
     {
-        $this->blogControllerRemoveWithHttpInfo($id, $contentType);
+        list($response) = $this->blogControllerRemoveWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerRemoveWithHttpInfo
+     *
+     * Delete a blog post
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerRemove'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerRemoveWithHttpInfo($id, string $contentType = self::contentTypes['blogControllerRemove'][0])
     {
@@ -1475,10 +2092,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1486,6 +2180,8 @@ class BlogApi
 
     /**
      * Operation blogControllerRemoveAsync
+     *
+     * Delete a blog post
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerRemove'] to see the possible values for this operation
@@ -1506,6 +2202,8 @@ class BlogApi
     /**
      * Operation blogControllerRemoveAsyncWithHttpInfo
      *
+     * Delete a blog post
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerRemove'] to see the possible values for this operation
      *
@@ -1514,14 +2212,27 @@ class BlogApi
      */
     public function blogControllerRemoveAsyncWithHttpInfo($id, string $contentType = self::contentTypes['blogControllerRemove'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
         $request = $this->blogControllerRemoveRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1580,7 +2291,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1610,6 +2321,15 @@ class BlogApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1635,25 +2355,30 @@ class BlogApi
     /**
      * Operation blogControllerSitemap
      *
+     * Get the blog sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerSitemap'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function blogControllerSitemap(string $contentType = self::contentTypes['blogControllerSitemap'][0])
     {
-        $this->blogControllerSitemapWithHttpInfo($contentType);
+        list($response) = $this->blogControllerSitemapWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerSitemapWithHttpInfo
      *
+     * Get the blog sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerSitemap'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerSitemapWithHttpInfo(string $contentType = self::contentTypes['blogControllerSitemap'][0])
     {
@@ -1682,10 +2407,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1693,6 +2495,8 @@ class BlogApi
 
     /**
      * Operation blogControllerSitemapAsync
+     *
+     * Get the blog sitemap
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerSitemap'] to see the possible values for this operation
      *
@@ -1712,6 +2516,8 @@ class BlogApi
     /**
      * Operation blogControllerSitemapAsyncWithHttpInfo
      *
+     * Get the blog sitemap
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerSitemap'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1719,14 +2525,27 @@ class BlogApi
      */
     public function blogControllerSitemapAsyncWithHttpInfo(string $contentType = self::contentTypes['blogControllerSitemap'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->blogControllerSitemapRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1769,7 +2588,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/xml', ],
             $contentType,
             $multipart
         );
@@ -1824,21 +2643,26 @@ class BlogApi
     /**
      * Operation blogControllerUpdate
      *
+     * Update a blog post
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdatePostDto $update_post_dto update_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\BlogPost
      */
     public function blogControllerUpdate($id, $update_post_dto, string $contentType = self::contentTypes['blogControllerUpdate'][0])
     {
-        $this->blogControllerUpdateWithHttpInfo($id, $update_post_dto, $contentType);
+        list($response) = $this->blogControllerUpdateWithHttpInfo($id, $update_post_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation blogControllerUpdateWithHttpInfo
+     *
+     * Update a blog post
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdatePostDto $update_post_dto (required)
@@ -1846,7 +2670,7 @@ class BlogApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\BlogPost, HTTP status code, HTTP response headers (array of strings)
      */
     public function blogControllerUpdateWithHttpInfo($id, $update_post_dto, string $contentType = self::contentTypes['blogControllerUpdate'][0])
     {
@@ -1875,10 +2699,87 @@ class BlogApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\BlogPost' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\BlogPost' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\BlogPost', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\BlogPost';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\BlogPost',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1886,6 +2787,8 @@ class BlogApi
 
     /**
      * Operation blogControllerUpdateAsync
+     *
+     * Update a blog post
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdatePostDto $update_post_dto (required)
@@ -1907,6 +2810,8 @@ class BlogApi
     /**
      * Operation blogControllerUpdateAsyncWithHttpInfo
      *
+     * Update a blog post
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdatePostDto $update_post_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['blogControllerUpdate'] to see the possible values for this operation
@@ -1916,14 +2821,27 @@ class BlogApi
      */
     public function blogControllerUpdateAsyncWithHttpInfo($id, $update_post_dto, string $contentType = self::contentTypes['blogControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\BlogPost';
         $request = $this->blogControllerUpdateRequest($id, $update_post_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1990,7 +2908,7 @@ class BlogApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2027,6 +2945,15 @@ class BlogApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

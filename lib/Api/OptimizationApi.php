@@ -143,27 +143,32 @@ class OptimizationApi
     /**
      * Operation optimizationControllerAckAlert
      *
+     * Acknowledge an alert
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerAckAlert'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\OptimizationControllerAckAlert201Response
      */
     public function optimizationControllerAckAlert($id, string $contentType = self::contentTypes['optimizationControllerAckAlert'][0])
     {
-        $this->optimizationControllerAckAlertWithHttpInfo($id, $contentType);
+        list($response) = $this->optimizationControllerAckAlertWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerAckAlertWithHttpInfo
+     *
+     * Acknowledge an alert
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerAckAlert'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\OptimizationControllerAckAlert201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerAckAlertWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerAckAlert'][0])
     {
@@ -192,10 +197,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\OptimizationControllerAckAlert201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\OptimizationControllerAckAlert201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\OptimizationControllerAckAlert201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\OptimizationControllerAckAlert201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\OptimizationControllerAckAlert201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -203,6 +285,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerAckAlertAsync
+     *
+     * Acknowledge an alert
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerAckAlert'] to see the possible values for this operation
@@ -223,6 +307,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerAckAlertAsyncWithHttpInfo
      *
+     * Acknowledge an alert
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerAckAlert'] to see the possible values for this operation
      *
@@ -231,14 +317,27 @@ class OptimizationApi
      */
     public function optimizationControllerAckAlertAsyncWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerAckAlert'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\OptimizationControllerAckAlert201Response';
         $request = $this->optimizationControllerAckAlertRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -297,7 +396,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -327,6 +426,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -352,27 +460,32 @@ class OptimizationApi
     /**
      * Operation optimizationControllerCreateRule
      *
+     * Create an automation rule
+     *
      * @param  \Adviverse\Api\Model\CreateAutomationRuleDto $create_automation_rule_dto create_automation_rule_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerCreateRule'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudienceAutomationRule
      */
     public function optimizationControllerCreateRule($create_automation_rule_dto, string $contentType = self::contentTypes['optimizationControllerCreateRule'][0])
     {
-        $this->optimizationControllerCreateRuleWithHttpInfo($create_automation_rule_dto, $contentType);
+        list($response) = $this->optimizationControllerCreateRuleWithHttpInfo($create_automation_rule_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerCreateRuleWithHttpInfo
+     *
+     * Create an automation rule
      *
      * @param  \Adviverse\Api\Model\CreateAutomationRuleDto $create_automation_rule_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerCreateRule'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudienceAutomationRule, HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerCreateRuleWithHttpInfo($create_automation_rule_dto, string $contentType = self::contentTypes['optimizationControllerCreateRule'][0])
     {
@@ -401,10 +514,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AudienceAutomationRule' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudienceAutomationRule' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudienceAutomationRule', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudienceAutomationRule';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudienceAutomationRule',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -412,6 +602,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerCreateRuleAsync
+     *
+     * Create an automation rule
      *
      * @param  \Adviverse\Api\Model\CreateAutomationRuleDto $create_automation_rule_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerCreateRule'] to see the possible values for this operation
@@ -432,6 +624,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerCreateRuleAsyncWithHttpInfo
      *
+     * Create an automation rule
+     *
      * @param  \Adviverse\Api\Model\CreateAutomationRuleDto $create_automation_rule_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerCreateRule'] to see the possible values for this operation
      *
@@ -440,14 +634,27 @@ class OptimizationApi
      */
     public function optimizationControllerCreateRuleAsyncWithHttpInfo($create_automation_rule_dto, string $contentType = self::contentTypes['optimizationControllerCreateRule'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudienceAutomationRule';
         $request = $this->optimizationControllerCreateRuleRequest($create_automation_rule_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -498,7 +705,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -535,6 +742,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -560,25 +776,30 @@ class OptimizationApi
     /**
      * Operation optimizationControllerListAlerts
      *
+     * List anomaly alerts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListAlerts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]
      */
     public function optimizationControllerListAlerts(string $contentType = self::contentTypes['optimizationControllerListAlerts'][0])
     {
-        $this->optimizationControllerListAlertsWithHttpInfo($contentType);
+        list($response) = $this->optimizationControllerListAlertsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerListAlertsWithHttpInfo
      *
+     * List anomaly alerts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListAlerts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerListAlertsWithHttpInfo(string $contentType = self::contentTypes['optimizationControllerListAlerts'][0])
     {
@@ -607,10 +828,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -618,6 +916,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerListAlertsAsync
+     *
+     * List anomaly alerts
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListAlerts'] to see the possible values for this operation
      *
@@ -637,6 +937,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerListAlertsAsyncWithHttpInfo
      *
+     * List anomaly alerts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListAlerts'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -644,14 +946,27 @@ class OptimizationApi
      */
     public function optimizationControllerListAlertsAsyncWithHttpInfo(string $contentType = self::contentTypes['optimizationControllerListAlerts'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\OptimizationControllerListAlerts200ResponseInner[]';
         $request = $this->optimizationControllerListAlertsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -694,7 +1009,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -724,6 +1039,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -749,25 +1073,30 @@ class OptimizationApi
     /**
      * Operation optimizationControllerListRules
      *
+     * List automation rules
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListRules'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudienceAutomationRule[]
      */
     public function optimizationControllerListRules(string $contentType = self::contentTypes['optimizationControllerListRules'][0])
     {
-        $this->optimizationControllerListRulesWithHttpInfo($contentType);
+        list($response) = $this->optimizationControllerListRulesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerListRulesWithHttpInfo
      *
+     * List automation rules
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListRules'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudienceAutomationRule[], HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerListRulesWithHttpInfo(string $contentType = self::contentTypes['optimizationControllerListRules'][0])
     {
@@ -796,10 +1125,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudienceAutomationRule[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudienceAutomationRule[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudienceAutomationRule[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudienceAutomationRule[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudienceAutomationRule[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -807,6 +1213,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerListRulesAsync
+     *
+     * List automation rules
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListRules'] to see the possible values for this operation
      *
@@ -826,6 +1234,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerListRulesAsyncWithHttpInfo
      *
+     * List automation rules
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerListRules'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -833,14 +1243,27 @@ class OptimizationApi
      */
     public function optimizationControllerListRulesAsyncWithHttpInfo(string $contentType = self::contentTypes['optimizationControllerListRules'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudienceAutomationRule[]';
         $request = $this->optimizationControllerListRulesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -883,7 +1306,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -913,6 +1336,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -938,27 +1370,32 @@ class OptimizationApi
     /**
      * Operation optimizationControllerOptimizerLog
      *
+     * List budget-optimizer reallocations
+     *
      * @param  string $limit limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerOptimizerLog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]
      */
     public function optimizationControllerOptimizerLog($limit, string $contentType = self::contentTypes['optimizationControllerOptimizerLog'][0])
     {
-        $this->optimizationControllerOptimizerLogWithHttpInfo($limit, $contentType);
+        list($response) = $this->optimizationControllerOptimizerLogWithHttpInfo($limit, $contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerOptimizerLogWithHttpInfo
+     *
+     * List budget-optimizer reallocations
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerOptimizerLog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerOptimizerLogWithHttpInfo($limit, string $contentType = self::contentTypes['optimizationControllerOptimizerLog'][0])
     {
@@ -987,10 +1424,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -998,6 +1512,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerOptimizerLogAsync
+     *
+     * List budget-optimizer reallocations
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerOptimizerLog'] to see the possible values for this operation
@@ -1018,6 +1534,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerOptimizerLogAsyncWithHttpInfo
      *
+     * List budget-optimizer reallocations
+     *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerOptimizerLog'] to see the possible values for this operation
      *
@@ -1026,14 +1544,27 @@ class OptimizationApi
      */
     public function optimizationControllerOptimizerLogAsyncWithHttpInfo($limit, string $contentType = self::contentTypes['optimizationControllerOptimizerLog'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\OptimizationControllerOptimizerLog200ResponseInner[]';
         $request = $this->optimizationControllerOptimizerLogRequest($limit, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1093,7 +1624,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1123,6 +1654,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1148,27 +1688,32 @@ class OptimizationApi
     /**
      * Operation optimizationControllerRemoveRule
      *
+     * Delete an automation rule
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerRemoveRule'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerDeletePixel200Response
      */
     public function optimizationControllerRemoveRule($id, string $contentType = self::contentTypes['optimizationControllerRemoveRule'][0])
     {
-        $this->optimizationControllerRemoveRuleWithHttpInfo($id, $contentType);
+        list($response) = $this->optimizationControllerRemoveRuleWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerRemoveRuleWithHttpInfo
+     *
+     * Delete an automation rule
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerRemoveRule'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerDeletePixel200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerRemoveRuleWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerRemoveRule'][0])
     {
@@ -1197,10 +1742,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerDeletePixel200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerDeletePixel200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1208,6 +1830,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerRemoveRuleAsync
+     *
+     * Delete an automation rule
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerRemoveRule'] to see the possible values for this operation
@@ -1228,6 +1852,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerRemoveRuleAsyncWithHttpInfo
      *
+     * Delete an automation rule
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerRemoveRule'] to see the possible values for this operation
      *
@@ -1236,14 +1862,27 @@ class OptimizationApi
      */
     public function optimizationControllerRemoveRuleAsyncWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerRemoveRule'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
         $request = $this->optimizationControllerRemoveRuleRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1302,7 +1941,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1332,6 +1971,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1357,27 +2005,32 @@ class OptimizationApi
     /**
      * Operation optimizationControllerSetRuleEnabled
      *
+     * Enable or disable an automation rule
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerSetRuleEnabled'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudienceAutomationRule
      */
     public function optimizationControllerSetRuleEnabled($id, string $contentType = self::contentTypes['optimizationControllerSetRuleEnabled'][0])
     {
-        $this->optimizationControllerSetRuleEnabledWithHttpInfo($id, $contentType);
+        list($response) = $this->optimizationControllerSetRuleEnabledWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation optimizationControllerSetRuleEnabledWithHttpInfo
+     *
+     * Enable or disable an automation rule
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerSetRuleEnabled'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudienceAutomationRule, HTTP status code, HTTP response headers (array of strings)
      */
     public function optimizationControllerSetRuleEnabledWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerSetRuleEnabled'][0])
     {
@@ -1406,10 +2059,87 @@ class OptimizationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudienceAutomationRule' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudienceAutomationRule' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudienceAutomationRule', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudienceAutomationRule';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudienceAutomationRule',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1417,6 +2147,8 @@ class OptimizationApi
 
     /**
      * Operation optimizationControllerSetRuleEnabledAsync
+     *
+     * Enable or disable an automation rule
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerSetRuleEnabled'] to see the possible values for this operation
@@ -1437,6 +2169,8 @@ class OptimizationApi
     /**
      * Operation optimizationControllerSetRuleEnabledAsyncWithHttpInfo
      *
+     * Enable or disable an automation rule
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['optimizationControllerSetRuleEnabled'] to see the possible values for this operation
      *
@@ -1445,14 +2179,27 @@ class OptimizationApi
      */
     public function optimizationControllerSetRuleEnabledAsyncWithHttpInfo($id, string $contentType = self::contentTypes['optimizationControllerSetRuleEnabled'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudienceAutomationRule';
         $request = $this->optimizationControllerSetRuleEnabledRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1511,7 +2258,7 @@ class OptimizationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1541,6 +2288,15 @@ class OptimizationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

@@ -128,25 +128,30 @@ class ExportsApi
     /**
      * Operation exportsControllerList
      *
+     * List export jobs
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ExportJob[]
      */
     public function exportsControllerList(string $contentType = self::contentTypes['exportsControllerList'][0])
     {
-        $this->exportsControllerListWithHttpInfo($contentType);
+        list($response) = $this->exportsControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation exportsControllerListWithHttpInfo
      *
+     * List export jobs
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ExportJob[], HTTP status code, HTTP response headers (array of strings)
      */
     public function exportsControllerListWithHttpInfo(string $contentType = self::contentTypes['exportsControllerList'][0])
     {
@@ -175,10 +180,87 @@ class ExportsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ExportJob[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ExportJob[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ExportJob[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ExportJob[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ExportJob[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -186,6 +268,8 @@ class ExportsApi
 
     /**
      * Operation exportsControllerListAsync
+     *
+     * List export jobs
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerList'] to see the possible values for this operation
      *
@@ -205,6 +289,8 @@ class ExportsApi
     /**
      * Operation exportsControllerListAsyncWithHttpInfo
      *
+     * List export jobs
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -212,14 +298,27 @@ class ExportsApi
      */
     public function exportsControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['exportsControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ExportJob[]';
         $request = $this->exportsControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -262,7 +361,7 @@ class ExportsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -292,6 +391,15 @@ class ExportsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -317,27 +425,32 @@ class ExportsApi
     /**
      * Operation exportsControllerRun
      *
+     * Export an analytics dataset to object storage
+     *
      * @param  \Adviverse\Api\Model\RunExportDto $run_export_dto run_export_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerRun'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ExportsControllerRun201Response
      */
     public function exportsControllerRun($run_export_dto, string $contentType = self::contentTypes['exportsControllerRun'][0])
     {
-        $this->exportsControllerRunWithHttpInfo($run_export_dto, $contentType);
+        list($response) = $this->exportsControllerRunWithHttpInfo($run_export_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation exportsControllerRunWithHttpInfo
+     *
+     * Export an analytics dataset to object storage
      *
      * @param  \Adviverse\Api\Model\RunExportDto $run_export_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerRun'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ExportsControllerRun201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function exportsControllerRunWithHttpInfo($run_export_dto, string $contentType = self::contentTypes['exportsControllerRun'][0])
     {
@@ -366,10 +479,87 @@ class ExportsApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ExportsControllerRun201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ExportsControllerRun201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ExportsControllerRun201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ExportsControllerRun201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ExportsControllerRun201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -377,6 +567,8 @@ class ExportsApi
 
     /**
      * Operation exportsControllerRunAsync
+     *
+     * Export an analytics dataset to object storage
      *
      * @param  \Adviverse\Api\Model\RunExportDto $run_export_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerRun'] to see the possible values for this operation
@@ -397,6 +589,8 @@ class ExportsApi
     /**
      * Operation exportsControllerRunAsyncWithHttpInfo
      *
+     * Export an analytics dataset to object storage
+     *
      * @param  \Adviverse\Api\Model\RunExportDto $run_export_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['exportsControllerRun'] to see the possible values for this operation
      *
@@ -405,14 +599,27 @@ class ExportsApi
      */
     public function exportsControllerRunAsyncWithHttpInfo($run_export_dto, string $contentType = self::contentTypes['exportsControllerRun'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ExportsControllerRun201Response';
         $request = $this->exportsControllerRunRequest($run_export_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -463,7 +670,7 @@ class ExportsApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -500,6 +707,15 @@ class ExportsApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

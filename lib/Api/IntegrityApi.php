@@ -131,21 +131,26 @@ class IntegrityApi
     /**
      * Operation integrityControllerLiveness
      *
+     * Get per-install liveness for your tags
+     *
      * @param  string $client client (required)
      * @param  string $days days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerLiveness'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IntegrityControllerLiveness200Response
      */
     public function integrityControllerLiveness($client, $days, string $contentType = self::contentTypes['integrityControllerLiveness'][0])
     {
-        $this->integrityControllerLivenessWithHttpInfo($client, $days, $contentType);
+        list($response) = $this->integrityControllerLivenessWithHttpInfo($client, $days, $contentType);
+        return $response;
     }
 
     /**
      * Operation integrityControllerLivenessWithHttpInfo
+     *
+     * Get per-install liveness for your tags
      *
      * @param  string $client (required)
      * @param  string $days (required)
@@ -153,7 +158,7 @@ class IntegrityApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IntegrityControllerLiveness200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function integrityControllerLivenessWithHttpInfo($client, $days, string $contentType = self::contentTypes['integrityControllerLiveness'][0])
     {
@@ -182,10 +187,87 @@ class IntegrityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\IntegrityControllerLiveness200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IntegrityControllerLiveness200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IntegrityControllerLiveness200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IntegrityControllerLiveness200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IntegrityControllerLiveness200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -193,6 +275,8 @@ class IntegrityApi
 
     /**
      * Operation integrityControllerLivenessAsync
+     *
+     * Get per-install liveness for your tags
      *
      * @param  string $client (required)
      * @param  string $days (required)
@@ -214,6 +298,8 @@ class IntegrityApi
     /**
      * Operation integrityControllerLivenessAsyncWithHttpInfo
      *
+     * Get per-install liveness for your tags
+     *
      * @param  string $client (required)
      * @param  string $days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerLiveness'] to see the possible values for this operation
@@ -223,14 +309,27 @@ class IntegrityApi
      */
     public function integrityControllerLivenessAsyncWithHttpInfo($client, $days, string $contentType = self::contentTypes['integrityControllerLiveness'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IntegrityControllerLiveness200Response';
         $request = $this->integrityControllerLivenessRequest($client, $days, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -307,7 +406,7 @@ class IntegrityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -337,6 +436,15 @@ class IntegrityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -362,27 +470,32 @@ class IntegrityApi
     /**
      * Operation integrityControllerPing
      *
+     * Report a client integrity ping
+     *
      * @param  \Adviverse\Api\Model\ClientPingDto $client_ping_dto client_ping_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerPing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AuthControllerResendVerification201Response
      */
     public function integrityControllerPing($client_ping_dto, string $contentType = self::contentTypes['integrityControllerPing'][0])
     {
-        $this->integrityControllerPingWithHttpInfo($client_ping_dto, $contentType);
+        list($response) = $this->integrityControllerPingWithHttpInfo($client_ping_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation integrityControllerPingWithHttpInfo
+     *
+     * Report a client integrity ping
      *
      * @param  \Adviverse\Api\Model\ClientPingDto $client_ping_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerPing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AuthControllerResendVerification201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function integrityControllerPingWithHttpInfo($client_ping_dto, string $contentType = self::contentTypes['integrityControllerPing'][0])
     {
@@ -411,10 +524,87 @@ class IntegrityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AuthControllerResendVerification201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AuthControllerResendVerification201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AuthControllerResendVerification201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AuthControllerResendVerification201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AuthControllerResendVerification201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -422,6 +612,8 @@ class IntegrityApi
 
     /**
      * Operation integrityControllerPingAsync
+     *
+     * Report a client integrity ping
      *
      * @param  \Adviverse\Api\Model\ClientPingDto $client_ping_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerPing'] to see the possible values for this operation
@@ -442,6 +634,8 @@ class IntegrityApi
     /**
      * Operation integrityControllerPingAsyncWithHttpInfo
      *
+     * Report a client integrity ping
+     *
      * @param  \Adviverse\Api\Model\ClientPingDto $client_ping_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerPing'] to see the possible values for this operation
      *
@@ -450,14 +644,27 @@ class IntegrityApi
      */
     public function integrityControllerPingAsyncWithHttpInfo($client_ping_dto, string $contentType = self::contentTypes['integrityControllerPing'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AuthControllerResendVerification201Response';
         $request = $this->integrityControllerPingRequest($client_ping_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -508,7 +715,7 @@ class IntegrityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -570,21 +777,26 @@ class IntegrityApi
     /**
      * Operation integrityControllerReport
      *
+     * Get the terminal integrity report
+     *
      * @param  string $client client (required)
      * @param  string $days days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerReport'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IntegrityControllerReport200Response
      */
     public function integrityControllerReport($client, $days, string $contentType = self::contentTypes['integrityControllerReport'][0])
     {
-        $this->integrityControllerReportWithHttpInfo($client, $days, $contentType);
+        list($response) = $this->integrityControllerReportWithHttpInfo($client, $days, $contentType);
+        return $response;
     }
 
     /**
      * Operation integrityControllerReportWithHttpInfo
+     *
+     * Get the terminal integrity report
      *
      * @param  string $client (required)
      * @param  string $days (required)
@@ -592,7 +804,7 @@ class IntegrityApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IntegrityControllerReport200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function integrityControllerReportWithHttpInfo($client, $days, string $contentType = self::contentTypes['integrityControllerReport'][0])
     {
@@ -621,10 +833,87 @@ class IntegrityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\IntegrityControllerReport200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IntegrityControllerReport200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IntegrityControllerReport200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IntegrityControllerReport200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IntegrityControllerReport200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -632,6 +921,8 @@ class IntegrityApi
 
     /**
      * Operation integrityControllerReportAsync
+     *
+     * Get the terminal integrity report
      *
      * @param  string $client (required)
      * @param  string $days (required)
@@ -653,6 +944,8 @@ class IntegrityApi
     /**
      * Operation integrityControllerReportAsyncWithHttpInfo
      *
+     * Get the terminal integrity report
+     *
      * @param  string $client (required)
      * @param  string $days (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['integrityControllerReport'] to see the possible values for this operation
@@ -662,14 +955,27 @@ class IntegrityApi
      */
     public function integrityControllerReportAsyncWithHttpInfo($client, $days, string $contentType = self::contentTypes['integrityControllerReport'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IntegrityControllerReport200Response';
         $request = $this->integrityControllerReportRequest($client, $days, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -746,7 +1052,7 @@ class IntegrityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -776,6 +1082,15 @@ class IntegrityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

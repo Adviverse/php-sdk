@@ -176,21 +176,26 @@ class PixelApi
     /**
      * Operation pixelControllerAttribution
      *
+     * Closed-loop attribution by traffic source
+     *
      * @param  string $days days (required)
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerAttribution'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerAttribution200Response
      */
     public function pixelControllerAttribution($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerAttribution'][0])
     {
-        $this->pixelControllerAttributionWithHttpInfo($days, $pixel_id, $contentType);
+        list($response) = $this->pixelControllerAttributionWithHttpInfo($days, $pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerAttributionWithHttpInfo
+     *
+     * Closed-loop attribution by traffic source
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -198,7 +203,7 @@ class PixelApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerAttribution200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerAttributionWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerAttribution'][0])
     {
@@ -227,10 +232,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerAttribution200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerAttribution200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerAttribution200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerAttribution200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerAttribution200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -238,6 +320,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerAttributionAsync
+     *
+     * Closed-loop attribution by traffic source
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -259,6 +343,8 @@ class PixelApi
     /**
      * Operation pixelControllerAttributionAsyncWithHttpInfo
      *
+     * Closed-loop attribution by traffic source
+     *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerAttribution'] to see the possible values for this operation
@@ -268,14 +354,27 @@ class PixelApi
      */
     public function pixelControllerAttributionAsyncWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerAttribution'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerAttribution200Response';
         $request = $this->pixelControllerAttributionRequest($days, $pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -352,7 +451,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -382,6 +481,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -407,25 +515,30 @@ class PixelApi
     /**
      * Operation pixelControllerCliLinkCode
      *
+     * Generate a one-time CLI link code
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkCode'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerCliLinkCode201Response
      */
     public function pixelControllerCliLinkCode(string $contentType = self::contentTypes['pixelControllerCliLinkCode'][0])
     {
-        $this->pixelControllerCliLinkCodeWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerCliLinkCodeWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerCliLinkCodeWithHttpInfo
      *
+     * Generate a one-time CLI link code
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkCode'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerCliLinkCode201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerCliLinkCodeWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCliLinkCode'][0])
     {
@@ -454,10 +567,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerCliLinkCode201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerCliLinkCode201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerCliLinkCode201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerCliLinkCode201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerCliLinkCode201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -465,6 +655,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerCliLinkCodeAsync
+     *
+     * Generate a one-time CLI link code
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkCode'] to see the possible values for this operation
      *
@@ -484,6 +676,8 @@ class PixelApi
     /**
      * Operation pixelControllerCliLinkCodeAsyncWithHttpInfo
      *
+     * Generate a one-time CLI link code
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkCode'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -491,14 +685,27 @@ class PixelApi
      */
     public function pixelControllerCliLinkCodeAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCliLinkCode'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerCliLinkCode201Response';
         $request = $this->pixelControllerCliLinkCodeRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -541,7 +748,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -571,6 +778,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -596,25 +812,30 @@ class PixelApi
     /**
      * Operation pixelControllerCliLinkExchange
      *
+     * Exchange a CLI link code for an email hash
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkExchange'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerCliLinkExchange201Response
      */
     public function pixelControllerCliLinkExchange(string $contentType = self::contentTypes['pixelControllerCliLinkExchange'][0])
     {
-        $this->pixelControllerCliLinkExchangeWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerCliLinkExchangeWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerCliLinkExchangeWithHttpInfo
      *
+     * Exchange a CLI link code for an email hash
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkExchange'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerCliLinkExchange201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerCliLinkExchangeWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCliLinkExchange'][0])
     {
@@ -643,10 +864,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -654,6 +952,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerCliLinkExchangeAsync
+     *
+     * Exchange a CLI link code for an email hash
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkExchange'] to see the possible values for this operation
      *
@@ -673,6 +973,8 @@ class PixelApi
     /**
      * Operation pixelControllerCliLinkExchangeAsyncWithHttpInfo
      *
+     * Exchange a CLI link code for an email hash
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCliLinkExchange'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -680,14 +982,27 @@ class PixelApi
      */
     public function pixelControllerCliLinkExchangeAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCliLinkExchange'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerCliLinkExchange201Response';
         $request = $this->pixelControllerCliLinkExchangeRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -730,7 +1045,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -785,25 +1100,30 @@ class PixelApi
     /**
      * Operation pixelControllerCreatePixel
      *
+     * Create a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCreatePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudiencePixel
      */
     public function pixelControllerCreatePixel(string $contentType = self::contentTypes['pixelControllerCreatePixel'][0])
     {
-        $this->pixelControllerCreatePixelWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerCreatePixelWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerCreatePixelWithHttpInfo
      *
+     * Create a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCreatePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudiencePixel, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerCreatePixelWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCreatePixel'][0])
     {
@@ -832,10 +1152,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AudiencePixel' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudiencePixel' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudiencePixel', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudiencePixel';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudiencePixel',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -843,6 +1240,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerCreatePixelAsync
+     *
+     * Create a pixel
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCreatePixel'] to see the possible values for this operation
      *
@@ -862,6 +1261,8 @@ class PixelApi
     /**
      * Operation pixelControllerCreatePixelAsyncWithHttpInfo
      *
+     * Create a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerCreatePixel'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -869,14 +1270,27 @@ class PixelApi
      */
     public function pixelControllerCreatePixelAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerCreatePixel'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudiencePixel';
         $request = $this->pixelControllerCreatePixelRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -919,7 +1333,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -949,6 +1363,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -974,27 +1397,32 @@ class PixelApi
     /**
      * Operation pixelControllerDeletePixel
      *
+     * Delete a pixel
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerDeletePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerDeletePixel200Response
      */
     public function pixelControllerDeletePixel($id, string $contentType = self::contentTypes['pixelControllerDeletePixel'][0])
     {
-        $this->pixelControllerDeletePixelWithHttpInfo($id, $contentType);
+        list($response) = $this->pixelControllerDeletePixelWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerDeletePixelWithHttpInfo
+     *
+     * Delete a pixel
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerDeletePixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerDeletePixel200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerDeletePixelWithHttpInfo($id, string $contentType = self::contentTypes['pixelControllerDeletePixel'][0])
     {
@@ -1023,10 +1451,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerDeletePixel200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerDeletePixel200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1034,6 +1539,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerDeletePixelAsync
+     *
+     * Delete a pixel
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerDeletePixel'] to see the possible values for this operation
@@ -1054,6 +1561,8 @@ class PixelApi
     /**
      * Operation pixelControllerDeletePixelAsyncWithHttpInfo
      *
+     * Delete a pixel
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerDeletePixel'] to see the possible values for this operation
      *
@@ -1062,14 +1571,27 @@ class PixelApi
      */
     public function pixelControllerDeletePixelAsyncWithHttpInfo($id, string $contentType = self::contentTypes['pixelControllerDeletePixel'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
         $request = $this->pixelControllerDeletePixelRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1128,7 +1650,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1158,6 +1680,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1183,21 +1714,26 @@ class PixelApi
     /**
      * Operation pixelControllerEvents
      *
+     * Per-event activity totals
+     *
      * @param  string $days days (required)
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerEvents'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]
      */
     public function pixelControllerEvents($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerEvents'][0])
     {
-        $this->pixelControllerEventsWithHttpInfo($days, $pixel_id, $contentType);
+        list($response) = $this->pixelControllerEventsWithHttpInfo($days, $pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerEventsWithHttpInfo
+     *
+     * Per-event activity totals
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -1205,7 +1741,7 @@ class PixelApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerEvents200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerEventsWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerEvents'][0])
     {
@@ -1234,10 +1770,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1245,6 +1858,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerEventsAsync
+     *
+     * Per-event activity totals
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -1266,6 +1881,8 @@ class PixelApi
     /**
      * Operation pixelControllerEventsAsyncWithHttpInfo
      *
+     * Per-event activity totals
+     *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerEvents'] to see the possible values for this operation
@@ -1275,14 +1892,27 @@ class PixelApi
      */
     public function pixelControllerEventsAsyncWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerEvents'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerEvents200ResponseInner[]';
         $request = $this->pixelControllerEventsRequest($days, $pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1359,7 +1989,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1389,6 +2019,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1414,27 +2053,32 @@ class PixelApi
     /**
      * Operation pixelControllerGetPixel
      *
+     * Get one pixel and its install snippet
+     *
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerGetPixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudiencePixel
      */
     public function pixelControllerGetPixel($pixel_id, string $contentType = self::contentTypes['pixelControllerGetPixel'][0])
     {
-        $this->pixelControllerGetPixelWithHttpInfo($pixel_id, $contentType);
+        list($response) = $this->pixelControllerGetPixelWithHttpInfo($pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerGetPixelWithHttpInfo
+     *
+     * Get one pixel and its install snippet
      *
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerGetPixel'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudiencePixel, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerGetPixelWithHttpInfo($pixel_id, string $contentType = self::contentTypes['pixelControllerGetPixel'][0])
     {
@@ -1463,10 +2107,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudiencePixel' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudiencePixel' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudiencePixel', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudiencePixel';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudiencePixel',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1474,6 +2195,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerGetPixelAsync
+     *
+     * Get one pixel and its install snippet
      *
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerGetPixel'] to see the possible values for this operation
@@ -1494,6 +2217,8 @@ class PixelApi
     /**
      * Operation pixelControllerGetPixelAsyncWithHttpInfo
      *
+     * Get one pixel and its install snippet
+     *
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerGetPixel'] to see the possible values for this operation
      *
@@ -1502,14 +2227,27 @@ class PixelApi
      */
     public function pixelControllerGetPixelAsyncWithHttpInfo($pixel_id, string $contentType = self::contentTypes['pixelControllerGetPixel'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudiencePixel';
         $request = $this->pixelControllerGetPixelRequest($pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1569,7 +2307,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1599,6 +2337,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1624,21 +2371,26 @@ class PixelApi
     /**
      * Operation pixelControllerInsights
      *
+     * Pixel funnel, ROAS summary and daily trend
+     *
      * @param  string $days days (required)
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerInsights'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerInsights200Response
      */
     public function pixelControllerInsights($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerInsights'][0])
     {
-        $this->pixelControllerInsightsWithHttpInfo($days, $pixel_id, $contentType);
+        list($response) = $this->pixelControllerInsightsWithHttpInfo($days, $pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerInsightsWithHttpInfo
+     *
+     * Pixel funnel, ROAS summary and daily trend
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -1646,7 +2398,7 @@ class PixelApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerInsights200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerInsightsWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerInsights'][0])
     {
@@ -1675,10 +2427,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerInsights200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerInsights200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerInsights200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerInsights200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerInsights200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1686,6 +2515,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerInsightsAsync
+     *
+     * Pixel funnel, ROAS summary and daily trend
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -1707,6 +2538,8 @@ class PixelApi
     /**
      * Operation pixelControllerInsightsAsyncWithHttpInfo
      *
+     * Pixel funnel, ROAS summary and daily trend
+     *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerInsights'] to see the possible values for this operation
@@ -1716,14 +2549,27 @@ class PixelApi
      */
     public function pixelControllerInsightsAsyncWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerInsights'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerInsights200Response';
         $request = $this->pixelControllerInsightsRequest($days, $pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1800,7 +2646,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1830,6 +2676,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1855,6 +2710,8 @@ class PixelApi
     /**
      * Operation pixelControllerLibrary
      *
+     * Serve the pixel JavaScript library
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerLibrary'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
@@ -1868,6 +2725,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerLibraryWithHttpInfo
+     *
+     * Serve the pixel JavaScript library
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerLibrary'] to see the possible values for this operation
      *
@@ -1914,6 +2773,8 @@ class PixelApi
     /**
      * Operation pixelControllerLibraryAsync
      *
+     * Serve the pixel JavaScript library
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerLibrary'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1931,6 +2792,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerLibraryAsyncWithHttpInfo
+     *
+     * Serve the pixel JavaScript library
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerLibrary'] to see the possible values for this operation
      *
@@ -2044,25 +2907,30 @@ class PixelApi
     /**
      * Operation pixelControllerListPixels
      *
+     * List the account&#39;s pixels
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerListPixels'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudiencePixel[]
      */
     public function pixelControllerListPixels(string $contentType = self::contentTypes['pixelControllerListPixels'][0])
     {
-        $this->pixelControllerListPixelsWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerListPixelsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerListPixelsWithHttpInfo
      *
+     * List the account&#39;s pixels
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerListPixels'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudiencePixel[], HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerListPixelsWithHttpInfo(string $contentType = self::contentTypes['pixelControllerListPixels'][0])
     {
@@ -2091,10 +2959,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AudiencePixel[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudiencePixel[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudiencePixel[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudiencePixel[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudiencePixel[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2102,6 +3047,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerListPixelsAsync
+     *
+     * List the account&#39;s pixels
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerListPixels'] to see the possible values for this operation
      *
@@ -2121,6 +3068,8 @@ class PixelApi
     /**
      * Operation pixelControllerListPixelsAsyncWithHttpInfo
      *
+     * List the account&#39;s pixels
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerListPixels'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2128,14 +3077,27 @@ class PixelApi
      */
     public function pixelControllerListPixelsAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerListPixels'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudiencePixel[]';
         $request = $this->pixelControllerListPixelsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2178,7 +3140,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2208,6 +3170,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2233,21 +3204,26 @@ class PixelApi
     /**
      * Operation pixelControllerProducts
      *
+     * Product-level analytics
+     *
      * @param  string $days days (required)
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerProducts'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]
      */
     public function pixelControllerProducts($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerProducts'][0])
     {
-        $this->pixelControllerProductsWithHttpInfo($days, $pixel_id, $contentType);
+        list($response) = $this->pixelControllerProductsWithHttpInfo($days, $pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerProductsWithHttpInfo
+     *
+     * Product-level analytics
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -2255,7 +3231,7 @@ class PixelApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerProducts200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerProductsWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerProducts'][0])
     {
@@ -2284,10 +3260,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2295,6 +3348,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerProductsAsync
+     *
+     * Product-level analytics
      *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
@@ -2316,6 +3371,8 @@ class PixelApi
     /**
      * Operation pixelControllerProductsAsyncWithHttpInfo
      *
+     * Product-level analytics
+     *
      * @param  string $days (required)
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerProducts'] to see the possible values for this operation
@@ -2325,14 +3382,27 @@ class PixelApi
      */
     public function pixelControllerProductsAsyncWithHttpInfo($days, $pixel_id, string $contentType = self::contentTypes['pixelControllerProducts'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerProducts200ResponseInner[]';
         $request = $this->pixelControllerProductsRequest($days, $pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2409,7 +3479,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2439,6 +3509,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2464,25 +3543,30 @@ class PixelApi
     /**
      * Operation pixelControllerSetRealtime
      *
+     * Toggle real-time audiences for a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerSetRealtime'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerSetRealtime201Response
      */
     public function pixelControllerSetRealtime(string $contentType = self::contentTypes['pixelControllerSetRealtime'][0])
     {
-        $this->pixelControllerSetRealtimeWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerSetRealtimeWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerSetRealtimeWithHttpInfo
      *
+     * Toggle real-time audiences for a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerSetRealtime'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerSetRealtime201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerSetRealtimeWithHttpInfo(string $contentType = self::contentTypes['pixelControllerSetRealtime'][0])
     {
@@ -2511,10 +3595,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerSetRealtime201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerSetRealtime201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerSetRealtime201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerSetRealtime201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerSetRealtime201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2522,6 +3683,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerSetRealtimeAsync
+     *
+     * Toggle real-time audiences for a pixel
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerSetRealtime'] to see the possible values for this operation
      *
@@ -2541,6 +3704,8 @@ class PixelApi
     /**
      * Operation pixelControllerSetRealtimeAsyncWithHttpInfo
      *
+     * Toggle real-time audiences for a pixel
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerSetRealtime'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2548,14 +3713,27 @@ class PixelApi
      */
     public function pixelControllerSetRealtimeAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerSetRealtime'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerSetRealtime201Response';
         $request = $this->pixelControllerSetRealtimeRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2598,7 +3776,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2628,6 +3806,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2653,25 +3840,30 @@ class PixelApi
     /**
      * Operation pixelControllerTrack
      *
+     * Ingest a pixel event
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrack'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerTrack201Response
      */
     public function pixelControllerTrack(string $contentType = self::contentTypes['pixelControllerTrack'][0])
     {
-        $this->pixelControllerTrackWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerTrackWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerTrackWithHttpInfo
      *
+     * Ingest a pixel event
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrack'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerTrack201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerTrackWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrack'][0])
     {
@@ -2700,10 +3892,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerTrack201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerTrack201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerTrack201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerTrack201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerTrack201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2711,6 +3980,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTrackAsync
+     *
+     * Ingest a pixel event
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrack'] to see the possible values for this operation
      *
@@ -2730,6 +4001,8 @@ class PixelApi
     /**
      * Operation pixelControllerTrackAsyncWithHttpInfo
      *
+     * Ingest a pixel event
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrack'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2737,14 +4010,27 @@ class PixelApi
      */
     public function pixelControllerTrackAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrack'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerTrack201Response';
         $request = $this->pixelControllerTrackRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2787,7 +4073,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2842,25 +4128,30 @@ class PixelApi
     /**
      * Operation pixelControllerTrackCoding
      *
+     * Record terminal coding-context keywords
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackCoding'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerTrackCoding201Response
      */
     public function pixelControllerTrackCoding(string $contentType = self::contentTypes['pixelControllerTrackCoding'][0])
     {
-        $this->pixelControllerTrackCodingWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerTrackCodingWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerTrackCodingWithHttpInfo
      *
+     * Record terminal coding-context keywords
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackCoding'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerTrackCoding201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerTrackCodingWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrackCoding'][0])
     {
@@ -2889,10 +4180,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerTrackCoding201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerTrackCoding201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerTrackCoding201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerTrackCoding201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerTrackCoding201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2900,6 +4268,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTrackCodingAsync
+     *
+     * Record terminal coding-context keywords
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackCoding'] to see the possible values for this operation
      *
@@ -2919,6 +4289,8 @@ class PixelApi
     /**
      * Operation pixelControllerTrackCodingAsyncWithHttpInfo
      *
+     * Record terminal coding-context keywords
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackCoding'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2926,14 +4298,27 @@ class PixelApi
      */
     public function pixelControllerTrackCodingAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrackCoding'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerTrackCoding201Response';
         $request = $this->pixelControllerTrackCodingRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2976,7 +4361,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3031,6 +4416,8 @@ class PixelApi
     /**
      * Operation pixelControllerTrackGet
      *
+     * Ingest a pixel event via image beacon
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
@@ -3044,6 +4431,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTrackGetWithHttpInfo
+     *
+     * Ingest a pixel event via image beacon
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackGet'] to see the possible values for this operation
      *
@@ -3090,6 +4479,8 @@ class PixelApi
     /**
      * Operation pixelControllerTrackGetAsync
      *
+     * Ingest a pixel event via image beacon
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackGet'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -3107,6 +4498,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTrackGetAsyncWithHttpInfo
+     *
+     * Ingest a pixel event via image beacon
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrackGet'] to see the possible values for this operation
      *
@@ -3220,25 +4613,30 @@ class PixelApi
     /**
      * Operation pixelControllerTrait
      *
+     * Set user traits for the visitor
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrait'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerTrait201Response
      */
     public function pixelControllerTrait(string $contentType = self::contentTypes['pixelControllerTrait'][0])
     {
-        $this->pixelControllerTraitWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerTraitWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerTraitWithHttpInfo
      *
+     * Set user traits for the visitor
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrait'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerTrait201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerTraitWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrait'][0])
     {
@@ -3267,10 +4665,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\PixelControllerTrait201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerTrait201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerTrait201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerTrait201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerTrait201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3278,6 +4753,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTraitAsync
+     *
+     * Set user traits for the visitor
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrait'] to see the possible values for this operation
      *
@@ -3297,6 +4774,8 @@ class PixelApi
     /**
      * Operation pixelControllerTraitAsyncWithHttpInfo
      *
+     * Set user traits for the visitor
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTrait'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -3304,14 +4783,27 @@ class PixelApi
      */
     public function pixelControllerTraitAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerTrait'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerTrait201Response';
         $request = $this->pixelControllerTraitRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3354,7 +4846,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3409,21 +4901,26 @@ class PixelApi
     /**
      * Operation pixelControllerTraitLookup
      *
+     * Look up a user&#39;s CDP traits
+     *
      * @param  string $user user (required)
      * @param  string $pixel_id pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTraitLookup'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerTraitLookup200Response
      */
     public function pixelControllerTraitLookup($user, $pixel_id, string $contentType = self::contentTypes['pixelControllerTraitLookup'][0])
     {
-        $this->pixelControllerTraitLookupWithHttpInfo($user, $pixel_id, $contentType);
+        list($response) = $this->pixelControllerTraitLookupWithHttpInfo($user, $pixel_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerTraitLookupWithHttpInfo
+     *
+     * Look up a user&#39;s CDP traits
      *
      * @param  string $user (required)
      * @param  string $pixel_id (required)
@@ -3431,7 +4928,7 @@ class PixelApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerTraitLookup200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerTraitLookupWithHttpInfo($user, $pixel_id, string $contentType = self::contentTypes['pixelControllerTraitLookup'][0])
     {
@@ -3460,10 +4957,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerTraitLookup200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerTraitLookup200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerTraitLookup200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerTraitLookup200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerTraitLookup200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3471,6 +5045,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerTraitLookupAsync
+     *
+     * Look up a user&#39;s CDP traits
      *
      * @param  string $user (required)
      * @param  string $pixel_id (required)
@@ -3492,6 +5068,8 @@ class PixelApi
     /**
      * Operation pixelControllerTraitLookupAsyncWithHttpInfo
      *
+     * Look up a user&#39;s CDP traits
+     *
      * @param  string $user (required)
      * @param  string $pixel_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerTraitLookup'] to see the possible values for this operation
@@ -3501,14 +5079,27 @@ class PixelApi
      */
     public function pixelControllerTraitLookupAsyncWithHttpInfo($user, $pixel_id, string $contentType = self::contentTypes['pixelControllerTraitLookup'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerTraitLookup200Response';
         $request = $this->pixelControllerTraitLookupRequest($user, $pixel_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3585,7 +5176,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3615,6 +5206,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3640,25 +5240,30 @@ class PixelApi
     /**
      * Operation pixelControllerUpdateSettings
      *
+     * Update pixel settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerUpdateSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AudiencePixel
      */
     public function pixelControllerUpdateSettings(string $contentType = self::contentTypes['pixelControllerUpdateSettings'][0])
     {
-        $this->pixelControllerUpdateSettingsWithHttpInfo($contentType);
+        list($response) = $this->pixelControllerUpdateSettingsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation pixelControllerUpdateSettingsWithHttpInfo
      *
+     * Update pixel settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerUpdateSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AudiencePixel, HTTP status code, HTTP response headers (array of strings)
      */
     public function pixelControllerUpdateSettingsWithHttpInfo(string $contentType = self::contentTypes['pixelControllerUpdateSettings'][0])
     {
@@ -3687,10 +5292,87 @@ class PixelApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AudiencePixel' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AudiencePixel' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AudiencePixel', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AudiencePixel';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AudiencePixel',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3698,6 +5380,8 @@ class PixelApi
 
     /**
      * Operation pixelControllerUpdateSettingsAsync
+     *
+     * Update pixel settings
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerUpdateSettings'] to see the possible values for this operation
      *
@@ -3717,6 +5401,8 @@ class PixelApi
     /**
      * Operation pixelControllerUpdateSettingsAsyncWithHttpInfo
      *
+     * Update pixel settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['pixelControllerUpdateSettings'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -3724,14 +5410,27 @@ class PixelApi
      */
     public function pixelControllerUpdateSettingsAsyncWithHttpInfo(string $contentType = self::contentTypes['pixelControllerUpdateSettings'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AudiencePixel';
         $request = $this->pixelControllerUpdateSettingsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3774,7 +5473,7 @@ class PixelApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3804,6 +5503,15 @@ class PixelApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

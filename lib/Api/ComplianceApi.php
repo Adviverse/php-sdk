@@ -158,25 +158,30 @@ class ComplianceApi
     /**
      * Operation complianceControllerAdsTxt
      *
+     * Get the ads.txt line
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerAdsTxt'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function complianceControllerAdsTxt(string $contentType = self::contentTypes['complianceControllerAdsTxt'][0])
     {
-        $this->complianceControllerAdsTxtWithHttpInfo($contentType);
+        list($response) = $this->complianceControllerAdsTxtWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerAdsTxtWithHttpInfo
      *
+     * Get the ads.txt line
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerAdsTxt'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerAdsTxtWithHttpInfo(string $contentType = self::contentTypes['complianceControllerAdsTxt'][0])
     {
@@ -205,10 +210,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -216,6 +298,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerAdsTxtAsync
+     *
+     * Get the ads.txt line
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerAdsTxt'] to see the possible values for this operation
      *
@@ -235,6 +319,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerAdsTxtAsyncWithHttpInfo
      *
+     * Get the ads.txt line
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerAdsTxt'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -242,14 +328,27 @@ class ComplianceApi
      */
     public function complianceControllerAdsTxtAsyncWithHttpInfo(string $contentType = self::contentTypes['complianceControllerAdsTxt'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->complianceControllerAdsTxtRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -292,7 +391,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/plain', ],
             $contentType,
             $multipart
         );
@@ -347,27 +446,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerComplete
      *
+     * Complete a data-subject request
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerComplete'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
      */
     public function complianceControllerComplete($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
-        $this->complianceControllerCompleteWithHttpInfo($id, $contentType);
+        list($response) = $this->complianceControllerCompleteWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerCompleteWithHttpInfo
+     *
+     * Complete a data-subject request
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerComplete'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerCompleteWithHttpInfo($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
@@ -396,10 +500,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -407,6 +588,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerCompleteAsync
+     *
+     * Complete a data-subject request
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerComplete'] to see the possible values for this operation
@@ -427,6 +610,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerCompleteAsyncWithHttpInfo
      *
+     * Complete a data-subject request
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerComplete'] to see the possible values for this operation
      *
@@ -435,14 +620,27 @@ class ComplianceApi
      */
     public function complianceControllerCompleteAsyncWithHttpInfo($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
         $request = $this->complianceControllerCompleteRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -501,7 +699,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -531,6 +729,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -556,27 +763,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerConsent
      *
+     * Log a consent signal
+     *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceControllerConsent201Response
      */
     public function complianceControllerConsent($consent_dto, string $contentType = self::contentTypes['complianceControllerConsent'][0])
     {
-        $this->complianceControllerConsentWithHttpInfo($consent_dto, $contentType);
+        list($response) = $this->complianceControllerConsentWithHttpInfo($consent_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerConsentWithHttpInfo
+     *
+     * Log a consent signal
      *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerConsent201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerConsentWithHttpInfo($consent_dto, string $contentType = self::contentTypes['complianceControllerConsent'][0])
     {
@@ -605,10 +817,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ComplianceControllerConsent201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceControllerConsent201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerConsent201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerConsent201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceControllerConsent201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -616,6 +905,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerConsentAsync
+     *
+     * Log a consent signal
      *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsent'] to see the possible values for this operation
@@ -636,6 +927,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerConsentAsyncWithHttpInfo
      *
+     * Log a consent signal
+     *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsent'] to see the possible values for this operation
      *
@@ -644,14 +937,27 @@ class ComplianceApi
      */
     public function complianceControllerConsentAsyncWithHttpInfo($consent_dto, string $contentType = self::contentTypes['complianceControllerConsent'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerConsent201Response';
         $request = $this->complianceControllerConsentRequest($consent_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -702,7 +1008,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -764,25 +1070,30 @@ class ComplianceApi
     /**
      * Operation complianceControllerConsentLog
      *
+     * List recent consent records
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsentLog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]
      */
     public function complianceControllerConsentLog(string $contentType = self::contentTypes['complianceControllerConsentLog'][0])
     {
-        $this->complianceControllerConsentLogWithHttpInfo($contentType);
+        list($response) = $this->complianceControllerConsentLogWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerConsentLogWithHttpInfo
      *
+     * List recent consent records
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsentLog'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerConsentLogWithHttpInfo(string $contentType = self::contentTypes['complianceControllerConsentLog'][0])
     {
@@ -811,10 +1122,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -822,6 +1210,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerConsentLogAsync
+     *
+     * List recent consent records
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsentLog'] to see the possible values for this operation
      *
@@ -841,6 +1231,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerConsentLogAsyncWithHttpInfo
      *
+     * List recent consent records
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerConsentLog'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -848,14 +1240,27 @@ class ComplianceApi
      */
     public function complianceControllerConsentLogAsyncWithHttpInfo(string $contentType = self::contentTypes['complianceControllerConsentLog'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerConsentLog200ResponseInner[]';
         $request = $this->complianceControllerConsentLogRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -898,7 +1303,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -928,6 +1333,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -953,6 +1367,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerDomainConnectTemplate
      *
+     * Get the DomainConnect verification template
+     *
      * @param  string $provider_id provider_id (required)
      * @param  string $service_id service_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDomainConnectTemplate'] to see the possible values for this operation
@@ -968,6 +1384,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerDomainConnectTemplateWithHttpInfo
+     *
+     * Get the DomainConnect verification template
      *
      * @param  string $provider_id (required)
      * @param  string $service_id (required)
@@ -1016,6 +1434,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerDomainConnectTemplateAsync
      *
+     * Get the DomainConnect verification template
+     *
      * @param  string $provider_id (required)
      * @param  string $service_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDomainConnectTemplate'] to see the possible values for this operation
@@ -1035,6 +1455,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerDomainConnectTemplateAsyncWithHttpInfo
+     *
+     * Get the DomainConnect verification template
      *
      * @param  string $provider_id (required)
      * @param  string $service_id (required)
@@ -1182,27 +1604,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerDsar
      *
+     * Submit a data-subject request
+     *
      * @param  \Adviverse\Api\Model\DsarDto $dsar_dto dsar_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDsar'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceDsar
      */
     public function complianceControllerDsar($dsar_dto, string $contentType = self::contentTypes['complianceControllerDsar'][0])
     {
-        $this->complianceControllerDsarWithHttpInfo($dsar_dto, $contentType);
+        list($response) = $this->complianceControllerDsarWithHttpInfo($dsar_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerDsarWithHttpInfo
+     *
+     * Submit a data-subject request
      *
      * @param  \Adviverse\Api\Model\DsarDto $dsar_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDsar'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceDsar, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerDsarWithHttpInfo($dsar_dto, string $contentType = self::contentTypes['complianceControllerDsar'][0])
     {
@@ -1231,10 +1658,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ComplianceDsar' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceDsar' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceDsar', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceDsar';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceDsar',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1242,6 +1746,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerDsarAsync
+     *
+     * Submit a data-subject request
      *
      * @param  \Adviverse\Api\Model\DsarDto $dsar_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDsar'] to see the possible values for this operation
@@ -1262,6 +1768,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerDsarAsyncWithHttpInfo
      *
+     * Submit a data-subject request
+     *
      * @param  \Adviverse\Api\Model\DsarDto $dsar_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerDsar'] to see the possible values for this operation
      *
@@ -1270,14 +1778,27 @@ class ComplianceApi
      */
     public function complianceControllerDsarAsyncWithHttpInfo($dsar_dto, string $contentType = self::contentTypes['complianceControllerDsar'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceDsar';
         $request = $this->complianceControllerDsarRequest($dsar_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1328,7 +1849,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1390,27 +1911,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerGetConsentConfig
      *
+     * Get consent configuration
+     *
      * @param  string $property_id property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetConsentConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceConsentConfig
      */
     public function complianceControllerGetConsentConfig($property_id, string $contentType = self::contentTypes['complianceControllerGetConsentConfig'][0])
     {
-        $this->complianceControllerGetConsentConfigWithHttpInfo($property_id, $contentType);
+        list($response) = $this->complianceControllerGetConsentConfigWithHttpInfo($property_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerGetConsentConfigWithHttpInfo
+     *
+     * Get consent configuration
      *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetConsentConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceConsentConfig, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerGetConsentConfigWithHttpInfo($property_id, string $contentType = self::contentTypes['complianceControllerGetConsentConfig'][0])
     {
@@ -1439,10 +1965,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceConsentConfig' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceConsentConfig' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceConsentConfig', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceConsentConfig';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceConsentConfig',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1450,6 +2053,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerGetConsentConfigAsync
+     *
+     * Get consent configuration
      *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetConsentConfig'] to see the possible values for this operation
@@ -1470,6 +2075,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerGetConsentConfigAsyncWithHttpInfo
      *
+     * Get consent configuration
+     *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetConsentConfig'] to see the possible values for this operation
      *
@@ -1478,14 +2085,27 @@ class ComplianceApi
      */
     public function complianceControllerGetConsentConfigAsyncWithHttpInfo($property_id, string $contentType = self::contentTypes['complianceControllerGetConsentConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceConsentConfig';
         $request = $this->complianceControllerGetConsentConfigRequest($property_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1545,7 +2165,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1575,6 +2195,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1600,25 +2229,30 @@ class ComplianceApi
     /**
      * Operation complianceControllerGetSellerListing
      *
+     * Get sellers.json listing preference
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetSellerListing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceSellerListing
      */
     public function complianceControllerGetSellerListing(string $contentType = self::contentTypes['complianceControllerGetSellerListing'][0])
     {
-        $this->complianceControllerGetSellerListingWithHttpInfo($contentType);
+        list($response) = $this->complianceControllerGetSellerListingWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerGetSellerListingWithHttpInfo
      *
+     * Get sellers.json listing preference
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetSellerListing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceSellerListing, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerGetSellerListingWithHttpInfo(string $contentType = self::contentTypes['complianceControllerGetSellerListing'][0])
     {
@@ -1647,10 +2281,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceSellerListing' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceSellerListing' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceSellerListing', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceSellerListing';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceSellerListing',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1658,6 +2369,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerGetSellerListingAsync
+     *
+     * Get sellers.json listing preference
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetSellerListing'] to see the possible values for this operation
      *
@@ -1677,6 +2390,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerGetSellerListingAsyncWithHttpInfo
      *
+     * Get sellers.json listing preference
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerGetSellerListing'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1684,14 +2399,27 @@ class ComplianceApi
      */
     public function complianceControllerGetSellerListingAsyncWithHttpInfo(string $contentType = self::contentTypes['complianceControllerGetSellerListing'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceSellerListing';
         $request = $this->complianceControllerGetSellerListingRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1734,7 +2462,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1764,6 +2492,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1789,25 +2526,30 @@ class ComplianceApi
     /**
      * Operation complianceControllerListDsar
      *
+     * List data-subject requests
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerListDsar'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceDsar[]
      */
     public function complianceControllerListDsar(string $contentType = self::contentTypes['complianceControllerListDsar'][0])
     {
-        $this->complianceControllerListDsarWithHttpInfo($contentType);
+        list($response) = $this->complianceControllerListDsarWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerListDsarWithHttpInfo
      *
+     * List data-subject requests
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerListDsar'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceDsar[], HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerListDsarWithHttpInfo(string $contentType = self::contentTypes['complianceControllerListDsar'][0])
     {
@@ -1836,10 +2578,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceDsar[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceDsar[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceDsar[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceDsar[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceDsar[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1847,6 +2666,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerListDsarAsync
+     *
+     * List data-subject requests
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerListDsar'] to see the possible values for this operation
      *
@@ -1866,6 +2687,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerListDsarAsyncWithHttpInfo
      *
+     * List data-subject requests
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerListDsar'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1873,14 +2696,27 @@ class ComplianceApi
      */
     public function complianceControllerListDsarAsyncWithHttpInfo(string $contentType = self::contentTypes['complianceControllerListDsar'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceDsar[]';
         $request = $this->complianceControllerListDsarRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1923,7 +2759,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1953,6 +2789,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1978,27 +2823,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerSaveConsentConfig
      *
+     * Save consent configuration
+     *
      * @param  \Adviverse\Api\Model\ConsentConfigDto $consent_config_dto consent_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveConsentConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceConsentConfig
      */
     public function complianceControllerSaveConsentConfig($consent_config_dto, string $contentType = self::contentTypes['complianceControllerSaveConsentConfig'][0])
     {
-        $this->complianceControllerSaveConsentConfigWithHttpInfo($consent_config_dto, $contentType);
+        list($response) = $this->complianceControllerSaveConsentConfigWithHttpInfo($consent_config_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerSaveConsentConfigWithHttpInfo
+     *
+     * Save consent configuration
      *
      * @param  \Adviverse\Api\Model\ConsentConfigDto $consent_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveConsentConfig'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceConsentConfig, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerSaveConsentConfigWithHttpInfo($consent_config_dto, string $contentType = self::contentTypes['complianceControllerSaveConsentConfig'][0])
     {
@@ -2027,10 +2877,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ComplianceConsentConfig' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceConsentConfig' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceConsentConfig', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceConsentConfig';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceConsentConfig',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2038,6 +2965,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerSaveConsentConfigAsync
+     *
+     * Save consent configuration
      *
      * @param  \Adviverse\Api\Model\ConsentConfigDto $consent_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveConsentConfig'] to see the possible values for this operation
@@ -2058,6 +2987,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerSaveConsentConfigAsyncWithHttpInfo
      *
+     * Save consent configuration
+     *
      * @param  \Adviverse\Api\Model\ConsentConfigDto $consent_config_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveConsentConfig'] to see the possible values for this operation
      *
@@ -2066,14 +2997,27 @@ class ComplianceApi
      */
     public function complianceControllerSaveConsentConfigAsyncWithHttpInfo($consent_config_dto, string $contentType = self::contentTypes['complianceControllerSaveConsentConfig'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceConsentConfig';
         $request = $this->complianceControllerSaveConsentConfigRequest($consent_config_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2124,7 +3068,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2161,6 +3105,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2186,27 +3139,32 @@ class ComplianceApi
     /**
      * Operation complianceControllerSaveSellerListing
      *
+     * Set sellers.json listing preference
+     *
      * @param  \Adviverse\Api\Model\SellerListingDto $seller_listing_dto seller_listing_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveSellerListing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceSellerListing
      */
     public function complianceControllerSaveSellerListing($seller_listing_dto, string $contentType = self::contentTypes['complianceControllerSaveSellerListing'][0])
     {
-        $this->complianceControllerSaveSellerListingWithHttpInfo($seller_listing_dto, $contentType);
+        list($response) = $this->complianceControllerSaveSellerListingWithHttpInfo($seller_listing_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerSaveSellerListingWithHttpInfo
+     *
+     * Set sellers.json listing preference
      *
      * @param  \Adviverse\Api\Model\SellerListingDto $seller_listing_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveSellerListing'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceSellerListing, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerSaveSellerListingWithHttpInfo($seller_listing_dto, string $contentType = self::contentTypes['complianceControllerSaveSellerListing'][0])
     {
@@ -2235,10 +3193,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceSellerListing' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceSellerListing' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceSellerListing', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceSellerListing';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceSellerListing',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2246,6 +3281,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerSaveSellerListingAsync
+     *
+     * Set sellers.json listing preference
      *
      * @param  \Adviverse\Api\Model\SellerListingDto $seller_listing_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveSellerListing'] to see the possible values for this operation
@@ -2266,6 +3303,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerSaveSellerListingAsyncWithHttpInfo
      *
+     * Set sellers.json listing preference
+     *
      * @param  \Adviverse\Api\Model\SellerListingDto $seller_listing_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSaveSellerListing'] to see the possible values for this operation
      *
@@ -2274,14 +3313,27 @@ class ComplianceApi
      */
     public function complianceControllerSaveSellerListingAsyncWithHttpInfo($seller_listing_dto, string $contentType = self::contentTypes['complianceControllerSaveSellerListing'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceSellerListing';
         $request = $this->complianceControllerSaveSellerListingRequest($seller_listing_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2332,7 +3384,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2369,6 +3421,15 @@ class ComplianceApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2394,25 +3455,30 @@ class ComplianceApi
     /**
      * Operation complianceControllerSellers
      *
+     * Get sellers.json
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSellers'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComplianceControllerSellers200Response
      */
     public function complianceControllerSellers(string $contentType = self::contentTypes['complianceControllerSellers'][0])
     {
-        $this->complianceControllerSellersWithHttpInfo($contentType);
+        list($response) = $this->complianceControllerSellersWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation complianceControllerSellersWithHttpInfo
      *
+     * Get sellers.json
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSellers'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerSellers200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerSellersWithHttpInfo(string $contentType = self::contentTypes['complianceControllerSellers'][0])
     {
@@ -2441,10 +3507,87 @@ class ComplianceApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComplianceControllerSellers200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComplianceControllerSellers200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerSellers200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerSellers200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComplianceControllerSellers200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2452,6 +3595,8 @@ class ComplianceApi
 
     /**
      * Operation complianceControllerSellersAsync
+     *
+     * Get sellers.json
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSellers'] to see the possible values for this operation
      *
@@ -2471,6 +3616,8 @@ class ComplianceApi
     /**
      * Operation complianceControllerSellersAsyncWithHttpInfo
      *
+     * Get sellers.json
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['complianceControllerSellers'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2478,14 +3625,27 @@ class ComplianceApi
      */
     public function complianceControllerSellersAsyncWithHttpInfo(string $contentType = self::contentTypes['complianceControllerSellers'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerSellers200Response';
         $request = $this->complianceControllerSellersRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2528,7 +3688,7 @@ class ComplianceApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );

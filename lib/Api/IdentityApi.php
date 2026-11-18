@@ -137,27 +137,32 @@ class IdentityApi
     /**
      * Operation identityControllerConsent
      *
+     * Set identity consent state
+     *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerConsent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IdentityControllerConsent201Response
      */
     public function identityControllerConsent($consent_dto, string $contentType = self::contentTypes['identityControllerConsent'][0])
     {
-        $this->identityControllerConsentWithHttpInfo($consent_dto, $contentType);
+        list($response) = $this->identityControllerConsentWithHttpInfo($consent_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation identityControllerConsentWithHttpInfo
+     *
+     * Set identity consent state
      *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerConsent'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IdentityControllerConsent201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function identityControllerConsentWithHttpInfo($consent_dto, string $contentType = self::contentTypes['identityControllerConsent'][0])
     {
@@ -186,10 +191,87 @@ class IdentityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\IdentityControllerConsent201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IdentityControllerConsent201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IdentityControllerConsent201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IdentityControllerConsent201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IdentityControllerConsent201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -197,6 +279,8 @@ class IdentityApi
 
     /**
      * Operation identityControllerConsentAsync
+     *
+     * Set identity consent state
      *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerConsent'] to see the possible values for this operation
@@ -217,6 +301,8 @@ class IdentityApi
     /**
      * Operation identityControllerConsentAsyncWithHttpInfo
      *
+     * Set identity consent state
+     *
      * @param  \Adviverse\Api\Model\ConsentDto $consent_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerConsent'] to see the possible values for this operation
      *
@@ -225,14 +311,27 @@ class IdentityApi
      */
     public function identityControllerConsentAsyncWithHttpInfo($consent_dto, string $contentType = self::contentTypes['identityControllerConsent'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IdentityControllerConsent201Response';
         $request = $this->identityControllerConsentRequest($consent_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -283,7 +382,7 @@ class IdentityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -320,6 +419,15 @@ class IdentityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -345,27 +453,32 @@ class IdentityApi
     /**
      * Operation identityControllerGet
      *
+     * Get an identity with its signals
+     *
      * @param  string $canonical_id canonical_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IdentityControllerGet200Response
      */
     public function identityControllerGet($canonical_id, string $contentType = self::contentTypes['identityControllerGet'][0])
     {
-        $this->identityControllerGetWithHttpInfo($canonical_id, $contentType);
+        list($response) = $this->identityControllerGetWithHttpInfo($canonical_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation identityControllerGetWithHttpInfo
+     *
+     * Get an identity with its signals
      *
      * @param  string $canonical_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IdentityControllerGet200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function identityControllerGetWithHttpInfo($canonical_id, string $contentType = self::contentTypes['identityControllerGet'][0])
     {
@@ -394,10 +507,87 @@ class IdentityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\IdentityControllerGet200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IdentityControllerGet200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IdentityControllerGet200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IdentityControllerGet200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IdentityControllerGet200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -405,6 +595,8 @@ class IdentityApi
 
     /**
      * Operation identityControllerGetAsync
+     *
+     * Get an identity with its signals
      *
      * @param  string $canonical_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerGet'] to see the possible values for this operation
@@ -425,6 +617,8 @@ class IdentityApi
     /**
      * Operation identityControllerGetAsyncWithHttpInfo
      *
+     * Get an identity with its signals
+     *
      * @param  string $canonical_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerGet'] to see the possible values for this operation
      *
@@ -433,14 +627,27 @@ class IdentityApi
      */
     public function identityControllerGetAsyncWithHttpInfo($canonical_id, string $contentType = self::contentTypes['identityControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IdentityControllerGet200Response';
         $request = $this->identityControllerGetRequest($canonical_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -499,7 +706,7 @@ class IdentityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -529,6 +736,15 @@ class IdentityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -554,27 +770,32 @@ class IdentityApi
     /**
      * Operation identityControllerLink
      *
+     * Link signals to an identity
+     *
      * @param  \Adviverse\Api\Model\LinkIdentityDto $link_identity_dto link_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerLink'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IdentityControllerLink201Response
      */
     public function identityControllerLink($link_identity_dto, string $contentType = self::contentTypes['identityControllerLink'][0])
     {
-        $this->identityControllerLinkWithHttpInfo($link_identity_dto, $contentType);
+        list($response) = $this->identityControllerLinkWithHttpInfo($link_identity_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation identityControllerLinkWithHttpInfo
+     *
+     * Link signals to an identity
      *
      * @param  \Adviverse\Api\Model\LinkIdentityDto $link_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerLink'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IdentityControllerLink201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function identityControllerLinkWithHttpInfo($link_identity_dto, string $contentType = self::contentTypes['identityControllerLink'][0])
     {
@@ -603,10 +824,87 @@ class IdentityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\IdentityControllerLink201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IdentityControllerLink201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IdentityControllerLink201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IdentityControllerLink201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IdentityControllerLink201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -614,6 +912,8 @@ class IdentityApi
 
     /**
      * Operation identityControllerLinkAsync
+     *
+     * Link signals to an identity
      *
      * @param  \Adviverse\Api\Model\LinkIdentityDto $link_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerLink'] to see the possible values for this operation
@@ -634,6 +934,8 @@ class IdentityApi
     /**
      * Operation identityControllerLinkAsyncWithHttpInfo
      *
+     * Link signals to an identity
+     *
      * @param  \Adviverse\Api\Model\LinkIdentityDto $link_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerLink'] to see the possible values for this operation
      *
@@ -642,14 +944,27 @@ class IdentityApi
      */
     public function identityControllerLinkAsyncWithHttpInfo($link_identity_dto, string $contentType = self::contentTypes['identityControllerLink'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IdentityControllerLink201Response';
         $request = $this->identityControllerLinkRequest($link_identity_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -700,7 +1015,7 @@ class IdentityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -737,6 +1052,15 @@ class IdentityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -762,27 +1086,32 @@ class IdentityApi
     /**
      * Operation identityControllerResolve
      *
+     * Resolve signals to a canonical identity
+     *
      * @param  \Adviverse\Api\Model\ResolveIdentityDto $resolve_identity_dto resolve_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerResolve'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IdentityControllerResolve201Response
      */
     public function identityControllerResolve($resolve_identity_dto, string $contentType = self::contentTypes['identityControllerResolve'][0])
     {
-        $this->identityControllerResolveWithHttpInfo($resolve_identity_dto, $contentType);
+        list($response) = $this->identityControllerResolveWithHttpInfo($resolve_identity_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation identityControllerResolveWithHttpInfo
+     *
+     * Resolve signals to a canonical identity
      *
      * @param  \Adviverse\Api\Model\ResolveIdentityDto $resolve_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerResolve'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IdentityControllerResolve201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function identityControllerResolveWithHttpInfo($resolve_identity_dto, string $contentType = self::contentTypes['identityControllerResolve'][0])
     {
@@ -811,10 +1140,87 @@ class IdentityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\IdentityControllerResolve201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IdentityControllerResolve201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IdentityControllerResolve201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IdentityControllerResolve201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IdentityControllerResolve201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -822,6 +1228,8 @@ class IdentityApi
 
     /**
      * Operation identityControllerResolveAsync
+     *
+     * Resolve signals to a canonical identity
      *
      * @param  \Adviverse\Api\Model\ResolveIdentityDto $resolve_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerResolve'] to see the possible values for this operation
@@ -842,6 +1250,8 @@ class IdentityApi
     /**
      * Operation identityControllerResolveAsyncWithHttpInfo
      *
+     * Resolve signals to a canonical identity
+     *
      * @param  \Adviverse\Api\Model\ResolveIdentityDto $resolve_identity_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerResolve'] to see the possible values for this operation
      *
@@ -850,14 +1260,27 @@ class IdentityApi
      */
     public function identityControllerResolveAsyncWithHttpInfo($resolve_identity_dto, string $contentType = self::contentTypes['identityControllerResolve'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IdentityControllerResolve201Response';
         $request = $this->identityControllerResolveRequest($resolve_identity_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -908,7 +1331,7 @@ class IdentityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -945,6 +1368,15 @@ class IdentityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -970,25 +1402,30 @@ class IdentityApi
     /**
      * Operation identityControllerStats
      *
+     * Get identity graph counts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerStats'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\IdentityControllerStats200Response
      */
     public function identityControllerStats(string $contentType = self::contentTypes['identityControllerStats'][0])
     {
-        $this->identityControllerStatsWithHttpInfo($contentType);
+        list($response) = $this->identityControllerStatsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation identityControllerStatsWithHttpInfo
      *
+     * Get identity graph counts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerStats'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\IdentityControllerStats200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function identityControllerStatsWithHttpInfo(string $contentType = self::contentTypes['identityControllerStats'][0])
     {
@@ -1017,10 +1454,87 @@ class IdentityApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\IdentityControllerStats200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\IdentityControllerStats200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\IdentityControllerStats200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\IdentityControllerStats200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\IdentityControllerStats200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1028,6 +1542,8 @@ class IdentityApi
 
     /**
      * Operation identityControllerStatsAsync
+     *
+     * Get identity graph counts
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerStats'] to see the possible values for this operation
      *
@@ -1047,6 +1563,8 @@ class IdentityApi
     /**
      * Operation identityControllerStatsAsyncWithHttpInfo
      *
+     * Get identity graph counts
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['identityControllerStats'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1054,14 +1572,27 @@ class IdentityApi
      */
     public function identityControllerStatsAsyncWithHttpInfo(string $contentType = self::contentTypes['identityControllerStats'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\IdentityControllerStats200Response';
         $request = $this->identityControllerStatsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1104,7 +1635,7 @@ class IdentityApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1134,6 +1665,15 @@ class IdentityApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

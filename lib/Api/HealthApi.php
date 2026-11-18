@@ -128,25 +128,30 @@ class HealthApi
     /**
      * Operation healthControllerHealth
      *
+     * Control-plane health check
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerHealth'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\HealthControllerHealth200Response
      */
     public function healthControllerHealth(string $contentType = self::contentTypes['healthControllerHealth'][0])
     {
-        $this->healthControllerHealthWithHttpInfo($contentType);
+        list($response) = $this->healthControllerHealthWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation healthControllerHealthWithHttpInfo
      *
+     * Control-plane health check
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerHealth'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\HealthControllerHealth200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function healthControllerHealthWithHttpInfo(string $contentType = self::contentTypes['healthControllerHealth'][0])
     {
@@ -175,10 +180,87 @@ class HealthApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\HealthControllerHealth200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\HealthControllerHealth200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\HealthControllerHealth200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\HealthControllerHealth200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\HealthControllerHealth200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -186,6 +268,8 @@ class HealthApi
 
     /**
      * Operation healthControllerHealthAsync
+     *
+     * Control-plane health check
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerHealth'] to see the possible values for this operation
      *
@@ -205,6 +289,8 @@ class HealthApi
     /**
      * Operation healthControllerHealthAsyncWithHttpInfo
      *
+     * Control-plane health check
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerHealth'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -212,14 +298,27 @@ class HealthApi
      */
     public function healthControllerHealthAsyncWithHttpInfo(string $contentType = self::contentTypes['healthControllerHealth'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\HealthControllerHealth200Response';
         $request = $this->healthControllerHealthRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -262,7 +361,7 @@ class HealthApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -317,25 +416,30 @@ class HealthApi
     /**
      * Operation healthControllerMetrics
      *
+     * Prometheus metrics
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerMetrics'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return string
      */
     public function healthControllerMetrics(string $contentType = self::contentTypes['healthControllerMetrics'][0])
     {
-        $this->healthControllerMetricsWithHttpInfo($contentType);
+        list($response) = $this->healthControllerMetricsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation healthControllerMetricsWithHttpInfo
      *
+     * Prometheus metrics
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerMetrics'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of string, HTTP status code, HTTP response headers (array of strings)
      */
     public function healthControllerMetricsWithHttpInfo(string $contentType = self::contentTypes['healthControllerMetrics'][0])
     {
@@ -364,10 +468,87 @@ class HealthApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('string' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('string' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, 'string', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = 'string';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        'string',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -375,6 +556,8 @@ class HealthApi
 
     /**
      * Operation healthControllerMetricsAsync
+     *
+     * Prometheus metrics
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerMetrics'] to see the possible values for this operation
      *
@@ -394,6 +577,8 @@ class HealthApi
     /**
      * Operation healthControllerMetricsAsyncWithHttpInfo
      *
+     * Prometheus metrics
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['healthControllerMetrics'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -401,14 +586,27 @@ class HealthApi
      */
     public function healthControllerMetricsAsyncWithHttpInfo(string $contentType = self::contentTypes['healthControllerMetrics'][0])
     {
-        $returnType = '';
+        $returnType = 'string';
         $request = $this->healthControllerMetricsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -451,7 +649,7 @@ class HealthApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['text/plain', ],
             $contentType,
             $multipart
         );

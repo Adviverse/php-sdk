@@ -131,25 +131,30 @@ class VerificationApi
     /**
      * Operation verificationControllerCategories
      *
+     * List brand-safety categories
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerCategories'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]
      */
     public function verificationControllerCategories(string $contentType = self::contentTypes['verificationControllerCategories'][0])
     {
-        $this->verificationControllerCategoriesWithHttpInfo($contentType);
+        list($response) = $this->verificationControllerCategoriesWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation verificationControllerCategoriesWithHttpInfo
      *
+     * List brand-safety categories
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerCategories'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function verificationControllerCategoriesWithHttpInfo(string $contentType = self::contentTypes['verificationControllerCategories'][0])
     {
@@ -178,10 +183,87 @@ class VerificationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -189,6 +271,8 @@ class VerificationApi
 
     /**
      * Operation verificationControllerCategoriesAsync
+     *
+     * List brand-safety categories
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerCategories'] to see the possible values for this operation
      *
@@ -208,6 +292,8 @@ class VerificationApi
     /**
      * Operation verificationControllerCategoriesAsyncWithHttpInfo
      *
+     * List brand-safety categories
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerCategories'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -215,14 +301,27 @@ class VerificationApi
      */
     public function verificationControllerCategoriesAsyncWithHttpInfo(string $contentType = self::contentTypes['verificationControllerCategories'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\VerificationControllerCategories200ResponseInner[]';
         $request = $this->verificationControllerCategoriesRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -265,7 +364,7 @@ class VerificationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -295,6 +394,15 @@ class VerificationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -320,25 +428,30 @@ class VerificationApi
     /**
      * Operation verificationControllerGetSettings
      *
+     * Get your verification and brand-safety settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerGetSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewVerificationSettings
      */
     public function verificationControllerGetSettings(string $contentType = self::contentTypes['verificationControllerGetSettings'][0])
     {
-        $this->verificationControllerGetSettingsWithHttpInfo($contentType);
+        list($response) = $this->verificationControllerGetSettingsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation verificationControllerGetSettingsWithHttpInfo
      *
+     * Get your verification and brand-safety settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerGetSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewVerificationSettings, HTTP status code, HTTP response headers (array of strings)
      */
     public function verificationControllerGetSettingsWithHttpInfo(string $contentType = self::contentTypes['verificationControllerGetSettings'][0])
     {
@@ -367,10 +480,87 @@ class VerificationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewVerificationSettings' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewVerificationSettings' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewVerificationSettings', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewVerificationSettings';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewVerificationSettings',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -378,6 +568,8 @@ class VerificationApi
 
     /**
      * Operation verificationControllerGetSettingsAsync
+     *
+     * Get your verification and brand-safety settings
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerGetSettings'] to see the possible values for this operation
      *
@@ -397,6 +589,8 @@ class VerificationApi
     /**
      * Operation verificationControllerGetSettingsAsyncWithHttpInfo
      *
+     * Get your verification and brand-safety settings
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerGetSettings'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -404,14 +598,27 @@ class VerificationApi
      */
     public function verificationControllerGetSettingsAsyncWithHttpInfo(string $contentType = self::contentTypes['verificationControllerGetSettings'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewVerificationSettings';
         $request = $this->verificationControllerGetSettingsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -454,7 +661,7 @@ class VerificationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -484,6 +691,15 @@ class VerificationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -509,27 +725,32 @@ class VerificationApi
     /**
      * Operation verificationControllerPutSettings
      *
+     * Save your verification and brand-safety settings
+     *
      * @param  \Adviverse\Api\Model\PutSettingsDto $put_settings_dto put_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerPutSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\RewVerificationSettings
      */
     public function verificationControllerPutSettings($put_settings_dto, string $contentType = self::contentTypes['verificationControllerPutSettings'][0])
     {
-        $this->verificationControllerPutSettingsWithHttpInfo($put_settings_dto, $contentType);
+        list($response) = $this->verificationControllerPutSettingsWithHttpInfo($put_settings_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation verificationControllerPutSettingsWithHttpInfo
+     *
+     * Save your verification and brand-safety settings
      *
      * @param  \Adviverse\Api\Model\PutSettingsDto $put_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerPutSettings'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\RewVerificationSettings, HTTP status code, HTTP response headers (array of strings)
      */
     public function verificationControllerPutSettingsWithHttpInfo($put_settings_dto, string $contentType = self::contentTypes['verificationControllerPutSettings'][0])
     {
@@ -558,10 +779,87 @@ class VerificationApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\RewVerificationSettings' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\RewVerificationSettings' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\RewVerificationSettings', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\RewVerificationSettings';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\RewVerificationSettings',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -569,6 +867,8 @@ class VerificationApi
 
     /**
      * Operation verificationControllerPutSettingsAsync
+     *
+     * Save your verification and brand-safety settings
      *
      * @param  \Adviverse\Api\Model\PutSettingsDto $put_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerPutSettings'] to see the possible values for this operation
@@ -589,6 +889,8 @@ class VerificationApi
     /**
      * Operation verificationControllerPutSettingsAsyncWithHttpInfo
      *
+     * Save your verification and brand-safety settings
+     *
      * @param  \Adviverse\Api\Model\PutSettingsDto $put_settings_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['verificationControllerPutSettings'] to see the possible values for this operation
      *
@@ -597,14 +899,27 @@ class VerificationApi
      */
     public function verificationControllerPutSettingsAsyncWithHttpInfo($put_settings_dto, string $contentType = self::contentTypes['verificationControllerPutSettings'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\RewVerificationSettings';
         $request = $this->verificationControllerPutSettingsRequest($put_settings_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -655,7 +970,7 @@ class VerificationApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -692,6 +1007,15 @@ class VerificationApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

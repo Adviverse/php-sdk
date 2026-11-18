@@ -194,25 +194,30 @@ class AgencyApi
     /**
      * Operation agencyControllerAcceptTransfer
      *
+     * Accept a pixel transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAcceptTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response
      */
     public function agencyControllerAcceptTransfer(string $contentType = self::contentTypes['agencyControllerAcceptTransfer'][0])
     {
-        $this->agencyControllerAcceptTransferWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerAcceptTransferWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerAcceptTransferWithHttpInfo
      *
+     * Accept a pixel transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAcceptTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerAcceptTransferWithHttpInfo(string $contentType = self::contentTypes['agencyControllerAcceptTransfer'][0])
     {
@@ -241,10 +246,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -252,6 +334,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerAcceptTransferAsync
+     *
+     * Accept a pixel transfer
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAcceptTransfer'] to see the possible values for this operation
      *
@@ -271,6 +355,8 @@ class AgencyApi
     /**
      * Operation agencyControllerAcceptTransferAsyncWithHttpInfo
      *
+     * Accept a pixel transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAcceptTransfer'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -278,14 +364,27 @@ class AgencyApi
      */
     public function agencyControllerAcceptTransferAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerAcceptTransfer'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerAcceptTransfer201Response';
         $request = $this->agencyControllerAcceptTransferRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -328,7 +427,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -358,6 +457,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -383,27 +491,32 @@ class AgencyApi
     /**
      * Operation agencyControllerAddItem
      *
+     * Add a line item to a draft invoice
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAddItem'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerAddItem($id, string $contentType = self::contentTypes['agencyControllerAddItem'][0])
     {
-        $this->agencyControllerAddItemWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerAddItemWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerAddItemWithHttpInfo
+     *
+     * Add a line item to a draft invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAddItem'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerAddItemWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerAddItem'][0])
     {
@@ -432,10 +545,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -443,6 +633,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerAddItemAsync
+     *
+     * Add a line item to a draft invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAddItem'] to see the possible values for this operation
@@ -463,6 +655,8 @@ class AgencyApi
     /**
      * Operation agencyControllerAddItemAsyncWithHttpInfo
      *
+     * Add a line item to a draft invoice
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerAddItem'] to see the possible values for this operation
      *
@@ -471,14 +665,27 @@ class AgencyApi
      */
     public function agencyControllerAddItemAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerAddItem'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerAddItemRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -537,7 +744,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -567,6 +774,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -592,27 +808,32 @@ class AgencyApi
     /**
      * Operation agencyControllerCancelTransfer
      *
+     * Cancel a pending pixel transfer
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCancelTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerCancelTransfer201Response
      */
     public function agencyControllerCancelTransfer($id, string $contentType = self::contentTypes['agencyControllerCancelTransfer'][0])
     {
-        $this->agencyControllerCancelTransferWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerCancelTransferWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerCancelTransferWithHttpInfo
+     *
+     * Cancel a pending pixel transfer
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCancelTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerCancelTransfer201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerCancelTransferWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerCancelTransfer'][0])
     {
@@ -641,10 +862,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -652,6 +950,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerCancelTransferAsync
+     *
+     * Cancel a pending pixel transfer
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCancelTransfer'] to see the possible values for this operation
@@ -672,6 +972,8 @@ class AgencyApi
     /**
      * Operation agencyControllerCancelTransferAsyncWithHttpInfo
      *
+     * Cancel a pending pixel transfer
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCancelTransfer'] to see the possible values for this operation
      *
@@ -680,14 +982,27 @@ class AgencyApi
      */
     public function agencyControllerCancelTransferAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerCancelTransfer'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerCancelTransfer201Response';
         $request = $this->agencyControllerCancelTransferRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -746,7 +1061,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -776,6 +1091,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -801,6 +1125,8 @@ class AgencyApi
     /**
      * Operation agencyControllerClientSpend
      *
+     * Get spend and delivery for a client
+     *
      * @param  string $id id (required)
      * @param  string $from from (required)
      * @param  string $to to (required)
@@ -808,15 +1134,18 @@ class AgencyApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerClientSpend200Response
      */
     public function agencyControllerClientSpend($id, $from, $to, string $contentType = self::contentTypes['agencyControllerClientSpend'][0])
     {
-        $this->agencyControllerClientSpendWithHttpInfo($id, $from, $to, $contentType);
+        list($response) = $this->agencyControllerClientSpendWithHttpInfo($id, $from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerClientSpendWithHttpInfo
+     *
+     * Get spend and delivery for a client
      *
      * @param  string $id (required)
      * @param  string $from (required)
@@ -825,7 +1154,7 @@ class AgencyApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerClientSpend200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerClientSpendWithHttpInfo($id, $from, $to, string $contentType = self::contentTypes['agencyControllerClientSpend'][0])
     {
@@ -854,10 +1183,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyControllerClientSpend200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerClientSpend200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerClientSpend200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerClientSpend200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerClientSpend200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -865,6 +1271,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerClientSpendAsync
+     *
+     * Get spend and delivery for a client
      *
      * @param  string $id (required)
      * @param  string $from (required)
@@ -887,6 +1295,8 @@ class AgencyApi
     /**
      * Operation agencyControllerClientSpendAsyncWithHttpInfo
      *
+     * Get spend and delivery for a client
+     *
      * @param  string $id (required)
      * @param  string $from (required)
      * @param  string $to (required)
@@ -897,14 +1307,27 @@ class AgencyApi
      */
     public function agencyControllerClientSpendAsyncWithHttpInfo($id, $from, $to, string $contentType = self::contentTypes['agencyControllerClientSpend'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerClientSpend200Response';
         $request = $this->agencyControllerClientSpendRequest($id, $from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -997,7 +1420,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1027,6 +1450,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1052,25 +1484,30 @@ class AgencyApi
     /**
      * Operation agencyControllerCreateClient
      *
+     * Create an agency client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyClient
      */
     public function agencyControllerCreateClient(string $contentType = self::contentTypes['agencyControllerCreateClient'][0])
     {
-        $this->agencyControllerCreateClientWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerCreateClientWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerCreateClientWithHttpInfo
      *
+     * Create an agency client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyClient, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerCreateClientWithHttpInfo(string $contentType = self::contentTypes['agencyControllerCreateClient'][0])
     {
@@ -1099,10 +1536,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyClient' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyClient' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyClient', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyClient';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyClient',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1110,6 +1624,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerCreateClientAsync
+     *
+     * Create an agency client
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateClient'] to see the possible values for this operation
      *
@@ -1129,6 +1645,8 @@ class AgencyApi
     /**
      * Operation agencyControllerCreateClientAsyncWithHttpInfo
      *
+     * Create an agency client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateClient'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1136,14 +1654,27 @@ class AgencyApi
      */
     public function agencyControllerCreateClientAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerCreateClient'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyClient';
         $request = $this->agencyControllerCreateClientRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1186,7 +1717,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1216,6 +1747,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1241,25 +1781,30 @@ class AgencyApi
     /**
      * Operation agencyControllerCreateInvoice
      *
+     * Create a draft invoice for a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerCreateInvoice(string $contentType = self::contentTypes['agencyControllerCreateInvoice'][0])
     {
-        $this->agencyControllerCreateInvoiceWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerCreateInvoiceWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerCreateInvoiceWithHttpInfo
      *
+     * Create a draft invoice for a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerCreateInvoiceWithHttpInfo(string $contentType = self::contentTypes['agencyControllerCreateInvoice'][0])
     {
@@ -1288,10 +1833,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1299,6 +1921,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerCreateInvoiceAsync
+     *
+     * Create a draft invoice for a client
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateInvoice'] to see the possible values for this operation
      *
@@ -1318,6 +1942,8 @@ class AgencyApi
     /**
      * Operation agencyControllerCreateInvoiceAsyncWithHttpInfo
      *
+     * Create a draft invoice for a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerCreateInvoice'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1325,14 +1951,27 @@ class AgencyApi
      */
     public function agencyControllerCreateInvoiceAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerCreateInvoice'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerCreateInvoiceRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1375,7 +2014,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1405,6 +2044,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1430,27 +2078,32 @@ class AgencyApi
     /**
      * Operation agencyControllerGetClient
      *
+     * Get an agency client
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyClient
      */
     public function agencyControllerGetClient($id, string $contentType = self::contentTypes['agencyControllerGetClient'][0])
     {
-        $this->agencyControllerGetClientWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerGetClientWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerGetClientWithHttpInfo
+     *
+     * Get an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyClient, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerGetClientWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerGetClient'][0])
     {
@@ -1479,10 +2132,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyClient' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyClient' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyClient', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyClient';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyClient',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1490,6 +2220,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerGetClientAsync
+     *
+     * Get an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetClient'] to see the possible values for this operation
@@ -1510,6 +2242,8 @@ class AgencyApi
     /**
      * Operation agencyControllerGetClientAsyncWithHttpInfo
      *
+     * Get an agency client
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetClient'] to see the possible values for this operation
      *
@@ -1518,14 +2252,27 @@ class AgencyApi
      */
     public function agencyControllerGetClientAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerGetClient'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyClient';
         $request = $this->agencyControllerGetClientRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1584,7 +2331,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1614,6 +2361,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1639,27 +2395,32 @@ class AgencyApi
     /**
      * Operation agencyControllerGetInvoice
      *
+     * Get an invoice with line items
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerGetInvoice($id, string $contentType = self::contentTypes['agencyControllerGetInvoice'][0])
     {
-        $this->agencyControllerGetInvoiceWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerGetInvoiceWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerGetInvoiceWithHttpInfo
+     *
+     * Get an invoice with line items
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerGetInvoiceWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerGetInvoice'][0])
     {
@@ -1688,10 +2449,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1699,6 +2537,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerGetInvoiceAsync
+     *
+     * Get an invoice with line items
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetInvoice'] to see the possible values for this operation
@@ -1719,6 +2559,8 @@ class AgencyApi
     /**
      * Operation agencyControllerGetInvoiceAsyncWithHttpInfo
      *
+     * Get an invoice with line items
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerGetInvoice'] to see the possible values for this operation
      *
@@ -1727,14 +2569,27 @@ class AgencyApi
      */
     public function agencyControllerGetInvoiceAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerGetInvoice'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerGetInvoiceRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1793,7 +2648,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1823,6 +2678,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1848,25 +2712,30 @@ class AgencyApi
     /**
      * Operation agencyControllerInitiateTransfer
      *
+     * Start a pixel ownership transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerInitiateTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyTransfer
      */
     public function agencyControllerInitiateTransfer(string $contentType = self::contentTypes['agencyControllerInitiateTransfer'][0])
     {
-        $this->agencyControllerInitiateTransferWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerInitiateTransferWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerInitiateTransferWithHttpInfo
      *
+     * Start a pixel ownership transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerInitiateTransfer'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyTransfer, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerInitiateTransferWithHttpInfo(string $contentType = self::contentTypes['agencyControllerInitiateTransfer'][0])
     {
@@ -1895,10 +2764,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyTransfer' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyTransfer' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyTransfer', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyTransfer';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyTransfer',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1906,6 +2852,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerInitiateTransferAsync
+     *
+     * Start a pixel ownership transfer
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerInitiateTransfer'] to see the possible values for this operation
      *
@@ -1925,6 +2873,8 @@ class AgencyApi
     /**
      * Operation agencyControllerInitiateTransferAsyncWithHttpInfo
      *
+     * Start a pixel ownership transfer
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerInitiateTransfer'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1932,14 +2882,27 @@ class AgencyApi
      */
     public function agencyControllerInitiateTransferAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerInitiateTransfer'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyTransfer';
         $request = $this->agencyControllerInitiateTransferRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1982,7 +2945,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2012,6 +2975,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2037,25 +3009,30 @@ class AgencyApi
     /**
      * Operation agencyControllerListClients
      *
+     * List agency clients
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListClients'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyClient[]
      */
     public function agencyControllerListClients(string $contentType = self::contentTypes['agencyControllerListClients'][0])
     {
-        $this->agencyControllerListClientsWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerListClientsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerListClientsWithHttpInfo
      *
+     * List agency clients
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListClients'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyClient[], HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerListClientsWithHttpInfo(string $contentType = self::contentTypes['agencyControllerListClients'][0])
     {
@@ -2084,10 +3061,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyClient[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyClient[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyClient[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyClient[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyClient[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2095,6 +3149,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerListClientsAsync
+     *
+     * List agency clients
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListClients'] to see the possible values for this operation
      *
@@ -2114,6 +3170,8 @@ class AgencyApi
     /**
      * Operation agencyControllerListClientsAsyncWithHttpInfo
      *
+     * List agency clients
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListClients'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2121,14 +3179,27 @@ class AgencyApi
      */
     public function agencyControllerListClientsAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerListClients'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyClient[]';
         $request = $this->agencyControllerListClientsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2171,7 +3242,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2201,6 +3272,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2226,27 +3306,32 @@ class AgencyApi
     /**
      * Operation agencyControllerListInvoices
      *
+     * List agency invoices
+     *
      * @param  string $client_id client_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListInvoices'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice[]
      */
     public function agencyControllerListInvoices($client_id, string $contentType = self::contentTypes['agencyControllerListInvoices'][0])
     {
-        $this->agencyControllerListInvoicesWithHttpInfo($client_id, $contentType);
+        list($response) = $this->agencyControllerListInvoicesWithHttpInfo($client_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerListInvoicesWithHttpInfo
+     *
+     * List agency invoices
      *
      * @param  string $client_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListInvoices'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice[], HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerListInvoicesWithHttpInfo($client_id, string $contentType = self::contentTypes['agencyControllerListInvoices'][0])
     {
@@ -2275,10 +3360,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyInvoice[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2286,6 +3448,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerListInvoicesAsync
+     *
+     * List agency invoices
      *
      * @param  string $client_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListInvoices'] to see the possible values for this operation
@@ -2306,6 +3470,8 @@ class AgencyApi
     /**
      * Operation agencyControllerListInvoicesAsyncWithHttpInfo
      *
+     * List agency invoices
+     *
      * @param  string $client_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListInvoices'] to see the possible values for this operation
      *
@@ -2314,14 +3480,27 @@ class AgencyApi
      */
     public function agencyControllerListInvoicesAsyncWithHttpInfo($client_id, string $contentType = self::contentTypes['agencyControllerListInvoices'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice[]';
         $request = $this->agencyControllerListInvoicesRequest($client_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2381,7 +3560,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2411,6 +3590,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2436,25 +3624,30 @@ class AgencyApi
     /**
      * Operation agencyControllerListTransfers
      *
+     * List outgoing pixel transfers
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListTransfers'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyTransfer[]
      */
     public function agencyControllerListTransfers(string $contentType = self::contentTypes['agencyControllerListTransfers'][0])
     {
-        $this->agencyControllerListTransfersWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerListTransfersWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerListTransfersWithHttpInfo
      *
+     * List outgoing pixel transfers
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListTransfers'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyTransfer[], HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerListTransfersWithHttpInfo(string $contentType = self::contentTypes['agencyControllerListTransfers'][0])
     {
@@ -2483,10 +3676,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyTransfer[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyTransfer[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyTransfer[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyTransfer[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyTransfer[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2494,6 +3764,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerListTransfersAsync
+     *
+     * List outgoing pixel transfers
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListTransfers'] to see the possible values for this operation
      *
@@ -2513,6 +3785,8 @@ class AgencyApi
     /**
      * Operation agencyControllerListTransfersAsyncWithHttpInfo
      *
+     * List outgoing pixel transfers
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerListTransfers'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2520,14 +3794,27 @@ class AgencyApi
      */
     public function agencyControllerListTransfersAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerListTransfers'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyTransfer[]';
         $request = $this->agencyControllerListTransfersRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2570,7 +3857,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2600,6 +3887,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2625,27 +3921,32 @@ class AgencyApi
     /**
      * Operation agencyControllerMarkPaid
      *
+     * Mark an invoice paid manually
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerMarkPaid'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerMarkPaid($id, string $contentType = self::contentTypes['agencyControllerMarkPaid'][0])
     {
-        $this->agencyControllerMarkPaidWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerMarkPaidWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerMarkPaidWithHttpInfo
+     *
+     * Mark an invoice paid manually
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerMarkPaid'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerMarkPaidWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerMarkPaid'][0])
     {
@@ -2674,10 +3975,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2685,6 +4063,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerMarkPaidAsync
+     *
+     * Mark an invoice paid manually
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerMarkPaid'] to see the possible values for this operation
@@ -2705,6 +4085,8 @@ class AgencyApi
     /**
      * Operation agencyControllerMarkPaidAsyncWithHttpInfo
      *
+     * Mark an invoice paid manually
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerMarkPaid'] to see the possible values for this operation
      *
@@ -2713,14 +4095,27 @@ class AgencyApi
      */
     public function agencyControllerMarkPaidAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerMarkPaid'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerMarkPaidRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2779,7 +4174,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2809,6 +4204,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2834,27 +4238,32 @@ class AgencyApi
     /**
      * Operation agencyControllerPayInfo
      *
+     * Get the public view of an invoice
+     *
      * @param  string $token token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerPayInfo'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerPayInfo200Response
      */
     public function agencyControllerPayInfo($token, string $contentType = self::contentTypes['agencyControllerPayInfo'][0])
     {
-        $this->agencyControllerPayInfoWithHttpInfo($token, $contentType);
+        list($response) = $this->agencyControllerPayInfoWithHttpInfo($token, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerPayInfoWithHttpInfo
+     *
+     * Get the public view of an invoice
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerPayInfo'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerPayInfo200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerPayInfoWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerPayInfo'][0])
     {
@@ -2883,10 +4292,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyControllerPayInfo200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerPayInfo200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerPayInfo200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerPayInfo200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerPayInfo200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2894,6 +4380,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerPayInfoAsync
+     *
+     * Get the public view of an invoice
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerPayInfo'] to see the possible values for this operation
@@ -2914,6 +4402,8 @@ class AgencyApi
     /**
      * Operation agencyControllerPayInfoAsyncWithHttpInfo
      *
+     * Get the public view of an invoice
+     *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerPayInfo'] to see the possible values for this operation
      *
@@ -2922,14 +4412,27 @@ class AgencyApi
      */
     public function agencyControllerPayInfoAsyncWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerPayInfo'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerPayInfo200Response';
         $request = $this->agencyControllerPayInfoRequest($token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2988,7 +4491,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3043,27 +4546,32 @@ class AgencyApi
     /**
      * Operation agencyControllerRemoveClient
      *
+     * Delete an agency client
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\PixelControllerDeletePixel200Response
      */
     public function agencyControllerRemoveClient($id, string $contentType = self::contentTypes['agencyControllerRemoveClient'][0])
     {
-        $this->agencyControllerRemoveClientWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerRemoveClientWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerRemoveClientWithHttpInfo
+     *
+     * Delete an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\PixelControllerDeletePixel200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerRemoveClientWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerRemoveClient'][0])
     {
@@ -3092,10 +4600,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\PixelControllerDeletePixel200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\PixelControllerDeletePixel200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\PixelControllerDeletePixel200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3103,6 +4688,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerRemoveClientAsync
+     *
+     * Delete an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveClient'] to see the possible values for this operation
@@ -3123,6 +4710,8 @@ class AgencyApi
     /**
      * Operation agencyControllerRemoveClientAsyncWithHttpInfo
      *
+     * Delete an agency client
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveClient'] to see the possible values for this operation
      *
@@ -3131,14 +4720,27 @@ class AgencyApi
      */
     public function agencyControllerRemoveClientAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerRemoveClient'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\PixelControllerDeletePixel200Response';
         $request = $this->agencyControllerRemoveClientRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3197,7 +4799,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3227,6 +4829,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3252,21 +4863,26 @@ class AgencyApi
     /**
      * Operation agencyControllerRemoveItem
      *
+     * Remove a line item from a draft invoice
+     *
      * @param  string $id id (required)
      * @param  string $item_id item_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveItem'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerRemoveItem($id, $item_id, string $contentType = self::contentTypes['agencyControllerRemoveItem'][0])
     {
-        $this->agencyControllerRemoveItemWithHttpInfo($id, $item_id, $contentType);
+        list($response) = $this->agencyControllerRemoveItemWithHttpInfo($id, $item_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerRemoveItemWithHttpInfo
+     *
+     * Remove a line item from a draft invoice
      *
      * @param  string $id (required)
      * @param  string $item_id (required)
@@ -3274,7 +4890,7 @@ class AgencyApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerRemoveItemWithHttpInfo($id, $item_id, string $contentType = self::contentTypes['agencyControllerRemoveItem'][0])
     {
@@ -3303,10 +4919,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3314,6 +5007,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerRemoveItemAsync
+     *
+     * Remove a line item from a draft invoice
      *
      * @param  string $id (required)
      * @param  string $item_id (required)
@@ -3335,6 +5030,8 @@ class AgencyApi
     /**
      * Operation agencyControllerRemoveItemAsyncWithHttpInfo
      *
+     * Remove a line item from a draft invoice
+     *
      * @param  string $id (required)
      * @param  string $item_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerRemoveItem'] to see the possible values for this operation
@@ -3344,14 +5041,27 @@ class AgencyApi
      */
     public function agencyControllerRemoveItemAsyncWithHttpInfo($id, $item_id, string $contentType = self::contentTypes['agencyControllerRemoveItem'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerRemoveItemRequest($id, $item_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3426,7 +5136,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3456,6 +5166,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3481,27 +5200,32 @@ class AgencyApi
     /**
      * Operation agencyControllerSendInvoice
      *
+     * Send an invoice and mint its pay link
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerSendInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerSendInvoice($id, string $contentType = self::contentTypes['agencyControllerSendInvoice'][0])
     {
-        $this->agencyControllerSendInvoiceWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerSendInvoiceWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerSendInvoiceWithHttpInfo
+     *
+     * Send an invoice and mint its pay link
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerSendInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerSendInvoiceWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerSendInvoice'][0])
     {
@@ -3530,10 +5254,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3541,6 +5342,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerSendInvoiceAsync
+     *
+     * Send an invoice and mint its pay link
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerSendInvoice'] to see the possible values for this operation
@@ -3561,6 +5364,8 @@ class AgencyApi
     /**
      * Operation agencyControllerSendInvoiceAsyncWithHttpInfo
      *
+     * Send an invoice and mint its pay link
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerSendInvoice'] to see the possible values for this operation
      *
@@ -3569,14 +5374,27 @@ class AgencyApi
      */
     public function agencyControllerSendInvoiceAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerSendInvoice'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerSendInvoiceRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3635,7 +5453,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3665,6 +5483,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3690,27 +5517,32 @@ class AgencyApi
     /**
      * Operation agencyControllerStartPayment
      *
+     * Start paying an invoice
+     *
      * @param  string $token token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerStartPayment'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerStartPayment201Response
      */
     public function agencyControllerStartPayment($token, string $contentType = self::contentTypes['agencyControllerStartPayment'][0])
     {
-        $this->agencyControllerStartPaymentWithHttpInfo($token, $contentType);
+        list($response) = $this->agencyControllerStartPaymentWithHttpInfo($token, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerStartPaymentWithHttpInfo
+     *
+     * Start paying an invoice
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerStartPayment'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerStartPayment201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerStartPaymentWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerStartPayment'][0])
     {
@@ -3739,10 +5571,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyControllerStartPayment201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerStartPayment201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerStartPayment201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerStartPayment201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerStartPayment201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3750,6 +5659,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerStartPaymentAsync
+     *
+     * Start paying an invoice
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerStartPayment'] to see the possible values for this operation
@@ -3770,6 +5681,8 @@ class AgencyApi
     /**
      * Operation agencyControllerStartPaymentAsyncWithHttpInfo
      *
+     * Start paying an invoice
+     *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerStartPayment'] to see the possible values for this operation
      *
@@ -3778,14 +5691,27 @@ class AgencyApi
      */
     public function agencyControllerStartPaymentAsyncWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerStartPayment'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerStartPayment201Response';
         $request = $this->agencyControllerStartPaymentRequest($token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3844,7 +5770,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3899,25 +5825,30 @@ class AgencyApi
     /**
      * Operation agencyControllerTagCampaign
      *
+     * Tag or untag a campaign to a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTagCampaign'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerTagCampaign201Response
      */
     public function agencyControllerTagCampaign(string $contentType = self::contentTypes['agencyControllerTagCampaign'][0])
     {
-        $this->agencyControllerTagCampaignWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerTagCampaignWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerTagCampaignWithHttpInfo
      *
+     * Tag or untag a campaign to a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTagCampaign'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerTagCampaign201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerTagCampaignWithHttpInfo(string $contentType = self::contentTypes['agencyControllerTagCampaign'][0])
     {
@@ -3946,10 +5877,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyControllerTagCampaign201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerTagCampaign201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerTagCampaign201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerTagCampaign201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerTagCampaign201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3957,6 +5965,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerTagCampaignAsync
+     *
+     * Tag or untag a campaign to a client
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTagCampaign'] to see the possible values for this operation
      *
@@ -3976,6 +5986,8 @@ class AgencyApi
     /**
      * Operation agencyControllerTagCampaignAsyncWithHttpInfo
      *
+     * Tag or untag a campaign to a client
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTagCampaign'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -3983,14 +5995,27 @@ class AgencyApi
      */
     public function agencyControllerTagCampaignAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerTagCampaign'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerTagCampaign201Response';
         $request = $this->agencyControllerTagCampaignRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4033,7 +6058,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4063,6 +6088,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4088,25 +6122,30 @@ class AgencyApi
     /**
      * Operation agencyControllerTaggable
      *
+     * List campaigns available for client tagging
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTaggable'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]
      */
     public function agencyControllerTaggable(string $contentType = self::contentTypes['agencyControllerTaggable'][0])
     {
-        $this->agencyControllerTaggableWithHttpInfo($contentType);
+        list($response) = $this->agencyControllerTaggableWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerTaggableWithHttpInfo
      *
+     * List campaigns available for client tagging
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTaggable'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerTaggableWithHttpInfo(string $contentType = self::contentTypes['agencyControllerTaggable'][0])
     {
@@ -4135,10 +6174,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4146,6 +6262,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerTaggableAsync
+     *
+     * List campaigns available for client tagging
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTaggable'] to see the possible values for this operation
      *
@@ -4165,6 +6283,8 @@ class AgencyApi
     /**
      * Operation agencyControllerTaggableAsyncWithHttpInfo
      *
+     * List campaigns available for client tagging
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTaggable'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -4172,14 +6292,27 @@ class AgencyApi
      */
     public function agencyControllerTaggableAsyncWithHttpInfo(string $contentType = self::contentTypes['agencyControllerTaggable'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerTaggable200ResponseInner[]';
         $request = $this->agencyControllerTaggableRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4222,7 +6355,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4252,6 +6385,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4277,27 +6419,32 @@ class AgencyApi
     /**
      * Operation agencyControllerTransferInfo
      *
+     * Preview a pixel transfer by token
+     *
      * @param  string $token token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTransferInfo'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyControllerTransferInfo200Response
      */
     public function agencyControllerTransferInfo($token, string $contentType = self::contentTypes['agencyControllerTransferInfo'][0])
     {
-        $this->agencyControllerTransferInfoWithHttpInfo($token, $contentType);
+        list($response) = $this->agencyControllerTransferInfoWithHttpInfo($token, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerTransferInfoWithHttpInfo
+     *
+     * Preview a pixel transfer by token
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTransferInfo'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyControllerTransferInfo200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerTransferInfoWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerTransferInfo'][0])
     {
@@ -4326,10 +6473,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AgencyControllerTransferInfo200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyControllerTransferInfo200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyControllerTransferInfo200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyControllerTransferInfo200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyControllerTransferInfo200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4337,6 +6561,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerTransferInfoAsync
+     *
+     * Preview a pixel transfer by token
      *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTransferInfo'] to see the possible values for this operation
@@ -4357,6 +6583,8 @@ class AgencyApi
     /**
      * Operation agencyControllerTransferInfoAsyncWithHttpInfo
      *
+     * Preview a pixel transfer by token
+     *
      * @param  string $token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerTransferInfo'] to see the possible values for this operation
      *
@@ -4365,14 +6593,27 @@ class AgencyApi
      */
     public function agencyControllerTransferInfoAsyncWithHttpInfo($token, string $contentType = self::contentTypes['agencyControllerTransferInfo'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyControllerTransferInfo200Response';
         $request = $this->agencyControllerTransferInfoRequest($token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4432,7 +6673,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4462,6 +6703,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4487,27 +6737,32 @@ class AgencyApi
     /**
      * Operation agencyControllerUpdateClient
      *
+     * Update an agency client
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyClient
      */
     public function agencyControllerUpdateClient($id, string $contentType = self::contentTypes['agencyControllerUpdateClient'][0])
     {
-        $this->agencyControllerUpdateClientWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerUpdateClientWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerUpdateClientWithHttpInfo
+     *
+     * Update an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateClient'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyClient, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerUpdateClientWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerUpdateClient'][0])
     {
@@ -4536,10 +6791,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyClient' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyClient' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyClient', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyClient';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyClient',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4547,6 +6879,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerUpdateClientAsync
+     *
+     * Update an agency client
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateClient'] to see the possible values for this operation
@@ -4567,6 +6901,8 @@ class AgencyApi
     /**
      * Operation agencyControllerUpdateClientAsyncWithHttpInfo
      *
+     * Update an agency client
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateClient'] to see the possible values for this operation
      *
@@ -4575,14 +6911,27 @@ class AgencyApi
      */
     public function agencyControllerUpdateClientAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerUpdateClient'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyClient';
         $request = $this->agencyControllerUpdateClientRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4641,7 +6990,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4671,6 +7020,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4696,27 +7054,32 @@ class AgencyApi
     /**
      * Operation agencyControllerUpdateInvoice
      *
+     * Update a draft invoice
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerUpdateInvoice($id, string $contentType = self::contentTypes['agencyControllerUpdateInvoice'][0])
     {
-        $this->agencyControllerUpdateInvoiceWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerUpdateInvoiceWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerUpdateInvoiceWithHttpInfo
+     *
+     * Update a draft invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerUpdateInvoiceWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerUpdateInvoice'][0])
     {
@@ -4745,10 +7108,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4756,6 +7196,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerUpdateInvoiceAsync
+     *
+     * Update a draft invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateInvoice'] to see the possible values for this operation
@@ -4776,6 +7218,8 @@ class AgencyApi
     /**
      * Operation agencyControllerUpdateInvoiceAsyncWithHttpInfo
      *
+     * Update a draft invoice
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerUpdateInvoice'] to see the possible values for this operation
      *
@@ -4784,14 +7228,27 @@ class AgencyApi
      */
     public function agencyControllerUpdateInvoiceAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerUpdateInvoice'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerUpdateInvoiceRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -4850,7 +7307,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -4880,6 +7337,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -4905,27 +7371,32 @@ class AgencyApi
     /**
      * Operation agencyControllerVoidInvoice
      *
+     * Void an invoice
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerVoidInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AgencyInvoice
      */
     public function agencyControllerVoidInvoice($id, string $contentType = self::contentTypes['agencyControllerVoidInvoice'][0])
     {
-        $this->agencyControllerVoidInvoiceWithHttpInfo($id, $contentType);
+        list($response) = $this->agencyControllerVoidInvoiceWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation agencyControllerVoidInvoiceWithHttpInfo
+     *
+     * Void an invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerVoidInvoice'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AgencyInvoice, HTTP status code, HTTP response headers (array of strings)
      */
     public function agencyControllerVoidInvoiceWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerVoidInvoice'][0])
     {
@@ -4954,10 +7425,87 @@ class AgencyApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AgencyInvoice' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AgencyInvoice' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AgencyInvoice', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AgencyInvoice';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AgencyInvoice',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -4965,6 +7513,8 @@ class AgencyApi
 
     /**
      * Operation agencyControllerVoidInvoiceAsync
+     *
+     * Void an invoice
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerVoidInvoice'] to see the possible values for this operation
@@ -4985,6 +7535,8 @@ class AgencyApi
     /**
      * Operation agencyControllerVoidInvoiceAsyncWithHttpInfo
      *
+     * Void an invoice
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['agencyControllerVoidInvoice'] to see the possible values for this operation
      *
@@ -4993,14 +7545,27 @@ class AgencyApi
      */
     public function agencyControllerVoidInvoiceAsyncWithHttpInfo($id, string $contentType = self::contentTypes['agencyControllerVoidInvoice'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AgencyInvoice';
         $request = $this->agencyControllerVoidInvoiceRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -5059,7 +7624,7 @@ class AgencyApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -5089,6 +7654,15 @@ class AgencyApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

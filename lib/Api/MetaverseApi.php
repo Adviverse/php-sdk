@@ -167,25 +167,30 @@ class MetaverseApi
     /**
      * Operation metaverseControllerAdminWorlds
      *
+     * List all world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdminWorlds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]
      */
     public function metaverseControllerAdminWorlds(string $contentType = self::contentTypes['metaverseControllerAdminWorlds'][0])
     {
-        $this->metaverseControllerAdminWorldsWithHttpInfo($contentType);
+        list($response) = $this->metaverseControllerAdminWorldsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerAdminWorldsWithHttpInfo
      *
+     * List all world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdminWorlds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerAdminWorldsWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerAdminWorlds'][0])
     {
@@ -214,10 +219,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -225,6 +307,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerAdminWorldsAsync
+     *
+     * List all world integrations
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdminWorlds'] to see the possible values for this operation
      *
@@ -244,6 +328,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerAdminWorldsAsyncWithHttpInfo
      *
+     * List all world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdminWorlds'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -251,14 +337,27 @@ class MetaverseApi
      */
     public function metaverseControllerAdminWorldsAsyncWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerAdminWorlds'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerAdminWorlds200ResponseInner[]';
         $request = $this->metaverseControllerAdminWorldsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -301,7 +400,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -331,6 +430,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -356,21 +464,26 @@ class MetaverseApi
     /**
      * Operation metaverseControllerAdvertiserViews
      *
+     * Get metaverse proof-of-view for your campaigns
+     *
      * @param  string $from from (required)
      * @param  string $to to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdvertiserViews'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupSurfaceReport
      */
     public function metaverseControllerAdvertiserViews($from, $to, string $contentType = self::contentTypes['metaverseControllerAdvertiserViews'][0])
     {
-        $this->metaverseControllerAdvertiserViewsWithHttpInfo($from, $to, $contentType);
+        list($response) = $this->metaverseControllerAdvertiserViewsWithHttpInfo($from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerAdvertiserViewsWithHttpInfo
+     *
+     * Get metaverse proof-of-view for your campaigns
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -378,7 +491,7 @@ class MetaverseApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupSurfaceReport, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerAdvertiserViewsWithHttpInfo($from, $to, string $contentType = self::contentTypes['metaverseControllerAdvertiserViews'][0])
     {
@@ -407,10 +520,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupSurfaceReport' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupSurfaceReport' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupSurfaceReport', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupSurfaceReport';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupSurfaceReport',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -418,6 +608,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerAdvertiserViewsAsync
+     *
+     * Get metaverse proof-of-view for your campaigns
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -439,6 +631,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerAdvertiserViewsAsyncWithHttpInfo
      *
+     * Get metaverse proof-of-view for your campaigns
+     *
      * @param  string $from (required)
      * @param  string $to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerAdvertiserViews'] to see the possible values for this operation
@@ -448,14 +642,27 @@ class MetaverseApi
      */
     public function metaverseControllerAdvertiserViewsAsyncWithHttpInfo($from, $to, string $contentType = self::contentTypes['metaverseControllerAdvertiserViews'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupSurfaceReport';
         $request = $this->metaverseControllerAdvertiserViewsRequest($from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -532,7 +739,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -562,6 +769,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -587,27 +803,32 @@ class MetaverseApi
     /**
      * Operation metaverseControllerClaim
      *
+     * Claim a metaverse surface by its pairing code
+     *
      * @param  \Adviverse\Api\Model\ClaimSurfaceDto $claim_surface_dto claim_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupSurface
      */
     public function metaverseControllerClaim($claim_surface_dto, string $contentType = self::contentTypes['metaverseControllerClaim'][0])
     {
-        $this->metaverseControllerClaimWithHttpInfo($claim_surface_dto, $contentType);
+        list($response) = $this->metaverseControllerClaimWithHttpInfo($claim_surface_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerClaimWithHttpInfo
+     *
+     * Claim a metaverse surface by its pairing code
      *
      * @param  \Adviverse\Api\Model\ClaimSurfaceDto $claim_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerClaim'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupSurface, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerClaimWithHttpInfo($claim_surface_dto, string $contentType = self::contentTypes['metaverseControllerClaim'][0])
     {
@@ -636,10 +857,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\SupSurface' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupSurface' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupSurface', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupSurface';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupSurface',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -647,6 +945,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerClaimAsync
+     *
+     * Claim a metaverse surface by its pairing code
      *
      * @param  \Adviverse\Api\Model\ClaimSurfaceDto $claim_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerClaim'] to see the possible values for this operation
@@ -667,6 +967,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerClaimAsyncWithHttpInfo
      *
+     * Claim a metaverse surface by its pairing code
+     *
      * @param  \Adviverse\Api\Model\ClaimSurfaceDto $claim_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerClaim'] to see the possible values for this operation
      *
@@ -675,14 +977,27 @@ class MetaverseApi
      */
     public function metaverseControllerClaimAsyncWithHttpInfo($claim_surface_dto, string $contentType = self::contentTypes['metaverseControllerClaim'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupSurface';
         $request = $this->metaverseControllerClaimRequest($claim_surface_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -733,7 +1048,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -770,6 +1085,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -795,27 +1119,32 @@ class MetaverseApi
     /**
      * Operation metaverseControllerCreateWorld
      *
+     * Register a metaverse world integration
+     *
      * @param  \Adviverse\Api\Model\CreateWorldDto $create_world_dto create_world_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerCreateWorld'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerCreateWorld201Response
      */
     public function metaverseControllerCreateWorld($create_world_dto, string $contentType = self::contentTypes['metaverseControllerCreateWorld'][0])
     {
-        $this->metaverseControllerCreateWorldWithHttpInfo($create_world_dto, $contentType);
+        list($response) = $this->metaverseControllerCreateWorldWithHttpInfo($create_world_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerCreateWorldWithHttpInfo
+     *
+     * Register a metaverse world integration
      *
      * @param  \Adviverse\Api\Model\CreateWorldDto $create_world_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerCreateWorld'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerCreateWorld201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerCreateWorldWithHttpInfo($create_world_dto, string $contentType = self::contentTypes['metaverseControllerCreateWorld'][0])
     {
@@ -844,10 +1173,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -855,6 +1261,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerCreateWorldAsync
+     *
+     * Register a metaverse world integration
      *
      * @param  \Adviverse\Api\Model\CreateWorldDto $create_world_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerCreateWorld'] to see the possible values for this operation
@@ -875,6 +1283,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerCreateWorldAsyncWithHttpInfo
      *
+     * Register a metaverse world integration
+     *
      * @param  \Adviverse\Api\Model\CreateWorldDto $create_world_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerCreateWorld'] to see the possible values for this operation
      *
@@ -883,14 +1293,27 @@ class MetaverseApi
      */
     public function metaverseControllerCreateWorldAsyncWithHttpInfo($create_world_dto, string $contentType = self::contentTypes['metaverseControllerCreateWorld'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerCreateWorld201Response';
         $request = $this->metaverseControllerCreateWorldRequest($create_world_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -941,7 +1364,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -978,6 +1401,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1003,27 +1435,32 @@ class MetaverseApi
     /**
      * Operation metaverseControllerGet
      *
+     * Get a metaverse surface
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupSurface
      */
     public function metaverseControllerGet($id, string $contentType = self::contentTypes['metaverseControllerGet'][0])
     {
-        $this->metaverseControllerGetWithHttpInfo($id, $contentType);
+        list($response) = $this->metaverseControllerGetWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerGetWithHttpInfo
+     *
+     * Get a metaverse surface
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerGet'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupSurface, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerGetWithHttpInfo($id, string $contentType = self::contentTypes['metaverseControllerGet'][0])
     {
@@ -1052,10 +1489,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupSurface' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupSurface' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupSurface', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupSurface';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupSurface',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1063,6 +1577,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerGetAsync
+     *
+     * Get a metaverse surface
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerGet'] to see the possible values for this operation
@@ -1083,6 +1599,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerGetAsyncWithHttpInfo
      *
+     * Get a metaverse surface
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerGet'] to see the possible values for this operation
      *
@@ -1091,14 +1609,27 @@ class MetaverseApi
      */
     public function metaverseControllerGetAsyncWithHttpInfo($id, string $contentType = self::contentTypes['metaverseControllerGet'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupSurface';
         $request = $this->metaverseControllerGetRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1157,7 +1688,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1187,6 +1718,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1212,25 +1752,30 @@ class MetaverseApi
     /**
      * Operation metaverseControllerList
      *
+     * List your metaverse surfaces
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]
      */
     public function metaverseControllerList(string $contentType = self::contentTypes['metaverseControllerList'][0])
     {
-        $this->metaverseControllerListWithHttpInfo($contentType);
+        list($response) = $this->metaverseControllerListWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerListWithHttpInfo
      *
+     * List your metaverse surfaces
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerList'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerList200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerListWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerList'][0])
     {
@@ -1259,10 +1804,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1270,6 +1892,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerListAsync
+     *
+     * List your metaverse surfaces
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerList'] to see the possible values for this operation
      *
@@ -1289,6 +1913,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerListAsyncWithHttpInfo
      *
+     * List your metaverse surfaces
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerList'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1296,14 +1922,27 @@ class MetaverseApi
      */
     public function metaverseControllerListAsyncWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerList'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerList200ResponseInner[]';
         $request = $this->metaverseControllerListRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1346,7 +1985,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1376,6 +2015,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1401,25 +2049,30 @@ class MetaverseApi
     /**
      * Operation metaverseControllerListWorlds
      *
+     * List your world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerListWorlds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupWorld[]
      */
     public function metaverseControllerListWorlds(string $contentType = self::contentTypes['metaverseControllerListWorlds'][0])
     {
-        $this->metaverseControllerListWorldsWithHttpInfo($contentType);
+        list($response) = $this->metaverseControllerListWorldsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerListWorldsWithHttpInfo
      *
+     * List your world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerListWorlds'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupWorld[], HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerListWorldsWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerListWorlds'][0])
     {
@@ -1448,10 +2101,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupWorld[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupWorld[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupWorld[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupWorld[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupWorld[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1459,6 +2189,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerListWorldsAsync
+     *
+     * List your world integrations
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerListWorlds'] to see the possible values for this operation
      *
@@ -1478,6 +2210,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerListWorldsAsyncWithHttpInfo
      *
+     * List your world integrations
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerListWorlds'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1485,14 +2219,27 @@ class MetaverseApi
      */
     public function metaverseControllerListWorldsAsyncWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerListWorlds'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupWorld[]';
         $request = $this->metaverseControllerListWorldsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1535,7 +2282,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1565,6 +2312,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -1590,27 +2346,32 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPairInit
      *
+     * Start pairing a metaverse ad surface
+     *
      * @param  \Adviverse\Api\Model\SurfacePairInitDto $surface_pair_init_dto surface_pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairInit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerPairInit201Response
      */
     public function metaverseControllerPairInit($surface_pair_init_dto, string $contentType = self::contentTypes['metaverseControllerPairInit'][0])
     {
-        $this->metaverseControllerPairInitWithHttpInfo($surface_pair_init_dto, $contentType);
+        list($response) = $this->metaverseControllerPairInitWithHttpInfo($surface_pair_init_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerPairInitWithHttpInfo
+     *
+     * Start pairing a metaverse ad surface
      *
      * @param  \Adviverse\Api\Model\SurfacePairInitDto $surface_pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairInit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerPairInit201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerPairInitWithHttpInfo($surface_pair_init_dto, string $contentType = self::contentTypes['metaverseControllerPairInit'][0])
     {
@@ -1639,10 +2400,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ScreensControllerPairInit201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerPairInit201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerPairInit201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerPairInit201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerPairInit201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1650,6 +2488,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerPairInitAsync
+     *
+     * Start pairing a metaverse ad surface
      *
      * @param  \Adviverse\Api\Model\SurfacePairInitDto $surface_pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairInit'] to see the possible values for this operation
@@ -1670,6 +2510,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPairInitAsyncWithHttpInfo
      *
+     * Start pairing a metaverse ad surface
+     *
      * @param  \Adviverse\Api\Model\SurfacePairInitDto $surface_pair_init_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairInit'] to see the possible values for this operation
      *
@@ -1678,14 +2520,27 @@ class MetaverseApi
      */
     public function metaverseControllerPairInitAsyncWithHttpInfo($surface_pair_init_dto, string $contentType = self::contentTypes['metaverseControllerPairInit'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerPairInit201Response';
         $request = $this->metaverseControllerPairInitRequest($surface_pair_init_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1736,7 +2591,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1798,27 +2653,32 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPairStatus
      *
+     * Poll a metaverse surface&#39;s pairing status
+     *
      * @param  string $poll_token poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerPairStatus200Response
      */
     public function metaverseControllerPairStatus($poll_token, string $contentType = self::contentTypes['metaverseControllerPairStatus'][0])
     {
-        $this->metaverseControllerPairStatusWithHttpInfo($poll_token, $contentType);
+        list($response) = $this->metaverseControllerPairStatusWithHttpInfo($poll_token, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerPairStatusWithHttpInfo
+     *
+     * Poll a metaverse surface&#39;s pairing status
      *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerPairStatus200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerPairStatusWithHttpInfo($poll_token, string $contentType = self::contentTypes['metaverseControllerPairStatus'][0])
     {
@@ -1847,10 +2707,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ScreensControllerPairStatus200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerPairStatus200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerPairStatus200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerPairStatus200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerPairStatus200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1858,6 +2795,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerPairStatusAsync
+     *
+     * Poll a metaverse surface&#39;s pairing status
      *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairStatus'] to see the possible values for this operation
@@ -1878,6 +2817,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPairStatusAsyncWithHttpInfo
      *
+     * Poll a metaverse surface&#39;s pairing status
+     *
      * @param  string $poll_token (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPairStatus'] to see the possible values for this operation
      *
@@ -1886,14 +2827,27 @@ class MetaverseApi
      */
     public function metaverseControllerPairStatusAsyncWithHttpInfo($poll_token, string $contentType = self::contentTypes['metaverseControllerPairStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerPairStatus200Response';
         $request = $this->metaverseControllerPairStatusRequest($poll_token, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1953,7 +2907,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2008,21 +2962,26 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPublisherViews
      *
+     * Get your metaverse proof-of-view report
+     *
      * @param  string $from from (required)
      * @param  string $to to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPublisherViews'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupSurfaceReport
      */
     public function metaverseControllerPublisherViews($from, $to, string $contentType = self::contentTypes['metaverseControllerPublisherViews'][0])
     {
-        $this->metaverseControllerPublisherViewsWithHttpInfo($from, $to, $contentType);
+        list($response) = $this->metaverseControllerPublisherViewsWithHttpInfo($from, $to, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerPublisherViewsWithHttpInfo
+     *
+     * Get your metaverse proof-of-view report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -2030,7 +2989,7 @@ class MetaverseApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupSurfaceReport, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerPublisherViewsWithHttpInfo($from, $to, string $contentType = self::contentTypes['metaverseControllerPublisherViews'][0])
     {
@@ -2059,10 +3018,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupSurfaceReport' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupSurfaceReport' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupSurfaceReport', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupSurfaceReport';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupSurfaceReport',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2070,6 +3106,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerPublisherViewsAsync
+     *
+     * Get your metaverse proof-of-view report
      *
      * @param  string $from (required)
      * @param  string $to (required)
@@ -2091,6 +3129,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerPublisherViewsAsyncWithHttpInfo
      *
+     * Get your metaverse proof-of-view report
+     *
      * @param  string $from (required)
      * @param  string $to (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerPublisherViews'] to see the possible values for this operation
@@ -2100,14 +3140,27 @@ class MetaverseApi
      */
     public function metaverseControllerPublisherViewsAsyncWithHttpInfo($from, $to, string $contentType = self::contentTypes['metaverseControllerPublisherViews'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupSurfaceReport';
         $request = $this->metaverseControllerPublisherViewsRequest($from, $to, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2184,7 +3237,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2214,6 +3267,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2239,25 +3301,30 @@ class MetaverseApi
     /**
      * Operation metaverseControllerScoreNow
      *
+     * Run world trust scoring now
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerScoreNow'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerScoreNow201Response
      */
     public function metaverseControllerScoreNow(string $contentType = self::contentTypes['metaverseControllerScoreNow'][0])
     {
-        $this->metaverseControllerScoreNowWithHttpInfo($contentType);
+        list($response) = $this->metaverseControllerScoreNowWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerScoreNowWithHttpInfo
      *
+     * Run world trust scoring now
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerScoreNow'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerScoreNow201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerScoreNowWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerScoreNow'][0])
     {
@@ -2286,10 +3353,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\MetaverseControllerScoreNow201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerScoreNow201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerScoreNow201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerScoreNow201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerScoreNow201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2297,6 +3441,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerScoreNowAsync
+     *
+     * Run world trust scoring now
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerScoreNow'] to see the possible values for this operation
      *
@@ -2316,6 +3462,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerScoreNowAsyncWithHttpInfo
      *
+     * Run world trust scoring now
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerScoreNow'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2323,14 +3471,27 @@ class MetaverseApi
      */
     public function metaverseControllerScoreNowAsyncWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerScoreNow'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerScoreNow201Response';
         $request = $this->metaverseControllerScoreNowRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2373,7 +3534,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2403,6 +3564,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2428,21 +3598,26 @@ class MetaverseApi
     /**
      * Operation metaverseControllerSetStatus
      *
+     * Pause or activate a metaverse surface
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\SetSurfaceStatusDto $set_surface_status_dto set_surface_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerSetStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ScreensControllerSetStatus201Response
      */
     public function metaverseControllerSetStatus($id, $set_surface_status_dto, string $contentType = self::contentTypes['metaverseControllerSetStatus'][0])
     {
-        $this->metaverseControllerSetStatusWithHttpInfo($id, $set_surface_status_dto, $contentType);
+        list($response) = $this->metaverseControllerSetStatusWithHttpInfo($id, $set_surface_status_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerSetStatusWithHttpInfo
+     *
+     * Pause or activate a metaverse surface
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetSurfaceStatusDto $set_surface_status_dto (required)
@@ -2450,7 +3625,7 @@ class MetaverseApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ScreensControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerSetStatusWithHttpInfo($id, $set_surface_status_dto, string $contentType = self::contentTypes['metaverseControllerSetStatus'][0])
     {
@@ -2479,10 +3654,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ScreensControllerSetStatus201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ScreensControllerSetStatus201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ScreensControllerSetStatus201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ScreensControllerSetStatus201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ScreensControllerSetStatus201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2490,6 +3742,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerSetStatusAsync
+     *
+     * Pause or activate a metaverse surface
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetSurfaceStatusDto $set_surface_status_dto (required)
@@ -2511,6 +3765,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerSetStatusAsyncWithHttpInfo
      *
+     * Pause or activate a metaverse surface
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetSurfaceStatusDto $set_surface_status_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerSetStatus'] to see the possible values for this operation
@@ -2520,14 +3776,27 @@ class MetaverseApi
      */
     public function metaverseControllerSetStatusAsyncWithHttpInfo($id, $set_surface_status_dto, string $contentType = self::contentTypes['metaverseControllerSetStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ScreensControllerSetStatus201Response';
         $request = $this->metaverseControllerSetStatusRequest($id, $set_surface_status_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2594,7 +3863,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2631,6 +3900,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2656,21 +3934,26 @@ class MetaverseApi
     /**
      * Operation metaverseControllerSetWorldTrust
      *
+     * Set a world&#39;s trust tier
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\SetWorldTrustDto $set_world_trust_dto set_world_trust_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerSetWorldTrust'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response
      */
     public function metaverseControllerSetWorldTrust($id, $set_world_trust_dto, string $contentType = self::contentTypes['metaverseControllerSetWorldTrust'][0])
     {
-        $this->metaverseControllerSetWorldTrustWithHttpInfo($id, $set_world_trust_dto, $contentType);
+        list($response) = $this->metaverseControllerSetWorldTrustWithHttpInfo($id, $set_world_trust_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerSetWorldTrustWithHttpInfo
+     *
+     * Set a world&#39;s trust tier
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetWorldTrustDto $set_world_trust_dto (required)
@@ -2678,7 +3961,7 @@ class MetaverseApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerSetWorldTrustWithHttpInfo($id, $set_world_trust_dto, string $contentType = self::contentTypes['metaverseControllerSetWorldTrust'][0])
     {
@@ -2707,10 +3990,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2718,6 +4078,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerSetWorldTrustAsync
+     *
+     * Set a world&#39;s trust tier
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetWorldTrustDto $set_world_trust_dto (required)
@@ -2739,6 +4101,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerSetWorldTrustAsyncWithHttpInfo
      *
+     * Set a world&#39;s trust tier
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\SetWorldTrustDto $set_world_trust_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerSetWorldTrust'] to see the possible values for this operation
@@ -2748,14 +4112,27 @@ class MetaverseApi
      */
     public function metaverseControllerSetWorldTrustAsyncWithHttpInfo($id, $set_world_trust_dto, string $contentType = self::contentTypes['metaverseControllerSetWorldTrust'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerSetWorldTrust201Response';
         $request = $this->metaverseControllerSetWorldTrustRequest($id, $set_world_trust_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -2822,7 +4199,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -2859,6 +4236,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -2884,25 +4270,30 @@ class MetaverseApi
     /**
      * Operation metaverseControllerTrustScores
      *
+     * List world trust scores
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerTrustScores'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]
      */
     public function metaverseControllerTrustScores(string $contentType = self::contentTypes['metaverseControllerTrustScores'][0])
     {
-        $this->metaverseControllerTrustScoresWithHttpInfo($contentType);
+        list($response) = $this->metaverseControllerTrustScoresWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerTrustScoresWithHttpInfo
      *
+     * List world trust scores
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerTrustScores'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerTrustScoresWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerTrustScores'][0])
     {
@@ -2931,10 +4322,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -2942,6 +4410,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerTrustScoresAsync
+     *
+     * List world trust scores
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerTrustScores'] to see the possible values for this operation
      *
@@ -2961,6 +4431,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerTrustScoresAsyncWithHttpInfo
      *
+     * List world trust scores
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerTrustScores'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -2968,14 +4440,27 @@ class MetaverseApi
      */
     public function metaverseControllerTrustScoresAsyncWithHttpInfo(string $contentType = self::contentTypes['metaverseControllerTrustScores'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MetaverseControllerTrustScores200ResponseInner[]';
         $request = $this->metaverseControllerTrustScoresRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3018,7 +4503,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3048,6 +4533,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -3073,21 +4567,26 @@ class MetaverseApi
     /**
      * Operation metaverseControllerUpdate
      *
+     * Update a metaverse surface
+     *
      * @param  string $id id (required)
      * @param  \Adviverse\Api\Model\UpdateSurfaceDto $update_surface_dto update_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerUpdate'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\SupSurface
      */
     public function metaverseControllerUpdate($id, $update_surface_dto, string $contentType = self::contentTypes['metaverseControllerUpdate'][0])
     {
-        $this->metaverseControllerUpdateWithHttpInfo($id, $update_surface_dto, $contentType);
+        list($response) = $this->metaverseControllerUpdateWithHttpInfo($id, $update_surface_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation metaverseControllerUpdateWithHttpInfo
+     *
+     * Update a metaverse surface
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateSurfaceDto $update_surface_dto (required)
@@ -3095,7 +4594,7 @@ class MetaverseApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\SupSurface, HTTP status code, HTTP response headers (array of strings)
      */
     public function metaverseControllerUpdateWithHttpInfo($id, $update_surface_dto, string $contentType = self::contentTypes['metaverseControllerUpdate'][0])
     {
@@ -3124,10 +4623,87 @@ class MetaverseApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\SupSurface' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\SupSurface' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\SupSurface', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\SupSurface';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\SupSurface',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -3135,6 +4711,8 @@ class MetaverseApi
 
     /**
      * Operation metaverseControllerUpdateAsync
+     *
+     * Update a metaverse surface
      *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateSurfaceDto $update_surface_dto (required)
@@ -3156,6 +4734,8 @@ class MetaverseApi
     /**
      * Operation metaverseControllerUpdateAsyncWithHttpInfo
      *
+     * Update a metaverse surface
+     *
      * @param  string $id (required)
      * @param  \Adviverse\Api\Model\UpdateSurfaceDto $update_surface_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['metaverseControllerUpdate'] to see the possible values for this operation
@@ -3165,14 +4745,27 @@ class MetaverseApi
      */
     public function metaverseControllerUpdateAsyncWithHttpInfo($id, $update_surface_dto, string $contentType = self::contentTypes['metaverseControllerUpdate'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\SupSurface';
         $request = $this->metaverseControllerUpdateRequest($id, $update_surface_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -3239,7 +4832,7 @@ class MetaverseApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -3276,6 +4869,15 @@ class MetaverseApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

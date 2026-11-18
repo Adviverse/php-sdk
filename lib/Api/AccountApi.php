@@ -137,6 +137,8 @@ class AccountApi
     /**
      * Operation accountControllerDiditWebhook
      *
+     * Receive Didit verification webhooks
+     *
      * @param  string $x_signature_simple x_signature_simple (required)
      * @param  string $x_signature_v2 x_signature_v2 (required)
      * @param  string $x_signature x_signature (required)
@@ -144,15 +146,18 @@ class AccountApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AccountControllerDiditWebhook201Response
      */
     public function accountControllerDiditWebhook($x_signature_simple, $x_signature_v2, $x_signature, string $contentType = self::contentTypes['accountControllerDiditWebhook'][0])
     {
-        $this->accountControllerDiditWebhookWithHttpInfo($x_signature_simple, $x_signature_v2, $x_signature, $contentType);
+        list($response) = $this->accountControllerDiditWebhookWithHttpInfo($x_signature_simple, $x_signature_v2, $x_signature, $contentType);
+        return $response;
     }
 
     /**
      * Operation accountControllerDiditWebhookWithHttpInfo
+     *
+     * Receive Didit verification webhooks
      *
      * @param  string $x_signature_simple (required)
      * @param  string $x_signature_v2 (required)
@@ -161,7 +166,7 @@ class AccountApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AccountControllerDiditWebhook201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function accountControllerDiditWebhookWithHttpInfo($x_signature_simple, $x_signature_v2, $x_signature, string $contentType = self::contentTypes['accountControllerDiditWebhook'][0])
     {
@@ -190,10 +195,87 @@ class AccountApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AccountControllerDiditWebhook201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AccountControllerDiditWebhook201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AccountControllerDiditWebhook201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AccountControllerDiditWebhook201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AccountControllerDiditWebhook201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -201,6 +283,8 @@ class AccountApi
 
     /**
      * Operation accountControllerDiditWebhookAsync
+     *
+     * Receive Didit verification webhooks
      *
      * @param  string $x_signature_simple (required)
      * @param  string $x_signature_v2 (required)
@@ -223,6 +307,8 @@ class AccountApi
     /**
      * Operation accountControllerDiditWebhookAsyncWithHttpInfo
      *
+     * Receive Didit verification webhooks
+     *
      * @param  string $x_signature_simple (required)
      * @param  string $x_signature_v2 (required)
      * @param  string $x_signature (required)
@@ -233,14 +319,27 @@ class AccountApi
      */
     public function accountControllerDiditWebhookAsyncWithHttpInfo($x_signature_simple, $x_signature_v2, $x_signature, string $contentType = self::contentTypes['accountControllerDiditWebhook'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AccountControllerDiditWebhook201Response';
         $request = $this->accountControllerDiditWebhookRequest($x_signature_simple, $x_signature_v2, $x_signature, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -319,7 +418,7 @@ class AccountApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -374,25 +473,30 @@ class AccountApi
     /**
      * Operation accountControllerKycStatus
      *
+     * Get KYC verification status
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerKycStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AccountControllerKycStatus200Response
      */
     public function accountControllerKycStatus(string $contentType = self::contentTypes['accountControllerKycStatus'][0])
     {
-        $this->accountControllerKycStatusWithHttpInfo($contentType);
+        list($response) = $this->accountControllerKycStatusWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation accountControllerKycStatusWithHttpInfo
      *
+     * Get KYC verification status
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerKycStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AccountControllerKycStatus200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function accountControllerKycStatusWithHttpInfo(string $contentType = self::contentTypes['accountControllerKycStatus'][0])
     {
@@ -421,10 +525,87 @@ class AccountApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\AccountControllerKycStatus200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AccountControllerKycStatus200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AccountControllerKycStatus200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AccountControllerKycStatus200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AccountControllerKycStatus200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -432,6 +613,8 @@ class AccountApi
 
     /**
      * Operation accountControllerKycStatusAsync
+     *
+     * Get KYC verification status
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerKycStatus'] to see the possible values for this operation
      *
@@ -451,6 +634,8 @@ class AccountApi
     /**
      * Operation accountControllerKycStatusAsyncWithHttpInfo
      *
+     * Get KYC verification status
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerKycStatus'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -458,14 +643,27 @@ class AccountApi
      */
     public function accountControllerKycStatusAsyncWithHttpInfo(string $contentType = self::contentTypes['accountControllerKycStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AccountControllerKycStatus200Response';
         $request = $this->accountControllerKycStatusRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -508,7 +706,7 @@ class AccountApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -538,6 +736,15 @@ class AccountApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -563,25 +770,30 @@ class AccountApi
     /**
      * Operation accountControllerStartDidit
      *
+     * Start a hosted KYC session
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerStartDidit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\AccountControllerStartDidit201Response
      */
     public function accountControllerStartDidit(string $contentType = self::contentTypes['accountControllerStartDidit'][0])
     {
-        $this->accountControllerStartDiditWithHttpInfo($contentType);
+        list($response) = $this->accountControllerStartDiditWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation accountControllerStartDiditWithHttpInfo
      *
+     * Start a hosted KYC session
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerStartDidit'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\AccountControllerStartDidit201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function accountControllerStartDiditWithHttpInfo(string $contentType = self::contentTypes['accountControllerStartDidit'][0])
     {
@@ -610,10 +822,87 @@ class AccountApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\AccountControllerStartDidit201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\AccountControllerStartDidit201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AccountControllerStartDidit201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\AccountControllerStartDidit201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\AccountControllerStartDidit201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -621,6 +910,8 @@ class AccountApi
 
     /**
      * Operation accountControllerStartDiditAsync
+     *
+     * Start a hosted KYC session
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerStartDidit'] to see the possible values for this operation
      *
@@ -640,6 +931,8 @@ class AccountApi
     /**
      * Operation accountControllerStartDiditAsyncWithHttpInfo
      *
+     * Start a hosted KYC session
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['accountControllerStartDidit'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -647,14 +940,27 @@ class AccountApi
      */
     public function accountControllerStartDiditAsyncWithHttpInfo(string $contentType = self::contentTypes['accountControllerStartDidit'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\AccountControllerStartDidit201Response';
         $request = $this->accountControllerStartDiditRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -697,7 +1003,7 @@ class AccountApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -727,6 +1033,15 @@ class AccountApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -752,27 +1067,32 @@ class AccountApi
     /**
      * Operation onboardingControllerSaveProfile
      *
+     * Save onboarding profile answers
+     *
      * @param  \Adviverse\Api\Model\ProfileDto $profile_dto profile_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerSaveProfile'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\OnboardingControllerSaveProfile201Response
      */
     public function onboardingControllerSaveProfile($profile_dto, string $contentType = self::contentTypes['onboardingControllerSaveProfile'][0])
     {
-        $this->onboardingControllerSaveProfileWithHttpInfo($profile_dto, $contentType);
+        list($response) = $this->onboardingControllerSaveProfileWithHttpInfo($profile_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation onboardingControllerSaveProfileWithHttpInfo
+     *
+     * Save onboarding profile answers
      *
      * @param  \Adviverse\Api\Model\ProfileDto $profile_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerSaveProfile'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\OnboardingControllerSaveProfile201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function onboardingControllerSaveProfileWithHttpInfo($profile_dto, string $contentType = self::contentTypes['onboardingControllerSaveProfile'][0])
     {
@@ -801,10 +1121,87 @@ class AccountApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -812,6 +1209,8 @@ class AccountApi
 
     /**
      * Operation onboardingControllerSaveProfileAsync
+     *
+     * Save onboarding profile answers
      *
      * @param  \Adviverse\Api\Model\ProfileDto $profile_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerSaveProfile'] to see the possible values for this operation
@@ -832,6 +1231,8 @@ class AccountApi
     /**
      * Operation onboardingControllerSaveProfileAsyncWithHttpInfo
      *
+     * Save onboarding profile answers
+     *
      * @param  \Adviverse\Api\Model\ProfileDto $profile_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerSaveProfile'] to see the possible values for this operation
      *
@@ -840,14 +1241,27 @@ class AccountApi
      */
     public function onboardingControllerSaveProfileAsyncWithHttpInfo($profile_dto, string $contentType = self::contentTypes['onboardingControllerSaveProfile'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\OnboardingControllerSaveProfile201Response';
         $request = $this->onboardingControllerSaveProfileRequest($profile_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -898,7 +1312,7 @@ class AccountApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -935,6 +1349,15 @@ class AccountApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -960,25 +1383,30 @@ class AccountApi
     /**
      * Operation onboardingControllerStatus
      *
+     * Get onboarding checklist progress
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\OnboardingControllerStatus200Response
      */
     public function onboardingControllerStatus(string $contentType = self::contentTypes['onboardingControllerStatus'][0])
     {
-        $this->onboardingControllerStatusWithHttpInfo($contentType);
+        list($response) = $this->onboardingControllerStatusWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation onboardingControllerStatusWithHttpInfo
      *
+     * Get onboarding checklist progress
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerStatus'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\OnboardingControllerStatus200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function onboardingControllerStatusWithHttpInfo(string $contentType = self::contentTypes['onboardingControllerStatus'][0])
     {
@@ -1007,10 +1435,87 @@ class AccountApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\OnboardingControllerStatus200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\OnboardingControllerStatus200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\OnboardingControllerStatus200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\OnboardingControllerStatus200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\OnboardingControllerStatus200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -1018,6 +1523,8 @@ class AccountApi
 
     /**
      * Operation onboardingControllerStatusAsync
+     *
+     * Get onboarding checklist progress
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerStatus'] to see the possible values for this operation
      *
@@ -1037,6 +1544,8 @@ class AccountApi
     /**
      * Operation onboardingControllerStatusAsyncWithHttpInfo
      *
+     * Get onboarding checklist progress
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['onboardingControllerStatus'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -1044,14 +1553,27 @@ class AccountApi
      */
     public function onboardingControllerStatusAsyncWithHttpInfo(string $contentType = self::contentTypes['onboardingControllerStatus'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\OnboardingControllerStatus200Response';
         $request = $this->onboardingControllerStatusRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -1094,7 +1616,7 @@ class AccountApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -1124,6 +1646,15 @@ class AccountApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

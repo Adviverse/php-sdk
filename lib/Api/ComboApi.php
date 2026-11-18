@@ -131,21 +131,26 @@ class ComboApi
     /**
      * Operation comboControllerCreateCombo
      *
+     * Provision a combo of placements on a property
+     *
      * @param  string $property_id property_id (required)
      * @param  \Adviverse\Api\Model\CreateComboDto $create_combo_dto create_combo_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerCreateCombo'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComboControllerCreateCombo201Response
      */
     public function comboControllerCreateCombo($property_id, $create_combo_dto, string $contentType = self::contentTypes['comboControllerCreateCombo'][0])
     {
-        $this->comboControllerCreateComboWithHttpInfo($property_id, $create_combo_dto, $contentType);
+        list($response) = $this->comboControllerCreateComboWithHttpInfo($property_id, $create_combo_dto, $contentType);
+        return $response;
     }
 
     /**
      * Operation comboControllerCreateComboWithHttpInfo
+     *
+     * Provision a combo of placements on a property
      *
      * @param  string $property_id (required)
      * @param  \Adviverse\Api\Model\CreateComboDto $create_combo_dto (required)
@@ -153,7 +158,7 @@ class ComboApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComboControllerCreateCombo201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function comboControllerCreateComboWithHttpInfo($property_id, $create_combo_dto, string $contentType = self::contentTypes['comboControllerCreateCombo'][0])
     {
@@ -182,10 +187,87 @@ class ComboApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 201:
+                    if ('\Adviverse\Api\Model\ComboControllerCreateCombo201Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComboControllerCreateCombo201Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComboControllerCreateCombo201Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComboControllerCreateCombo201Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 201:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComboControllerCreateCombo201Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -193,6 +275,8 @@ class ComboApi
 
     /**
      * Operation comboControllerCreateComboAsync
+     *
+     * Provision a combo of placements on a property
      *
      * @param  string $property_id (required)
      * @param  \Adviverse\Api\Model\CreateComboDto $create_combo_dto (required)
@@ -214,6 +298,8 @@ class ComboApi
     /**
      * Operation comboControllerCreateComboAsyncWithHttpInfo
      *
+     * Provision a combo of placements on a property
+     *
      * @param  string $property_id (required)
      * @param  \Adviverse\Api\Model\CreateComboDto $create_combo_dto (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerCreateCombo'] to see the possible values for this operation
@@ -223,14 +309,27 @@ class ComboApi
      */
     public function comboControllerCreateComboAsyncWithHttpInfo($property_id, $create_combo_dto, string $contentType = self::contentTypes['comboControllerCreateCombo'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComboControllerCreateCombo201Response';
         $request = $this->comboControllerCreateComboRequest($property_id, $create_combo_dto, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -297,7 +396,7 @@ class ComboApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -334,6 +433,15 @@ class ComboApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -359,27 +467,32 @@ class ComboApi
     /**
      * Operation comboControllerListCombos
      *
+     * List combos on a property
+     *
      * @param  string $property_id property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListCombos'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComboControllerListCombos200Response
      */
     public function comboControllerListCombos($property_id, string $contentType = self::contentTypes['comboControllerListCombos'][0])
     {
-        $this->comboControllerListCombosWithHttpInfo($property_id, $contentType);
+        list($response) = $this->comboControllerListCombosWithHttpInfo($property_id, $contentType);
+        return $response;
     }
 
     /**
      * Operation comboControllerListCombosWithHttpInfo
+     *
+     * List combos on a property
      *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListCombos'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComboControllerListCombos200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function comboControllerListCombosWithHttpInfo($property_id, string $contentType = self::contentTypes['comboControllerListCombos'][0])
     {
@@ -408,10 +521,87 @@ class ComboApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComboControllerListCombos200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComboControllerListCombos200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComboControllerListCombos200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComboControllerListCombos200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComboControllerListCombos200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -419,6 +609,8 @@ class ComboApi
 
     /**
      * Operation comboControllerListCombosAsync
+     *
+     * List combos on a property
      *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListCombos'] to see the possible values for this operation
@@ -439,6 +631,8 @@ class ComboApi
     /**
      * Operation comboControllerListCombosAsyncWithHttpInfo
      *
+     * List combos on a property
+     *
      * @param  string $property_id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListCombos'] to see the possible values for this operation
      *
@@ -447,14 +641,27 @@ class ComboApi
      */
     public function comboControllerListCombosAsyncWithHttpInfo($property_id, string $contentType = self::contentTypes['comboControllerListCombos'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComboControllerListCombos200Response';
         $request = $this->comboControllerListCombosRequest($property_id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -513,7 +720,7 @@ class ComboApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -543,6 +750,15 @@ class ComboApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -568,25 +784,30 @@ class ComboApi
     /**
      * Operation comboControllerListPresets
      *
+     * List combo layout presets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListPresets'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\ComboControllerListPresets200Response
      */
     public function comboControllerListPresets(string $contentType = self::contentTypes['comboControllerListPresets'][0])
     {
-        $this->comboControllerListPresetsWithHttpInfo($contentType);
+        list($response) = $this->comboControllerListPresetsWithHttpInfo($contentType);
+        return $response;
     }
 
     /**
      * Operation comboControllerListPresetsWithHttpInfo
      *
+     * List combo layout presets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListPresets'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComboControllerListPresets200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function comboControllerListPresetsWithHttpInfo(string $contentType = self::contentTypes['comboControllerListPresets'][0])
     {
@@ -615,10 +836,87 @@ class ComboApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\ComboControllerListPresets200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\ComboControllerListPresets200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComboControllerListPresets200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\ComboControllerListPresets200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\ComboControllerListPresets200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -626,6 +924,8 @@ class ComboApi
 
     /**
      * Operation comboControllerListPresetsAsync
+     *
+     * List combo layout presets
      *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListPresets'] to see the possible values for this operation
      *
@@ -645,6 +945,8 @@ class ComboApi
     /**
      * Operation comboControllerListPresetsAsyncWithHttpInfo
      *
+     * List combo layout presets
+     *
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['comboControllerListPresets'] to see the possible values for this operation
      *
      * @throws \InvalidArgumentException
@@ -652,14 +954,27 @@ class ComboApi
      */
     public function comboControllerListPresetsAsyncWithHttpInfo(string $contentType = self::contentTypes['comboControllerListPresets'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\ComboControllerListPresets200Response';
         $request = $this->comboControllerListPresetsRequest($contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -702,7 +1017,7 @@ class ComboApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -732,6 +1047,15 @@ class ComboApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {

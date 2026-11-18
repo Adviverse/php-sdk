@@ -128,27 +128,32 @@ class MfaApi
     /**
      * Operation mfaControllerOwn
      *
+     * Get my property&#39;s MFA score
+     *
      * @param  string $id id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerOwn'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MfaControllerOwn200Response
      */
     public function mfaControllerOwn($id, string $contentType = self::contentTypes['mfaControllerOwn'][0])
     {
-        $this->mfaControllerOwnWithHttpInfo($id, $contentType);
+        list($response) = $this->mfaControllerOwnWithHttpInfo($id, $contentType);
+        return $response;
     }
 
     /**
      * Operation mfaControllerOwnWithHttpInfo
+     *
+     * Get my property&#39;s MFA score
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerOwn'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MfaControllerOwn200Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function mfaControllerOwnWithHttpInfo($id, string $contentType = self::contentTypes['mfaControllerOwn'][0])
     {
@@ -177,10 +182,87 @@ class MfaApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\MfaControllerOwn200Response' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MfaControllerOwn200Response' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MfaControllerOwn200Response', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MfaControllerOwn200Response';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MfaControllerOwn200Response',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -188,6 +270,8 @@ class MfaApi
 
     /**
      * Operation mfaControllerOwnAsync
+     *
+     * Get my property&#39;s MFA score
      *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerOwn'] to see the possible values for this operation
@@ -208,6 +292,8 @@ class MfaApi
     /**
      * Operation mfaControllerOwnAsyncWithHttpInfo
      *
+     * Get my property&#39;s MFA score
+     *
      * @param  string $id (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerOwn'] to see the possible values for this operation
      *
@@ -216,14 +302,27 @@ class MfaApi
      */
     public function mfaControllerOwnAsyncWithHttpInfo($id, string $contentType = self::contentTypes['mfaControllerOwn'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MfaControllerOwn200Response';
         $request = $this->mfaControllerOwnRequest($id, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -282,7 +381,7 @@ class MfaApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -312,6 +411,15 @@ class MfaApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
@@ -337,27 +445,32 @@ class MfaApi
     /**
      * Operation mfaControllerRanked
      *
+     * Rank properties by MFA score (admin)
+     *
      * @param  string $limit limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerRanked'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return void
+     * @return \Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]
      */
     public function mfaControllerRanked($limit, string $contentType = self::contentTypes['mfaControllerRanked'][0])
     {
-        $this->mfaControllerRankedWithHttpInfo($limit, $contentType);
+        list($response) = $this->mfaControllerRankedWithHttpInfo($limit, $contentType);
+        return $response;
     }
 
     /**
      * Operation mfaControllerRankedWithHttpInfo
+     *
+     * Rank properties by MFA score (admin)
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerRanked'] to see the possible values for this operation
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\MfaControllerRanked200ResponseInner[], HTTP status code, HTTP response headers (array of strings)
      */
     public function mfaControllerRankedWithHttpInfo($limit, string $contentType = self::contentTypes['mfaControllerRanked'][0])
     {
@@ -386,10 +499,87 @@ class MfaApi
             $statusCode = $response->getStatusCode();
 
 
-            return [null, $statusCode, $response->getHeaders()];
+            switch($statusCode) {
+                case 200:
+                    if ('\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]' === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ('\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]' !== 'string') {
+                            try {
+                                $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                            } catch (\JsonException $exception) {
+                                throw new ApiException(
+                                    sprintf(
+                                        'Error JSON decoding server response (%s)',
+                                        $request->getUri()
+                                    ),
+                                    $statusCode,
+                                    $response->getHeaders(),
+                                    $content
+                                );
+                            }
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]', []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
+            }
+
+            if ($statusCode < 200 || $statusCode > 299) {
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s)',
+                        $statusCode,
+                        (string) $request->getUri()
+                    ),
+                    $statusCode,
+                    $response->getHeaders(),
+                    (string) $response->getBody()
+                );
+            }
+
+            $returnType = '\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]';
+            if ($returnType === '\SplFileObject') {
+                $content = $response->getBody(); //stream goes to serializer
+            } else {
+                $content = (string) $response->getBody();
+                if ($returnType !== 'string') {
+                    try {
+                        $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $exception) {
+                        throw new ApiException(
+                            sprintf(
+                                'Error JSON decoding server response (%s)',
+                                $request->getUri()
+                            ),
+                            $statusCode,
+                            $response->getHeaders(),
+                            $content
+                        );
+                    }
+                }
+            }
+
+            return [
+                ObjectSerializer::deserialize($content, $returnType, []),
+                $response->getStatusCode(),
+                $response->getHeaders()
+            ];
 
         } catch (ApiException $e) {
             switch ($e->getCode()) {
+                case 200:
+                    $data = ObjectSerializer::deserialize(
+                        $e->getResponseBody(),
+                        '\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]',
+                        $e->getResponseHeaders()
+                    );
+                    $e->setResponseObject($data);
+                    break;
             }
             throw $e;
         }
@@ -397,6 +587,8 @@ class MfaApi
 
     /**
      * Operation mfaControllerRankedAsync
+     *
+     * Rank properties by MFA score (admin)
      *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerRanked'] to see the possible values for this operation
@@ -417,6 +609,8 @@ class MfaApi
     /**
      * Operation mfaControllerRankedAsyncWithHttpInfo
      *
+     * Rank properties by MFA score (admin)
+     *
      * @param  string $limit (required)
      * @param  string $contentType The value for the Content-Type header. Check self::contentTypes['mfaControllerRanked'] to see the possible values for this operation
      *
@@ -425,14 +619,27 @@ class MfaApi
      */
     public function mfaControllerRankedAsyncWithHttpInfo($limit, string $contentType = self::contentTypes['mfaControllerRanked'][0])
     {
-        $returnType = '';
+        $returnType = '\Adviverse\Api\Model\MfaControllerRanked200ResponseInner[]';
         $request = $this->mfaControllerRankedRequest($limit, $contentType);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
             ->then(
                 function ($response) use ($returnType) {
-                    return [null, $response->getStatusCode(), $response->getHeaders()];
+                    if ($returnType === '\SplFileObject') {
+                        $content = $response->getBody(); //stream goes to serializer
+                    } else {
+                        $content = (string) $response->getBody();
+                        if ($returnType !== 'string') {
+                            $content = json_decode($content);
+                        }
+                    }
+
+                    return [
+                        ObjectSerializer::deserialize($content, $returnType, []),
+                        $response->getStatusCode(),
+                        $response->getHeaders()
+                    ];
                 },
                 function ($exception) {
                     $response = $exception->getResponse();
@@ -492,7 +699,7 @@ class MfaApi
 
 
         $headers = $this->headerSelector->selectHeaders(
-            [],
+            ['application/json', ],
             $contentType,
             $multipart
         );
@@ -522,6 +729,15 @@ class MfaApi
             }
         }
 
+        // this endpoint requires API key authentication
+        $apiKey = $this->config->getApiKeyWithPrefix('x-api-key');
+        if ($apiKey !== null) {
+            $headers['x-api-key'] = $apiKey;
+        }
+        // this endpoint requires Bearer (JWT) authentication (access token)
+        if (!empty($this->config->getAccessToken())) {
+            $headers['Authorization'] = 'Bearer ' . $this->config->getAccessToken();
+        }
 
         $defaultHeaders = [];
         if ($this->config->getUserAgent()) {
