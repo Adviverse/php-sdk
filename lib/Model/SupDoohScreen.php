@@ -35,7 +35,7 @@ use \Adviverse\Api\ObjectSerializer;
  * SupDoohScreen Class Doc Comment
  *
  * @category Class
- * @description A &#x60;dooh_screens&#x60; row plus its placement &#x60;tag_key&#x60;.
+ * @description A &#x60;dooh_screens&#x60; row plus its placement &#x60;tag_key&#x60;. Player credentials (&#x60;poll_token&#x60;, &#x60;pairing_token&#x60;) are never returned.
  * @package  Adviverse\Api
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -73,8 +73,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'string',
         'status' => 'string',
         'pairing_code' => 'string',
-        'poll_token' => 'string',
-        'pairing_token' => 'string',
         'paired_at' => '\DateTime',
         'last_heartbeat_at' => '\DateTime',
         'player_version' => 'string',
@@ -106,8 +104,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => null,
         'status' => null,
         'pairing_code' => null,
-        'poll_token' => null,
-        'pairing_token' => null,
         'paired_at' => 'date-time',
         'last_heartbeat_at' => 'date-time',
         'player_version' => null,
@@ -137,8 +133,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => false,
         'status' => false,
         'pairing_code' => true,
-        'poll_token' => true,
-        'pairing_token' => true,
         'paired_at' => true,
         'last_heartbeat_at' => true,
         'player_version' => true,
@@ -248,8 +242,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'audience_multiplier',
         'status' => 'status',
         'pairing_code' => 'pairing_code',
-        'poll_token' => 'poll_token',
-        'pairing_token' => 'pairing_token',
         'paired_at' => 'paired_at',
         'last_heartbeat_at' => 'last_heartbeat_at',
         'player_version' => 'player_version',
@@ -279,8 +271,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'setAudienceMultiplier',
         'status' => 'setStatus',
         'pairing_code' => 'setPairingCode',
-        'poll_token' => 'setPollToken',
-        'pairing_token' => 'setPairingToken',
         'paired_at' => 'setPairedAt',
         'last_heartbeat_at' => 'setLastHeartbeatAt',
         'player_version' => 'setPlayerVersion',
@@ -310,8 +300,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'getAudienceMultiplier',
         'status' => 'getStatus',
         'pairing_code' => 'getPairingCode',
-        'poll_token' => 'getPollToken',
-        'pairing_token' => 'getPairingToken',
         'paired_at' => 'getPairedAt',
         'last_heartbeat_at' => 'getLastHeartbeatAt',
         'player_version' => 'getPlayerVersion',
@@ -411,8 +399,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('audience_multiplier', $data ?? [], null);
         $this->setIfExists('status', $data ?? [], null);
         $this->setIfExists('pairing_code', $data ?? [], null);
-        $this->setIfExists('poll_token', $data ?? [], null);
-        $this->setIfExists('pairing_token', $data ?? [], null);
         $this->setIfExists('paired_at', $data ?? [], null);
         $this->setIfExists('last_heartbeat_at', $data ?? [], null);
         $this->setIfExists('player_version', $data ?? [], null);
@@ -960,74 +946,6 @@ class SupDoohScreen implements ModelInterface, ArrayAccess, \JsonSerializable
             }
         }
         $this->container['pairing_code'] = $pairing_code;
-
-        return $this;
-    }
-
-    /**
-     * Gets poll_token
-     *
-     * @return string|null
-     */
-    public function getPollToken()
-    {
-        return $this->container['poll_token'];
-    }
-
-    /**
-     * Sets poll_token
-     *
-     * @param string|null $poll_token poll_token
-     *
-     * @return self
-     */
-    public function setPollToken($poll_token)
-    {
-        if (is_null($poll_token)) {
-            array_push($this->openAPINullablesSetToNull, 'poll_token');
-        } else {
-            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
-            $index = array_search('poll_token', $nullablesSetToNull);
-            if ($index !== FALSE) {
-                unset($nullablesSetToNull[$index]);
-                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
-            }
-        }
-        $this->container['poll_token'] = $poll_token;
-
-        return $this;
-    }
-
-    /**
-     * Gets pairing_token
-     *
-     * @return string|null
-     */
-    public function getPairingToken()
-    {
-        return $this->container['pairing_token'];
-    }
-
-    /**
-     * Sets pairing_token
-     *
-     * @param string|null $pairing_token pairing_token
-     *
-     * @return self
-     */
-    public function setPairingToken($pairing_token)
-    {
-        if (is_null($pairing_token)) {
-            array_push($this->openAPINullablesSetToNull, 'pairing_token');
-        } else {
-            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
-            $index = array_search('pairing_token', $nullablesSetToNull);
-            if ($index !== FALSE) {
-                unset($nullablesSetToNull[$index]);
-                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
-            }
-        }
-        $this->container['pairing_token'] = $pairing_token;
 
         return $this;
     }

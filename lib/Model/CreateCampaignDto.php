@@ -77,6 +77,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => 'object',
         'conversion' => 'object',
         'house_ad' => 'bool',
+        'auto_own_placements' => 'bool',
+        'network_expansion' => 'bool',
         'priority_tier' => 'string',
         'delivery_goal' => 'float',
         'goal_type' => 'string',
@@ -119,6 +121,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => null,
         'conversion' => null,
         'house_ad' => null,
+        'auto_own_placements' => null,
+        'network_expansion' => null,
         'priority_tier' => null,
         'delivery_goal' => null,
         'goal_type' => null,
@@ -159,6 +163,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => false,
         'conversion' => false,
         'house_ad' => false,
+        'auto_own_placements' => false,
+        'network_expansion' => false,
         'priority_tier' => false,
         'delivery_goal' => false,
         'goal_type' => false,
@@ -279,6 +285,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => 'targeting',
         'conversion' => 'conversion',
         'house_ad' => 'houseAd',
+        'auto_own_placements' => 'autoOwnPlacements',
+        'network_expansion' => 'networkExpansion',
         'priority_tier' => 'priorityTier',
         'delivery_goal' => 'deliveryGoal',
         'goal_type' => 'goalType',
@@ -319,6 +327,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => 'setTargeting',
         'conversion' => 'setConversion',
         'house_ad' => 'setHouseAd',
+        'auto_own_placements' => 'setAutoOwnPlacements',
+        'network_expansion' => 'setNetworkExpansion',
         'priority_tier' => 'setPriorityTier',
         'delivery_goal' => 'setDeliveryGoal',
         'goal_type' => 'setGoalType',
@@ -359,6 +369,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'targeting' => 'getTargeting',
         'conversion' => 'getConversion',
         'house_ad' => 'getHouseAd',
+        'auto_own_placements' => 'getAutoOwnPlacements',
+        'network_expansion' => 'getNetworkExpansion',
         'priority_tier' => 'getPriorityTier',
         'delivery_goal' => 'getDeliveryGoal',
         'goal_type' => 'getGoalType',
@@ -507,6 +519,8 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         $this->setIfExists('targeting', $data ?? [], null);
         $this->setIfExists('conversion', $data ?? [], null);
         $this->setIfExists('house_ad', $data ?? [], null);
+        $this->setIfExists('auto_own_placements', $data ?? [], null);
+        $this->setIfExists('network_expansion', $data ?? [], null);
         $this->setIfExists('priority_tier', $data ?? [], null);
         $this->setIfExists('delivery_goal', $data ?? [], null);
         $this->setIfExists('goal_type', $data ?? [], null);
@@ -1168,6 +1182,60 @@ class CreateCampaignDto implements ModelInterface, ArrayAccess, \JsonSerializabl
             throw new \InvalidArgumentException('non-nullable house_ad cannot be null');
         }
         $this->container['house_ad'] = $house_ad;
+
+        return $this;
+    }
+
+    /**
+     * Gets auto_own_placements
+     *
+     * @return bool|null
+     */
+    public function getAutoOwnPlacements()
+    {
+        return $this->container['auto_own_placements'];
+    }
+
+    /**
+     * Sets auto_own_placements
+     *
+     * @param bool|null $auto_own_placements auto_own_placements
+     *
+     * @return self
+     */
+    public function setAutoOwnPlacements($auto_own_placements)
+    {
+        if (is_null($auto_own_placements)) {
+            throw new \InvalidArgumentException('non-nullable auto_own_placements cannot be null');
+        }
+        $this->container['auto_own_placements'] = $auto_own_placements;
+
+        return $this;
+    }
+
+    /**
+     * Gets network_expansion
+     *
+     * @return bool|null
+     */
+    public function getNetworkExpansion()
+    {
+        return $this->container['network_expansion'];
+    }
+
+    /**
+     * Sets network_expansion
+     *
+     * @param bool|null $network_expansion network_expansion
+     *
+     * @return self
+     */
+    public function setNetworkExpansion($network_expansion)
+    {
+        if (is_null($network_expansion)) {
+            throw new \InvalidArgumentException('non-nullable network_expansion cannot be null');
+        }
+        $this->container['network_expansion'] = $network_expansion;
 
         return $this;
     }

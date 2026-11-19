@@ -431,7 +431,7 @@ class IdentityControllerGet200ResponseIdentity implements ModelInterface, ArrayA
     /**
      * Sets household_id
      *
-     * @param string|null $household_id household_id
+     * @param string|null $household_id Admins only
      *
      * @return self
      */
@@ -502,7 +502,7 @@ class IdentityControllerGet200ResponseIdentity implements ModelInterface, ArrayA
     /**
      * Sets attributes
      *
-     * @param array<string,mixed>|null $attributes attributes
+     * @param array<string,mixed>|null $attributes Admins only
      *
      * @return self
      */

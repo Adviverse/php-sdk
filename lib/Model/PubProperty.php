@@ -64,6 +64,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => 'string',
         'domain' => 'string',
         'category' => 'int',
+        'category_source' => 'string',
+        'categories' => '\Adviverse\Api\Model\PubPropertyCategoriesInner[]',
+        'classified_at' => '\DateTime',
+        'classify_error' => 'string',
+        'trust_tier' => 'string',
+        'trust_locked' => 'bool',
+        'verified_at' => '\DateTime',
+        'trust_progress' => '\Adviverse\Api\Model\TrustProgress',
         'verification_status' => 'string',
         'verification_method' => 'string',
         'verification_token' => 'string',
@@ -99,6 +107,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => null,
         'domain' => null,
         'category' => null,
+        'category_source' => null,
+        'categories' => null,
+        'classified_at' => 'date-time',
+        'classify_error' => null,
+        'trust_tier' => null,
+        'trust_locked' => null,
+        'verified_at' => 'date-time',
+        'trust_progress' => null,
         'verification_status' => null,
         'verification_method' => null,
         'verification_token' => null,
@@ -132,6 +148,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => true,
         'domain' => false,
         'category' => true,
+        'category_source' => false,
+        'categories' => false,
+        'classified_at' => true,
+        'classify_error' => true,
+        'trust_tier' => false,
+        'trust_locked' => false,
+        'verified_at' => true,
+        'trust_progress' => false,
         'verification_status' => false,
         'verification_method' => true,
         'verification_token' => true,
@@ -245,6 +269,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => 'name',
         'domain' => 'domain',
         'category' => 'category',
+        'category_source' => 'category_source',
+        'categories' => 'categories',
+        'classified_at' => 'classified_at',
+        'classify_error' => 'classify_error',
+        'trust_tier' => 'trust_tier',
+        'trust_locked' => 'trust_locked',
+        'verified_at' => 'verified_at',
+        'trust_progress' => 'trust_progress',
         'verification_status' => 'verification_status',
         'verification_method' => 'verification_method',
         'verification_token' => 'verification_token',
@@ -278,6 +310,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => 'setName',
         'domain' => 'setDomain',
         'category' => 'setCategory',
+        'category_source' => 'setCategorySource',
+        'categories' => 'setCategories',
+        'classified_at' => 'setClassifiedAt',
+        'classify_error' => 'setClassifyError',
+        'trust_tier' => 'setTrustTier',
+        'trust_locked' => 'setTrustLocked',
+        'verified_at' => 'setVerifiedAt',
+        'trust_progress' => 'setTrustProgress',
         'verification_status' => 'setVerificationStatus',
         'verification_method' => 'setVerificationMethod',
         'verification_token' => 'setVerificationToken',
@@ -311,6 +351,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'name' => 'getName',
         'domain' => 'getDomain',
         'category' => 'getCategory',
+        'category_source' => 'getCategorySource',
+        'categories' => 'getCategories',
+        'classified_at' => 'getClassifiedAt',
+        'classify_error' => 'getClassifyError',
+        'trust_tier' => 'getTrustTier',
+        'trust_locked' => 'getTrustLocked',
+        'verified_at' => 'getVerifiedAt',
+        'trust_progress' => 'getTrustProgress',
         'verification_status' => 'getVerificationStatus',
         'verification_method' => 'getVerificationMethod',
         'verification_token' => 'getVerificationToken',
@@ -373,11 +421,41 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         return self::$openAPIModelName;
     }
 
+    public const CATEGORY_SOURCE_AUTO = 'auto';
+    public const CATEGORY_SOURCE_MANUAL = 'manual';
+    public const TRUST_TIER_UNVERIFIED = 'unverified';
+    public const TRUST_TIER_TRUSTED = 'trusted';
     public const VERIFICATION_STATUS_UNVERIFIED = 'unverified';
     public const VERIFICATION_STATUS_VERIFIED = 'verified';
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
+
+    /**
+     * Gets allowable values of the enum
+     *
+     * @return string[]
+     */
+    public function getCategorySourceAllowableValues()
+    {
+        return [
+            self::CATEGORY_SOURCE_AUTO,
+            self::CATEGORY_SOURCE_MANUAL,
+        ];
+    }
+
+    /**
+     * Gets allowable values of the enum
+     *
+     * @return string[]
+     */
+    public function getTrustTierAllowableValues()
+    {
+        return [
+            self::TRUST_TIER_UNVERIFIED,
+            self::TRUST_TIER_TRUSTED,
+        ];
+    }
 
     /**
      * Gets allowable values of the enum
@@ -427,6 +505,14 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('name', $data ?? [], null);
         $this->setIfExists('domain', $data ?? [], null);
         $this->setIfExists('category', $data ?? [], null);
+        $this->setIfExists('category_source', $data ?? [], null);
+        $this->setIfExists('categories', $data ?? [], null);
+        $this->setIfExists('classified_at', $data ?? [], null);
+        $this->setIfExists('classify_error', $data ?? [], null);
+        $this->setIfExists('trust_tier', $data ?? [], null);
+        $this->setIfExists('trust_locked', $data ?? [], null);
+        $this->setIfExists('verified_at', $data ?? [], null);
+        $this->setIfExists('trust_progress', $data ?? [], null);
         $this->setIfExists('verification_status', $data ?? [], null);
         $this->setIfExists('verification_method', $data ?? [], null);
         $this->setIfExists('verification_token', $data ?? [], null);
@@ -474,6 +560,24 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
     public function listInvalidProperties()
     {
         $invalidProperties = [];
+
+        $allowedValues = $this->getCategorySourceAllowableValues();
+        if (!is_null($this->container['category_source']) && !in_array($this->container['category_source'], $allowedValues, true)) {
+            $invalidProperties[] = sprintf(
+                "invalid value '%s' for 'category_source', must be one of '%s'",
+                $this->container['category_source'],
+                implode("', '", $allowedValues)
+            );
+        }
+
+        $allowedValues = $this->getTrustTierAllowableValues();
+        if (!is_null($this->container['trust_tier']) && !in_array($this->container['trust_tier'], $allowedValues, true)) {
+            $invalidProperties[] = sprintf(
+                "invalid value '%s' for 'trust_tier', must be one of '%s'",
+                $this->container['trust_tier'],
+                implode("', '", $allowedValues)
+            );
+        }
 
         $allowedValues = $this->getVerificationStatusAllowableValues();
         if (!is_null($this->container['verification_status']) && !in_array($this->container['verification_status'], $allowedValues, true)) {
@@ -663,7 +767,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets category
      *
-     * @param int|null $category category
+     * @param int|null $category Site-niche id (GET /v1/site-niches); null when unknown
      *
      * @return self
      */
@@ -680,6 +784,263 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
             }
         }
         $this->container['category'] = $category;
+
+        return $this;
+    }
+
+    /**
+     * Gets category_source
+     *
+     * @return string|null
+     */
+    public function getCategorySource()
+    {
+        return $this->container['category_source'];
+    }
+
+    /**
+     * Sets category_source
+     *
+     * @param string|null $category_source category_source
+     *
+     * @return self
+     */
+    public function setCategorySource($category_source)
+    {
+        if (is_null($category_source)) {
+            throw new \InvalidArgumentException('non-nullable category_source cannot be null');
+        }
+        $allowedValues = $this->getCategorySourceAllowableValues();
+        if (!in_array($category_source, $allowedValues, true)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    "Invalid value '%s' for 'category_source', must be one of '%s'",
+                    $category_source,
+                    implode("', '", $allowedValues)
+                )
+            );
+        }
+        $this->container['category_source'] = $category_source;
+
+        return $this;
+    }
+
+    /**
+     * Gets categories
+     *
+     * @return \Adviverse\Api\Model\PubPropertyCategoriesInner[]|null
+     */
+    public function getCategories()
+    {
+        return $this->container['categories'];
+    }
+
+    /**
+     * Sets categories
+     *
+     * @param \Adviverse\Api\Model\PubPropertyCategoriesInner[]|null $categories categories
+     *
+     * @return self
+     */
+    public function setCategories($categories)
+    {
+        if (is_null($categories)) {
+            throw new \InvalidArgumentException('non-nullable categories cannot be null');
+        }
+        $this->container['categories'] = $categories;
+
+        return $this;
+    }
+
+    /**
+     * Gets classified_at
+     *
+     * @return \DateTime|null
+     */
+    public function getClassifiedAt()
+    {
+        return $this->container['classified_at'];
+    }
+
+    /**
+     * Sets classified_at
+     *
+     * @param \DateTime|null $classified_at classified_at
+     *
+     * @return self
+     */
+    public function setClassifiedAt($classified_at)
+    {
+        if (is_null($classified_at)) {
+            array_push($this->openAPINullablesSetToNull, 'classified_at');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('classified_at', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['classified_at'] = $classified_at;
+
+        return $this;
+    }
+
+    /**
+     * Gets classify_error
+     *
+     * @return string|null
+     */
+    public function getClassifyError()
+    {
+        return $this->container['classify_error'];
+    }
+
+    /**
+     * Sets classify_error
+     *
+     * @param string|null $classify_error classify_error
+     *
+     * @return self
+     */
+    public function setClassifyError($classify_error)
+    {
+        if (is_null($classify_error)) {
+            array_push($this->openAPINullablesSetToNull, 'classify_error');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('classify_error', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['classify_error'] = $classify_error;
+
+        return $this;
+    }
+
+    /**
+     * Gets trust_tier
+     *
+     * @return string|null
+     */
+    public function getTrustTier()
+    {
+        return $this->container['trust_tier'];
+    }
+
+    /**
+     * Sets trust_tier
+     *
+     * @param string|null $trust_tier unverified = CPA-only demand; promoted automatically once proven clean
+     *
+     * @return self
+     */
+    public function setTrustTier($trust_tier)
+    {
+        if (is_null($trust_tier)) {
+            throw new \InvalidArgumentException('non-nullable trust_tier cannot be null');
+        }
+        $allowedValues = $this->getTrustTierAllowableValues();
+        if (!in_array($trust_tier, $allowedValues, true)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    "Invalid value '%s' for 'trust_tier', must be one of '%s'",
+                    $trust_tier,
+                    implode("', '", $allowedValues)
+                )
+            );
+        }
+        $this->container['trust_tier'] = $trust_tier;
+
+        return $this;
+    }
+
+    /**
+     * Gets trust_locked
+     *
+     * @return bool|null
+     */
+    public function getTrustLocked()
+    {
+        return $this->container['trust_locked'];
+    }
+
+    /**
+     * Sets trust_locked
+     *
+     * @param bool|null $trust_locked An admin pinned the trust tier; automatic changes are off
+     *
+     * @return self
+     */
+    public function setTrustLocked($trust_locked)
+    {
+        if (is_null($trust_locked)) {
+            throw new \InvalidArgumentException('non-nullable trust_locked cannot be null');
+        }
+        $this->container['trust_locked'] = $trust_locked;
+
+        return $this;
+    }
+
+    /**
+     * Gets verified_at
+     *
+     * @return \DateTime|null
+     */
+    public function getVerifiedAt()
+    {
+        return $this->container['verified_at'];
+    }
+
+    /**
+     * Sets verified_at
+     *
+     * @param \DateTime|null $verified_at verified_at
+     *
+     * @return self
+     */
+    public function setVerifiedAt($verified_at)
+    {
+        if (is_null($verified_at)) {
+            array_push($this->openAPINullablesSetToNull, 'verified_at');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('verified_at', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['verified_at'] = $verified_at;
+
+        return $this;
+    }
+
+    /**
+     * Gets trust_progress
+     *
+     * @return \Adviverse\Api\Model\TrustProgress|null
+     */
+    public function getTrustProgress()
+    {
+        return $this->container['trust_progress'];
+    }
+
+    /**
+     * Sets trust_progress
+     *
+     * @param \Adviverse\Api\Model\TrustProgress|null $trust_progress trust_progress
+     *
+     * @return self
+     */
+    public function setTrustProgress($trust_progress)
+    {
+        if (is_null($trust_progress)) {
+            throw new \InvalidArgumentException('non-nullable trust_progress cannot be null');
+        }
+        $this->container['trust_progress'] = $trust_progress;
 
         return $this;
     }

@@ -35,7 +35,7 @@ use \Adviverse\Api\ObjectSerializer;
  * SupSurface Class Doc Comment
  *
  * @category Class
- * @description A &#x60;surfaces&#x60; row plus its placement &#x60;tag_key&#x60;.
+ * @description A &#x60;surfaces&#x60; row plus its placement &#x60;tag_key&#x60;. Player credentials (&#x60;poll_token&#x60;, &#x60;pairing_token&#x60;) are never returned.
  * @package  Adviverse\Api
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -73,7 +73,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'string',
         'status' => 'string',
         'pairing_code' => 'string',
-        'poll_token' => 'string',
         'last_heartbeat_at' => '\DateTime',
         'tag_key' => 'string',
         'created_at' => '\DateTime'
@@ -102,7 +101,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => null,
         'status' => null,
         'pairing_code' => null,
-        'poll_token' => null,
         'last_heartbeat_at' => 'date-time',
         'tag_key' => null,
         'created_at' => 'date-time'
@@ -129,7 +127,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => false,
         'status' => false,
         'pairing_code' => true,
-        'poll_token' => true,
         'last_heartbeat_at' => true,
         'tag_key' => true,
         'created_at' => false
@@ -236,7 +233,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'audience_multiplier',
         'status' => 'status',
         'pairing_code' => 'pairing_code',
-        'poll_token' => 'poll_token',
         'last_heartbeat_at' => 'last_heartbeat_at',
         'tag_key' => 'tag_key',
         'created_at' => 'created_at'
@@ -263,7 +259,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'setAudienceMultiplier',
         'status' => 'setStatus',
         'pairing_code' => 'setPairingCode',
-        'poll_token' => 'setPollToken',
         'last_heartbeat_at' => 'setLastHeartbeatAt',
         'tag_key' => 'setTagKey',
         'created_at' => 'setCreatedAt'
@@ -290,7 +285,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         'audience_multiplier' => 'getAudienceMultiplier',
         'status' => 'getStatus',
         'pairing_code' => 'getPairingCode',
-        'poll_token' => 'getPollToken',
         'last_heartbeat_at' => 'getLastHeartbeatAt',
         'tag_key' => 'getTagKey',
         'created_at' => 'getCreatedAt'
@@ -385,7 +379,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('audience_multiplier', $data ?? [], null);
         $this->setIfExists('status', $data ?? [], null);
         $this->setIfExists('pairing_code', $data ?? [], null);
-        $this->setIfExists('poll_token', $data ?? [], null);
         $this->setIfExists('last_heartbeat_at', $data ?? [], null);
         $this->setIfExists('tag_key', $data ?? [], null);
         $this->setIfExists('created_at', $data ?? [], null);
@@ -930,40 +923,6 @@ class SupSurface implements ModelInterface, ArrayAccess, \JsonSerializable
             }
         }
         $this->container['pairing_code'] = $pairing_code;
-
-        return $this;
-    }
-
-    /**
-     * Gets poll_token
-     *
-     * @return string|null
-     */
-    public function getPollToken()
-    {
-        return $this->container['poll_token'];
-    }
-
-    /**
-     * Sets poll_token
-     *
-     * @param string|null $poll_token poll_token
-     *
-     * @return self
-     */
-    public function setPollToken($poll_token)
-    {
-        if (is_null($poll_token)) {
-            array_push($this->openAPINullablesSetToNull, 'poll_token');
-        } else {
-            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
-            $index = array_search('poll_token', $nullablesSetToNull);
-            if ($index !== FALSE) {
-                unset($nullablesSetToNull[$index]);
-                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
-            }
-        }
-        $this->container['poll_token'] = $poll_token;
 
         return $this;
     }

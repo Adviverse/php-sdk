@@ -62,7 +62,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => 'string[]',
         'active' => 'bool',
         'created_at' => '\DateTime',
-        'secret' => 'string'
+        'secret' => 'string',
+        'has_secret' => 'bool',
+        'secret_hint' => 'string'
     ];
 
     /**
@@ -78,7 +80,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => null,
         'active' => null,
         'created_at' => 'date-time',
-        'secret' => null
+        'secret' => null,
+        'has_secret' => null,
+        'secret_hint' => null
     ];
 
     /**
@@ -92,7 +96,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => false,
         'active' => false,
         'created_at' => false,
-        'secret' => false
+        'secret' => false,
+        'has_secret' => false,
+        'secret_hint' => true
     ];
 
     /**
@@ -186,7 +192,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => 'events',
         'active' => 'active',
         'created_at' => 'created_at',
-        'secret' => 'secret'
+        'secret' => 'secret',
+        'has_secret' => 'has_secret',
+        'secret_hint' => 'secret_hint'
     ];
 
     /**
@@ -200,7 +208,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => 'setEvents',
         'active' => 'setActive',
         'created_at' => 'setCreatedAt',
-        'secret' => 'setSecret'
+        'secret' => 'setSecret',
+        'has_secret' => 'setHasSecret',
+        'secret_hint' => 'setSecretHint'
     ];
 
     /**
@@ -214,7 +224,9 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         'events' => 'getEvents',
         'active' => 'getActive',
         'created_at' => 'getCreatedAt',
-        'secret' => 'getSecret'
+        'secret' => 'getSecret',
+        'has_secret' => 'getHasSecret',
+        'secret_hint' => 'getSecretHint'
     ];
 
     /**
@@ -280,6 +292,8 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('active', $data ?? [], null);
         $this->setIfExists('created_at', $data ?? [], null);
         $this->setIfExists('secret', $data ?? [], null);
+        $this->setIfExists('has_secret', $data ?? [], null);
+        $this->setIfExists('secret_hint', $data ?? [], null);
     }
 
     /**
@@ -320,9 +334,6 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
         }
         if ($this->container['active'] === null) {
             $invalidProperties[] = "'active' can't be null";
-        }
-        if ($this->container['secret'] === null) {
-            $invalidProperties[] = "'secret' can't be null";
         }
         return $invalidProperties;
     }
@@ -477,7 +488,7 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Gets secret
      *
-     * @return string
+     * @return string|null
      */
     public function getSecret()
     {
@@ -487,7 +498,7 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
     /**
      * Sets secret
      *
-     * @param string $secret HMAC-SHA256 signing secret (whsec_...).
+     * @param string|null $secret HMAC-SHA256 signing secret (whsec_...). Returned only by create and rotate-secret.
      *
      * @return self
      */
@@ -497,6 +508,67 @@ class WebhookEndpoint implements ModelInterface, ArrayAccess, \JsonSerializable
             throw new \InvalidArgumentException('non-nullable secret cannot be null');
         }
         $this->container['secret'] = $secret;
+
+        return $this;
+    }
+
+    /**
+     * Gets has_secret
+     *
+     * @return bool|null
+     */
+    public function getHasSecret()
+    {
+        return $this->container['has_secret'];
+    }
+
+    /**
+     * Sets has_secret
+     *
+     * @param bool|null $has_secret List/update only: whether a signing secret is set.
+     *
+     * @return self
+     */
+    public function setHasSecret($has_secret)
+    {
+        if (is_null($has_secret)) {
+            throw new \InvalidArgumentException('non-nullable has_secret cannot be null');
+        }
+        $this->container['has_secret'] = $has_secret;
+
+        return $this;
+    }
+
+    /**
+     * Gets secret_hint
+     *
+     * @return string|null
+     */
+    public function getSecretHint()
+    {
+        return $this->container['secret_hint'];
+    }
+
+    /**
+     * Sets secret_hint
+     *
+     * @param string|null $secret_hint List/update only: last 4 characters of the secret.
+     *
+     * @return self
+     */
+    public function setSecretHint($secret_hint)
+    {
+        if (is_null($secret_hint)) {
+            array_push($this->openAPINullablesSetToNull, 'secret_hint');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('secret_hint', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['secret_hint'] = $secret_hint;
 
         return $this;
     }

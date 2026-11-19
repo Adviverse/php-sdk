@@ -28,6 +28,7 @@ lib/Api/MfaApi.php
 lib/Api/OptimizationApi.php
 lib/Api/PixelApi.php
 lib/Api/PortalApi.php
+lib/Api/PropertyTrustApi.php
 lib/Api/PublisherApi.php
 lib/Api/PublisherInsightsApi.php
 lib/Api/ReferralsApi.php
@@ -54,6 +55,7 @@ lib/Model/AdminControllerProcessPayout201Response.php
 lib/Model/AdminControllerQuality200ResponseInner.php
 lib/Model/AdminControllerRescan201Response.php
 lib/Model/AdminControllerSetStatus201Response.php
+lib/Model/AdminTrustDto.php
 lib/Model/AdvAdSetSummary.php
 lib/Model/AdvAudience.php
 lib/Model/AdvAudienceDestination.php
@@ -277,6 +279,8 @@ lib/Model/ModelInterface.php
 lib/Model/ModeledLookalikeDto.php
 lib/Model/ModerationDecisionDto.php
 lib/Model/NetworkSettingsDto.php
+lib/Model/NicheClassification.php
+lib/Model/NicheScore.php
 lib/Model/OauthDiscordDto.php
 lib/Model/OauthGoogleDto.php
 lib/Model/OauthStartDto.php
@@ -308,10 +312,13 @@ lib/Model/PortalTemplatesControllerListTemplates200ResponseInner.php
 lib/Model/PortalTemplatesControllerListTemplates200ResponseInnerFieldsInner.php
 lib/Model/ProfileDto.php
 lib/Model/PromoteCampaignReportingControllerSummary200Response.php
+lib/Model/PropertyTrustControllerAdminList200ResponseInner.php
+lib/Model/PropertyTrustControllerAdminSet201Response.php
 lib/Model/PubComboPreset.php
 lib/Model/PubComboPresetUnitsInner.php
 lib/Model/PubPlacement.php
 lib/Model/PubProperty.php
+lib/Model/PubPropertyCategoriesInner.php
 lib/Model/PubServingDomain.php
 lib/Model/PublisherControllerDisableSigning200Response.php
 lib/Model/PublisherControllerDomainConnect201Response.php
@@ -462,6 +469,7 @@ lib/Model/SettingsControllerRotateTerminalToken201Response.php
 lib/Model/SettingsControllerSetTerminalTokenPolicy200Response.php
 lib/Model/SettingsControllerUpdateNetwork200Response.php
 lib/Model/SignupDto.php
+lib/Model/SiteNiche.php
 lib/Model/SkadnetworkControllerHealth200Response.php
 lib/Model/SkadnetworkControllerPostback200Response.php
 lib/Model/StatsControllerGet200Response.php
@@ -480,6 +488,8 @@ lib/Model/SurfacePairInitDto.php
 lib/Model/TaxFormDto.php
 lib/Model/TerminalSwitchDto.php
 lib/Model/TrackConversionDto.php
+lib/Model/TrustEvent.php
+lib/Model/TrustProgress.php
 lib/Model/UpdateAppDto.php
 lib/Model/UpdateCampaignDto.php
 lib/Model/UpdateCampaignGroupDto.php
@@ -498,6 +508,7 @@ lib/Model/WebhookDelivery.php
 lib/Model/WebhookDeliveryResult.php
 lib/Model/WebhookEndpoint.php
 lib/Model/WebhooksControllerEvents200Response.php
+lib/Model/WebhooksControllerRevealSecret201Response.php
 lib/Model/WebhooksControllerUnsubscribe200Response.php
 lib/ObjectSerializer.php
 phpunit.xml.dist

@@ -35,7 +35,7 @@ use \Adviverse\Api\ObjectSerializer;
  * PubPlacement Class Doc Comment
  *
  * @category Class
- * @description A &#x60;placements&#x60; row. All columns are returned, including &#x60;signing_secret&#x60;.
+ * @description A &#x60;placements&#x60; row. The signing secret itself is never returned here (only from POST /v1/publisher/placements/{id}/signing-secret); &#x60;has_signing_secret&#x60; says whether one is set.
  * @package  Adviverse\Api
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
@@ -79,7 +79,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => 'string',
         'house_backfill' => 'bool',
         'floor_fallback' => 'bool',
-        'signing_secret' => 'string',
+        'has_signing_secret' => 'bool',
         'combo_id' => 'string',
         'combo_label' => 'string',
         'last_active_at' => '\DateTime',
@@ -117,7 +117,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => null,
         'house_backfill' => null,
         'floor_fallback' => null,
-        'signing_secret' => null,
+        'has_signing_secret' => null,
         'combo_id' => 'uuid',
         'combo_label' => null,
         'last_active_at' => 'date-time',
@@ -153,7 +153,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => false,
         'house_backfill' => false,
         'floor_fallback' => false,
-        'signing_secret' => true,
+        'has_signing_secret' => false,
         'combo_id' => true,
         'combo_label' => true,
         'last_active_at' => true,
@@ -269,7 +269,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => 'house_share',
         'house_backfill' => 'house_backfill',
         'floor_fallback' => 'floor_fallback',
-        'signing_secret' => 'signing_secret',
+        'has_signing_secret' => 'has_signing_secret',
         'combo_id' => 'combo_id',
         'combo_label' => 'combo_label',
         'last_active_at' => 'last_active_at',
@@ -305,7 +305,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => 'setHouseShare',
         'house_backfill' => 'setHouseBackfill',
         'floor_fallback' => 'setFloorFallback',
-        'signing_secret' => 'setSigningSecret',
+        'has_signing_secret' => 'setHasSigningSecret',
         'combo_id' => 'setComboId',
         'combo_label' => 'setComboLabel',
         'last_active_at' => 'setLastActiveAt',
@@ -341,7 +341,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         'house_share' => 'getHouseShare',
         'house_backfill' => 'getHouseBackfill',
         'floor_fallback' => 'getFloorFallback',
-        'signing_secret' => 'getSigningSecret',
+        'has_signing_secret' => 'getHasSigningSecret',
         'combo_id' => 'getComboId',
         'combo_label' => 'getComboLabel',
         'last_active_at' => 'getLastActiveAt',
@@ -443,7 +443,7 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('house_share', $data ?? [], null);
         $this->setIfExists('house_backfill', $data ?? [], null);
         $this->setIfExists('floor_fallback', $data ?? [], null);
-        $this->setIfExists('signing_secret', $data ?? [], null);
+        $this->setIfExists('has_signing_secret', $data ?? [], null);
         $this->setIfExists('combo_id', $data ?? [], null);
         $this->setIfExists('combo_label', $data ?? [], null);
         $this->setIfExists('last_active_at', $data ?? [], null);
@@ -1109,35 +1109,28 @@ class PubPlacement implements ModelInterface, ArrayAccess, \JsonSerializable
     }
 
     /**
-     * Gets signing_secret
+     * Gets has_signing_secret
      *
-     * @return string|null
+     * @return bool|null
      */
-    public function getSigningSecret()
+    public function getHasSigningSecret()
     {
-        return $this->container['signing_secret'];
+        return $this->container['has_signing_secret'];
     }
 
     /**
-     * Sets signing_secret
+     * Sets has_signing_secret
      *
-     * @param string|null $signing_secret signing_secret
+     * @param bool|null $has_signing_secret True when a signing secret is set (signed-tag enforcement is on)
      *
      * @return self
      */
-    public function setSigningSecret($signing_secret)
+    public function setHasSigningSecret($has_signing_secret)
     {
-        if (is_null($signing_secret)) {
-            array_push($this->openAPINullablesSetToNull, 'signing_secret');
-        } else {
-            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
-            $index = array_search('signing_secret', $nullablesSetToNull);
-            if ($index !== FALSE) {
-                unset($nullablesSetToNull[$index]);
-                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
-            }
+        if (is_null($has_signing_secret)) {
+            throw new \InvalidArgumentException('non-nullable has_signing_secret cannot be null');
         }
-        $this->container['signing_secret'] = $signing_secret;
+        $this->container['has_signing_secret'] = $has_signing_secret;
 
         return $this;
     }

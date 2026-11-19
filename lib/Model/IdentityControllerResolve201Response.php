@@ -376,7 +376,7 @@ class IdentityControllerResolve201Response implements ModelInterface, ArrayAcces
     /**
      * Sets unified_id
      *
-     * @param string|null $unified_id unified_id
+     * @param string|null $unified_id Per-advertiser id for advertisers; the global email-derived id (or null) for admins
      *
      * @return self
      */
