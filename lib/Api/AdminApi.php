@@ -495,7 +495,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerAddBlock($add_block_dto, string $contentType = self::contentTypes['adminControllerAddBlock'][0])
     {
@@ -513,7 +513,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerAddBlockWithHttpInfo($add_block_dto, string $contentType = self::contentTypes['adminControllerAddBlock'][0])
     {
@@ -544,11 +544,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -566,7 +566,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -585,7 +585,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -618,7 +618,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -662,7 +662,7 @@ class AdminApi
      */
     public function adminControllerAddBlockAsyncWithHttpInfo($add_block_dto, string $contentType = self::contentTypes['adminControllerAddBlock'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerAddBlockRequest($add_block_dto, $contentType);
 
         return $this->client
@@ -1520,7 +1520,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerConfirmDeposit($id, string $contentType = self::contentTypes['adminControllerConfirmDeposit'][0])
     {
@@ -1538,7 +1538,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerConfirmDepositWithHttpInfo($id, string $contentType = self::contentTypes['adminControllerConfirmDeposit'][0])
     {
@@ -1569,11 +1569,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -1591,7 +1591,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -1610,7 +1610,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -1643,7 +1643,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1687,7 +1687,7 @@ class AdminApi
      */
     public function adminControllerConfirmDepositAsyncWithHttpInfo($id, string $contentType = self::contentTypes['adminControllerConfirmDeposit'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerConfirmDepositRequest($id, $contentType);
 
         return $this->client
@@ -1837,7 +1837,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerConfirmPayout($id, string $contentType = self::contentTypes['adminControllerConfirmPayout'][0])
     {
@@ -1855,7 +1855,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerConfirmPayoutWithHttpInfo($id, string $contentType = self::contentTypes['adminControllerConfirmPayout'][0])
     {
@@ -1886,11 +1886,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -1908,7 +1908,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -1927,7 +1927,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -1960,7 +1960,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2004,7 +2004,7 @@ class AdminApi
      */
     public function adminControllerConfirmPayoutAsyncWithHttpInfo($id, string $contentType = self::contentTypes['adminControllerConfirmPayout'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerConfirmPayoutRequest($id, $contentType);
 
         return $this->client
@@ -2155,7 +2155,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerDecide($id, $moderation_decision_dto, string $contentType = self::contentTypes['adminControllerDecide'][0])
     {
@@ -2174,7 +2174,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerDecideWithHttpInfo($id, $moderation_decision_dto, string $contentType = self::contentTypes['adminControllerDecide'][0])
     {
@@ -2205,11 +2205,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -2227,7 +2227,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -2246,7 +2246,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -2279,7 +2279,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2325,7 +2325,7 @@ class AdminApi
      */
     public function adminControllerDecideAsyncWithHttpInfo($id, $moderation_decision_dto, string $contentType = self::contentTypes['adminControllerDecide'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerDecideRequest($id, $moderation_decision_dto, $contentType);
 
         return $this->client
@@ -4060,7 +4060,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerSetConfig($set_config_dto, string $contentType = self::contentTypes['adminControllerSetConfig'][0])
     {
@@ -4078,7 +4078,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerSetConfigWithHttpInfo($set_config_dto, string $contentType = self::contentTypes['adminControllerSetConfig'][0])
     {
@@ -4109,11 +4109,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -4131,7 +4131,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -4150,7 +4150,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -4183,7 +4183,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4227,7 +4227,7 @@ class AdminApi
      */
     public function adminControllerSetConfigAsyncWithHttpInfo($set_config_dto, string $contentType = self::contentTypes['adminControllerSetConfig'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerSetConfigRequest($set_config_dto, $contentType);
 
         return $this->client
@@ -4377,7 +4377,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function adminControllerSetStatus($id, $set_account_status_dto, string $contentType = self::contentTypes['adminControllerSetStatus'][0])
     {
@@ -4396,7 +4396,7 @@ class AdminApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminControllerSetStatusWithHttpInfo($id, $set_account_status_dto, string $contentType = self::contentTypes['adminControllerSetStatus'][0])
     {
@@ -4427,11 +4427,11 @@ class AdminApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -4449,7 +4449,7 @@ class AdminApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -4468,7 +4468,7 @@ class AdminApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -4501,7 +4501,7 @@ class AdminApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4547,7 +4547,7 @@ class AdminApi
      */
     public function adminControllerSetStatusAsyncWithHttpInfo($id, $set_account_status_dto, string $contentType = self::contentTypes['adminControllerSetStatus'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->adminControllerSetStatusRequest($id, $set_account_status_dto, $contentType);
 
         return $this->client

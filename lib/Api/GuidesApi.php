@@ -2045,7 +2045,7 @@ class GuidesApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function guidesControllerRemove($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
@@ -2063,7 +2063,7 @@ class GuidesApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function guidesControllerRemoveWithHttpInfo($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
@@ -2094,11 +2094,11 @@ class GuidesApi
 
             switch($statusCode) {
                 case 200:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -2116,7 +2116,7 @@ class GuidesApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -2135,7 +2135,7 @@ class GuidesApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -2168,7 +2168,7 @@ class GuidesApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2212,7 +2212,7 @@ class GuidesApi
      */
     public function guidesControllerRemoveAsyncWithHttpInfo($id, string $contentType = self::contentTypes['guidesControllerRemove'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->guidesControllerRemoveRequest($id, $contentType);
 
         return $this->client

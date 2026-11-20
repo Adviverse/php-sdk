@@ -78,6 +78,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => 'string',
         'quality_score' => 'string',
         'cross_fill' => 'bool',
+        'contextual_without_consent' => 'bool',
+        'enhanced_capping' => 'bool',
         'serving_domain' => 'string',
         'serving_domain_verified' => 'bool',
         'serving_domain_checked_at' => '\DateTime',
@@ -121,6 +123,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => null,
         'quality_score' => null,
         'cross_fill' => null,
+        'contextual_without_consent' => null,
+        'enhanced_capping' => null,
         'serving_domain' => null,
         'serving_domain_verified' => null,
         'serving_domain_checked_at' => 'date-time',
@@ -162,6 +166,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => false,
         'quality_score' => false,
         'cross_fill' => false,
+        'contextual_without_consent' => false,
+        'enhanced_capping' => false,
         'serving_domain' => true,
         'serving_domain_verified' => false,
         'serving_domain_checked_at' => true,
@@ -283,6 +289,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => 'status',
         'quality_score' => 'quality_score',
         'cross_fill' => 'cross_fill',
+        'contextual_without_consent' => 'contextual_without_consent',
+        'enhanced_capping' => 'enhanced_capping',
         'serving_domain' => 'serving_domain',
         'serving_domain_verified' => 'serving_domain_verified',
         'serving_domain_checked_at' => 'serving_domain_checked_at',
@@ -324,6 +332,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => 'setStatus',
         'quality_score' => 'setQualityScore',
         'cross_fill' => 'setCrossFill',
+        'contextual_without_consent' => 'setContextualWithoutConsent',
+        'enhanced_capping' => 'setEnhancedCapping',
         'serving_domain' => 'setServingDomain',
         'serving_domain_verified' => 'setServingDomainVerified',
         'serving_domain_checked_at' => 'setServingDomainCheckedAt',
@@ -365,6 +375,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'status' => 'getStatus',
         'quality_score' => 'getQualityScore',
         'cross_fill' => 'getCrossFill',
+        'contextual_without_consent' => 'getContextualWithoutConsent',
+        'enhanced_capping' => 'getEnhancedCapping',
         'serving_domain' => 'getServingDomain',
         'serving_domain_verified' => 'getServingDomainVerified',
         'serving_domain_checked_at' => 'getServingDomainCheckedAt',
@@ -519,6 +531,8 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('status', $data ?? [], null);
         $this->setIfExists('quality_score', $data ?? [], null);
         $this->setIfExists('cross_fill', $data ?? [], null);
+        $this->setIfExists('contextual_without_consent', $data ?? [], null);
+        $this->setIfExists('enhanced_capping', $data ?? [], null);
         $this->setIfExists('serving_domain', $data ?? [], null);
         $this->setIfExists('serving_domain_verified', $data ?? [], null);
         $this->setIfExists('serving_domain_checked_at', $data ?? [], null);
@@ -1237,6 +1251,60 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
             throw new \InvalidArgumentException('non-nullable cross_fill cannot be null');
         }
         $this->container['cross_fill'] = $cross_fill;
+
+        return $this;
+    }
+
+    /**
+     * Gets contextual_without_consent
+     *
+     * @return bool|null
+     */
+    public function getContextualWithoutConsent()
+    {
+        return $this->container['contextual_without_consent'];
+    }
+
+    /**
+     * Sets contextual_without_consent
+     *
+     * @param bool|null $contextual_without_consent Ads before consent (resolved: property consent config, else account default)
+     *
+     * @return self
+     */
+    public function setContextualWithoutConsent($contextual_without_consent)
+    {
+        if (is_null($contextual_without_consent)) {
+            throw new \InvalidArgumentException('non-nullable contextual_without_consent cannot be null');
+        }
+        $this->container['contextual_without_consent'] = $contextual_without_consent;
+
+        return $this;
+    }
+
+    /**
+     * Gets enhanced_capping
+     *
+     * @return bool|null
+     */
+    public function getEnhancedCapping()
+    {
+        return $this->container['enhanced_capping'];
+    }
+
+    /**
+     * Sets enhanced_capping
+     *
+     * @param bool|null $enhanced_capping Enhanced frequency capping (resolved like contextual_without_consent)
+     *
+     * @return self
+     */
+    public function setEnhancedCapping($enhanced_capping)
+    {
+        if (is_null($enhanced_capping)) {
+            throw new \InvalidArgumentException('non-nullable enhanced_capping cannot be null');
+        }
+        $this->container['enhanced_capping'] = $enhanced_capping;
 
         return $this;
     }

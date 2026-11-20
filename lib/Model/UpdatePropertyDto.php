@@ -61,7 +61,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => 'string',
         'category' => 'float',
         'verification_method' => 'string',
-        'cross_fill' => 'bool'
+        'cross_fill' => 'bool',
+        'contextual_without_consent' => 'bool',
+        'enhanced_capping' => 'bool'
     ];
 
     /**
@@ -76,7 +78,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => null,
         'category' => null,
         'verification_method' => null,
-        'cross_fill' => null
+        'cross_fill' => null,
+        'contextual_without_consent' => null,
+        'enhanced_capping' => null
     ];
 
     /**
@@ -89,7 +93,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => false,
         'category' => false,
         'verification_method' => false,
-        'cross_fill' => false
+        'cross_fill' => false,
+        'contextual_without_consent' => false,
+        'enhanced_capping' => false
     ];
 
     /**
@@ -182,7 +188,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => 'domain',
         'category' => 'category',
         'verification_method' => 'verificationMethod',
-        'cross_fill' => 'crossFill'
+        'cross_fill' => 'crossFill',
+        'contextual_without_consent' => 'contextualWithoutConsent',
+        'enhanced_capping' => 'enhancedCapping'
     ];
 
     /**
@@ -195,7 +203,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => 'setDomain',
         'category' => 'setCategory',
         'verification_method' => 'setVerificationMethod',
-        'cross_fill' => 'setCrossFill'
+        'cross_fill' => 'setCrossFill',
+        'contextual_without_consent' => 'setContextualWithoutConsent',
+        'enhanced_capping' => 'setEnhancedCapping'
     ];
 
     /**
@@ -208,7 +218,9 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         'domain' => 'getDomain',
         'category' => 'getCategory',
         'verification_method' => 'getVerificationMethod',
-        'cross_fill' => 'getCrossFill'
+        'cross_fill' => 'getCrossFill',
+        'contextual_without_consent' => 'getContextualWithoutConsent',
+        'enhanced_capping' => 'getEnhancedCapping'
     ];
 
     /**
@@ -273,6 +285,8 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
         $this->setIfExists('category', $data ?? [], null);
         $this->setIfExists('verification_method', $data ?? [], null);
         $this->setIfExists('cross_fill', $data ?? [], null);
+        $this->setIfExists('contextual_without_consent', $data ?? [], null);
+        $this->setIfExists('enhanced_capping', $data ?? [], null);
     }
 
     /**
@@ -448,6 +462,60 @@ class UpdatePropertyDto implements ModelInterface, ArrayAccess, \JsonSerializabl
             throw new \InvalidArgumentException('non-nullable cross_fill cannot be null');
         }
         $this->container['cross_fill'] = $cross_fill;
+
+        return $this;
+    }
+
+    /**
+     * Gets contextual_without_consent
+     *
+     * @return bool|null
+     */
+    public function getContextualWithoutConsent()
+    {
+        return $this->container['contextual_without_consent'];
+    }
+
+    /**
+     * Sets contextual_without_consent
+     *
+     * @param bool|null $contextual_without_consent contextual_without_consent
+     *
+     * @return self
+     */
+    public function setContextualWithoutConsent($contextual_without_consent)
+    {
+        if (is_null($contextual_without_consent)) {
+            throw new \InvalidArgumentException('non-nullable contextual_without_consent cannot be null');
+        }
+        $this->container['contextual_without_consent'] = $contextual_without_consent;
+
+        return $this;
+    }
+
+    /**
+     * Gets enhanced_capping
+     *
+     * @return bool|null
+     */
+    public function getEnhancedCapping()
+    {
+        return $this->container['enhanced_capping'];
+    }
+
+    /**
+     * Sets enhanced_capping
+     *
+     * @param bool|null $enhanced_capping enhanced_capping
+     *
+     * @return self
+     */
+    public function setEnhancedCapping($enhanced_capping)
+    {
+        if (is_null($enhanced_capping)) {
+            throw new \InvalidArgumentException('non-nullable enhanced_capping cannot be null');
+        }
+        $this->container['enhanced_capping'] = $enhanced_capping;
 
         return $this;
     }

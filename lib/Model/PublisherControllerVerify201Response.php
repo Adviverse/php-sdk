@@ -59,7 +59,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static $openAPITypes = [
         'verified' => 'bool',
         'token' => 'string',
-        'method' => 'string'
+        'method' => 'string',
+        'error' => 'string',
+        'message' => 'string',
+        'check' => '\Adviverse\Api\Model\PublisherControllerVerify201ResponseCheck'
     ];
 
     /**
@@ -72,7 +75,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static $openAPIFormats = [
         'verified' => null,
         'token' => null,
-        'method' => null
+        'method' => null,
+        'error' => null,
+        'message' => null,
+        'check' => null
     ];
 
     /**
@@ -83,7 +89,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static array $openAPINullables = [
         'verified' => false,
         'token' => false,
-        'method' => true
+        'method' => true,
+        'error' => true,
+        'message' => true,
+        'check' => false
     ];
 
     /**
@@ -174,7 +183,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static $attributeMap = [
         'verified' => 'verified',
         'token' => 'token',
-        'method' => 'method'
+        'method' => 'method',
+        'error' => 'error',
+        'message' => 'message',
+        'check' => 'check'
     ];
 
     /**
@@ -185,7 +197,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static $setters = [
         'verified' => 'setVerified',
         'token' => 'setToken',
-        'method' => 'setMethod'
+        'method' => 'setMethod',
+        'error' => 'setError',
+        'message' => 'setMessage',
+        'check' => 'setCheck'
     ];
 
     /**
@@ -196,7 +211,10 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
     protected static $getters = [
         'verified' => 'getVerified',
         'token' => 'getToken',
-        'method' => 'getMethod'
+        'method' => 'getMethod',
+        'error' => 'getError',
+        'message' => 'getMessage',
+        'check' => 'getCheck'
     ];
 
     /**
@@ -259,6 +277,9 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
         $this->setIfExists('verified', $data ?? [], null);
         $this->setIfExists('token', $data ?? [], null);
         $this->setIfExists('method', $data ?? [], null);
+        $this->setIfExists('error', $data ?? [], null);
+        $this->setIfExists('message', $data ?? [], null);
+        $this->setIfExists('check', $data ?? [], null);
     }
 
     /**
@@ -296,6 +317,15 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
         }
         if ($this->container['method'] === null) {
             $invalidProperties[] = "'method' can't be null";
+        }
+        if ($this->container['error'] === null) {
+            $invalidProperties[] = "'error' can't be null";
+        }
+        if ($this->container['message'] === null) {
+            $invalidProperties[] = "'message' can't be null";
+        }
+        if ($this->container['check'] === null) {
+            $invalidProperties[] = "'check' can't be null";
         }
         return $invalidProperties;
     }
@@ -396,6 +426,101 @@ class PublisherControllerVerify201Response implements ModelInterface, ArrayAcces
             }
         }
         $this->container['method'] = $method;
+
+        return $this;
+    }
+
+    /**
+     * Gets error
+     *
+     * @return string
+     */
+    public function getError()
+    {
+        return $this->container['error'];
+    }
+
+    /**
+     * Sets error
+     *
+     * @param string $error error
+     *
+     * @return self
+     */
+    public function setError($error)
+    {
+        if (is_null($error)) {
+            array_push($this->openAPINullablesSetToNull, 'error');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('error', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['error'] = $error;
+
+        return $this;
+    }
+
+    /**
+     * Gets message
+     *
+     * @return string
+     */
+    public function getMessage()
+    {
+        return $this->container['message'];
+    }
+
+    /**
+     * Sets message
+     *
+     * @param string $message message
+     *
+     * @return self
+     */
+    public function setMessage($message)
+    {
+        if (is_null($message)) {
+            array_push($this->openAPINullablesSetToNull, 'message');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('message', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['message'] = $message;
+
+        return $this;
+    }
+
+    /**
+     * Gets check
+     *
+     * @return \Adviverse\Api\Model\PublisherControllerVerify201ResponseCheck
+     */
+    public function getCheck()
+    {
+        return $this->container['check'];
+    }
+
+    /**
+     * Sets check
+     *
+     * @param \Adviverse\Api\Model\PublisherControllerVerify201ResponseCheck $check check
+     *
+     * @return self
+     */
+    public function setCheck($check)
+    {
+        if (is_null($check)) {
+            throw new \InvalidArgumentException('non-nullable check cannot be null');
+        }
+        $this->container['check'] = $check;
 
         return $this;
     }

@@ -69,7 +69,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => 'string',
         'consent_grant_value' => 'string',
         'tcf_purpose' => 'float',
-        'tcf_vendor_id' => 'float'
+        'tcf_vendor_id' => 'float',
+        'contextual_without_consent' => 'bool',
+        'enhanced_capping' => 'bool'
     ];
 
     /**
@@ -92,7 +94,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => null,
         'consent_grant_value' => null,
         'tcf_purpose' => null,
-        'tcf_vendor_id' => null
+        'tcf_vendor_id' => null,
+        'contextual_without_consent' => null,
+        'enhanced_capping' => null
     ];
 
     /**
@@ -113,7 +117,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => false,
         'consent_grant_value' => false,
         'tcf_purpose' => false,
-        'tcf_vendor_id' => false
+        'tcf_vendor_id' => false,
+        'contextual_without_consent' => false,
+        'enhanced_capping' => false
     ];
 
     /**
@@ -214,7 +220,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => 'consentKey',
         'consent_grant_value' => 'consentGrantValue',
         'tcf_purpose' => 'tcfPurpose',
-        'tcf_vendor_id' => 'tcfVendorId'
+        'tcf_vendor_id' => 'tcfVendorId',
+        'contextual_without_consent' => 'contextualWithoutConsent',
+        'enhanced_capping' => 'enhancedCapping'
     ];
 
     /**
@@ -235,7 +243,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => 'setConsentKey',
         'consent_grant_value' => 'setConsentGrantValue',
         'tcf_purpose' => 'setTcfPurpose',
-        'tcf_vendor_id' => 'setTcfVendorId'
+        'tcf_vendor_id' => 'setTcfVendorId',
+        'contextual_without_consent' => 'setContextualWithoutConsent',
+        'enhanced_capping' => 'setEnhancedCapping'
     ];
 
     /**
@@ -256,7 +266,9 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'consent_key' => 'getConsentKey',
         'consent_grant_value' => 'getConsentGrantValue',
         'tcf_purpose' => 'getTcfPurpose',
-        'tcf_vendor_id' => 'getTcfVendorId'
+        'tcf_vendor_id' => 'getTcfVendorId',
+        'contextual_without_consent' => 'getContextualWithoutConsent',
+        'enhanced_capping' => 'getEnhancedCapping'
     ];
 
     /**
@@ -365,6 +377,8 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('consent_grant_value', $data ?? [], null);
         $this->setIfExists('tcf_purpose', $data ?? [], null);
         $this->setIfExists('tcf_vendor_id', $data ?? [], null);
+        $this->setIfExists('contextual_without_consent', $data ?? [], null);
+        $this->setIfExists('enhanced_capping', $data ?? [], null);
     }
 
     /**
@@ -800,6 +814,60 @@ class ConsentConfigDto implements ModelInterface, ArrayAccess, \JsonSerializable
             throw new \InvalidArgumentException('non-nullable tcf_vendor_id cannot be null');
         }
         $this->container['tcf_vendor_id'] = $tcf_vendor_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets contextual_without_consent
+     *
+     * @return bool|null
+     */
+    public function getContextualWithoutConsent()
+    {
+        return $this->container['contextual_without_consent'];
+    }
+
+    /**
+     * Sets contextual_without_consent
+     *
+     * @param bool|null $contextual_without_consent contextual_without_consent
+     *
+     * @return self
+     */
+    public function setContextualWithoutConsent($contextual_without_consent)
+    {
+        if (is_null($contextual_without_consent)) {
+            throw new \InvalidArgumentException('non-nullable contextual_without_consent cannot be null');
+        }
+        $this->container['contextual_without_consent'] = $contextual_without_consent;
+
+        return $this;
+    }
+
+    /**
+     * Gets enhanced_capping
+     *
+     * @return bool|null
+     */
+    public function getEnhancedCapping()
+    {
+        return $this->container['enhanced_capping'];
+    }
+
+    /**
+     * Sets enhanced_capping
+     *
+     * @param bool|null $enhanced_capping enhanced_capping
+     *
+     * @return self
+     */
+    public function setEnhancedCapping($enhanced_capping)
+    {
+        if (is_null($enhanced_capping)) {
+            throw new \InvalidArgumentException('non-nullable enhanced_capping cannot be null');
+        }
+        $this->container['enhanced_capping'] = $enhanced_capping;
 
         return $this;
     }

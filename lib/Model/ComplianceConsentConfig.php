@@ -70,7 +70,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => 'string',
         'consent_grant_value' => 'string',
         'tcf_purpose' => 'int',
-        'tcf_vendor_id' => 'int'
+        'tcf_vendor_id' => 'int',
+        'contextual_without_consent' => 'bool',
+        'enhanced_capping' => 'bool'
     ];
 
     /**
@@ -94,7 +96,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => null,
         'consent_grant_value' => null,
         'tcf_purpose' => null,
-        'tcf_vendor_id' => null
+        'tcf_vendor_id' => null,
+        'contextual_without_consent' => null,
+        'enhanced_capping' => null
     ];
 
     /**
@@ -116,7 +120,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => true,
         'consent_grant_value' => true,
         'tcf_purpose' => false,
-        'tcf_vendor_id' => true
+        'tcf_vendor_id' => true,
+        'contextual_without_consent' => false,
+        'enhanced_capping' => false
     ];
 
     /**
@@ -218,7 +224,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => 'consentKey',
         'consent_grant_value' => 'consentGrantValue',
         'tcf_purpose' => 'tcfPurpose',
-        'tcf_vendor_id' => 'tcfVendorId'
+        'tcf_vendor_id' => 'tcfVendorId',
+        'contextual_without_consent' => 'contextualWithoutConsent',
+        'enhanced_capping' => 'enhancedCapping'
     ];
 
     /**
@@ -240,7 +248,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => 'setConsentKey',
         'consent_grant_value' => 'setConsentGrantValue',
         'tcf_purpose' => 'setTcfPurpose',
-        'tcf_vendor_id' => 'setTcfVendorId'
+        'tcf_vendor_id' => 'setTcfVendorId',
+        'contextual_without_consent' => 'setContextualWithoutConsent',
+        'enhanced_capping' => 'setEnhancedCapping'
     ];
 
     /**
@@ -262,7 +272,9 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         'consent_key' => 'getConsentKey',
         'consent_grant_value' => 'getConsentGrantValue',
         'tcf_purpose' => 'getTcfPurpose',
-        'tcf_vendor_id' => 'getTcfVendorId'
+        'tcf_vendor_id' => 'getTcfVendorId',
+        'contextual_without_consent' => 'getContextualWithoutConsent',
+        'enhanced_capping' => 'getEnhancedCapping'
     ];
 
     /**
@@ -372,6 +384,8 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
         $this->setIfExists('consent_grant_value', $data ?? [], null);
         $this->setIfExists('tcf_purpose', $data ?? [], null);
         $this->setIfExists('tcf_vendor_id', $data ?? [], null);
+        $this->setIfExists('contextual_without_consent', $data ?? [], null);
+        $this->setIfExists('enhanced_capping', $data ?? [], null);
     }
 
     /**
@@ -856,6 +870,60 @@ class ComplianceConsentConfig implements ModelInterface, ArrayAccess, \JsonSeria
             }
         }
         $this->container['tcf_vendor_id'] = $tcf_vendor_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets contextual_without_consent
+     *
+     * @return bool|null
+     */
+    public function getContextualWithoutConsent()
+    {
+        return $this->container['contextual_without_consent'];
+    }
+
+    /**
+     * Sets contextual_without_consent
+     *
+     * @param bool|null $contextual_without_consent Ads always load: visitors who have not answered (or rejected) the CMP get contextual ads with no identifier; personalized still waits for consent. Same as the page flag window.ADVIVERSE_MIN_AC = 0.
+     *
+     * @return self
+     */
+    public function setContextualWithoutConsent($contextual_without_consent)
+    {
+        if (is_null($contextual_without_consent)) {
+            throw new \InvalidArgumentException('non-nullable contextual_without_consent cannot be null');
+        }
+        $this->container['contextual_without_consent'] = $contextual_without_consent;
+
+        return $this;
+    }
+
+    /**
+     * Gets enhanced_capping
+     *
+     * @return bool|null
+     */
+    public function getEnhancedCapping()
+    {
+        return $this->container['enhanced_capping'];
+    }
+
+    /**
+     * Sets enhanced_capping
+     *
+     * @param bool|null $enhanced_capping Enhanced frequency capping: outside the EEA/UK, for visitors with no opt-out signal (GPC, US-privacy opt-out), contextual frequency caps also use browser signals and an SDK canvas hash (daily-rotating, per-site, never stored on the device). Off: caps use IP + user agent only and unusual contextual traffic is not served. Declare it in your privacy policy if you turn it on.
+     *
+     * @return self
+     */
+    public function setEnhancedCapping($enhanced_capping)
+    {
+        if (is_null($enhanced_capping)) {
+            throw new \InvalidArgumentException('non-nullable enhanced_capping cannot be null');
+        }
+        $this->container['enhanced_capping'] = $enhanced_capping;
 
         return $this;
     }

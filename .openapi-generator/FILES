@@ -54,7 +54,6 @@ lib/Model/AdminControllerConfig200ResponseInner.php
 lib/Model/AdminControllerProcessPayout201Response.php
 lib/Model/AdminControllerQuality200ResponseInner.php
 lib/Model/AdminControllerRescan201Response.php
-lib/Model/AdminControllerSetStatus201Response.php
 lib/Model/AdminTrustDto.php
 lib/Model/AdvAdSetSummary.php
 lib/Model/AdvAudience.php
@@ -173,6 +172,7 @@ lib/Model/ComboControllerListPresets200Response.php
 lib/Model/ComboUnitDto.php
 lib/Model/CompanionDto.php
 lib/Model/ComplianceConsentConfig.php
+lib/Model/ComplianceControllerComplete201Response.php
 lib/Model/ComplianceControllerConsent201Response.php
 lib/Model/ComplianceControllerConsentLog200ResponseInner.php
 lib/Model/ComplianceControllerSellers200Response.php
@@ -325,6 +325,7 @@ lib/Model/PublisherControllerDomainConnect201Response.php
 lib/Model/PublisherControllerRotateSigningSecret201Response.php
 lib/Model/PublisherControllerTag200Response.php
 lib/Model/PublisherControllerVerify201Response.php
+lib/Model/PublisherControllerVerify201ResponseCheck.php
 lib/Model/PublisherControllerVerifyServingDomain201Response.php
 lib/Model/PublisherInsightsControllerClearing200Response.php
 lib/Model/PublisherInsightsControllerClearing200ResponsePointsInner.php

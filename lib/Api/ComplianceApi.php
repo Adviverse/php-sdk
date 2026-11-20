@@ -453,7 +453,7 @@ class ComplianceApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return \Adviverse\Api\Model\AdminControllerSetStatus201Response
+     * @return \Adviverse\Api\Model\ComplianceControllerComplete201Response
      */
     public function complianceControllerComplete($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
@@ -471,7 +471,7 @@ class ComplianceApi
      *
      * @throws \Adviverse\Api\ApiException on non-2xx response or if the response body is not in the expected format
      * @throws \InvalidArgumentException
-     * @return array of \Adviverse\Api\Model\AdminControllerSetStatus201Response, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \Adviverse\Api\Model\ComplianceControllerComplete201Response, HTTP status code, HTTP response headers (array of strings)
      */
     public function complianceControllerCompleteWithHttpInfo($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
@@ -502,11 +502,11 @@ class ComplianceApi
 
             switch($statusCode) {
                 case 201:
-                    if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' === '\SplFileObject') {
+                    if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' === '\SplFileObject') {
                         $content = $response->getBody(); //stream goes to serializer
                     } else {
                         $content = (string) $response->getBody();
-                        if ('\Adviverse\Api\Model\AdminControllerSetStatus201Response' !== 'string') {
+                        if ('\Adviverse\Api\Model\ComplianceControllerComplete201Response' !== 'string') {
                             try {
                                 $content = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
                             } catch (\JsonException $exception) {
@@ -524,7 +524,7 @@ class ComplianceApi
                     }
 
                     return [
-                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\AdminControllerSetStatus201Response', []),
+                        ObjectSerializer::deserialize($content, '\Adviverse\Api\Model\ComplianceControllerComplete201Response', []),
                         $response->getStatusCode(),
                         $response->getHeaders()
                     ];
@@ -543,7 +543,7 @@ class ComplianceApi
                 );
             }
 
-            $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+            $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
             if ($returnType === '\SplFileObject') {
                 $content = $response->getBody(); //stream goes to serializer
             } else {
@@ -576,7 +576,7 @@ class ComplianceApi
                 case 201:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Adviverse\Api\Model\AdminControllerSetStatus201Response',
+                        '\Adviverse\Api\Model\ComplianceControllerComplete201Response',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -620,7 +620,7 @@ class ComplianceApi
      */
     public function complianceControllerCompleteAsyncWithHttpInfo($id, string $contentType = self::contentTypes['complianceControllerComplete'][0])
     {
-        $returnType = '\Adviverse\Api\Model\AdminControllerSetStatus201Response';
+        $returnType = '\Adviverse\Api\Model\ComplianceControllerComplete201Response';
         $request = $this->complianceControllerCompleteRequest($id, $contentType);
 
         return $this->client

@@ -69,7 +69,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => 'bool',
         'floor_auto' => 'bool',
         'floor_soft' => 'float',
-        'auto_ads' => 'object'
+        'auto_ads' => 'object',
+        'frequency_cap' => 'object'
     ];
 
     /**
@@ -92,7 +93,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => null,
         'floor_auto' => null,
         'floor_soft' => null,
-        'auto_ads' => null
+        'auto_ads' => null,
+        'frequency_cap' => null
     ];
 
     /**
@@ -113,7 +115,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => false,
         'floor_auto' => false,
         'floor_soft' => false,
-        'auto_ads' => true
+        'auto_ads' => true,
+        'frequency_cap' => true
     ];
 
     /**
@@ -214,7 +217,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => 'floorFallback',
         'floor_auto' => 'floorAuto',
         'floor_soft' => 'floorSoft',
-        'auto_ads' => 'autoAds'
+        'auto_ads' => 'autoAds',
+        'frequency_cap' => 'frequencyCap'
     ];
 
     /**
@@ -235,7 +239,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => 'setFloorFallback',
         'floor_auto' => 'setFloorAuto',
         'floor_soft' => 'setFloorSoft',
-        'auto_ads' => 'setAutoAds'
+        'auto_ads' => 'setAutoAds',
+        'frequency_cap' => 'setFrequencyCap'
     ];
 
     /**
@@ -256,7 +261,8 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         'floor_fallback' => 'getFloorFallback',
         'floor_auto' => 'getFloorAuto',
         'floor_soft' => 'getFloorSoft',
-        'auto_ads' => 'getAutoAds'
+        'auto_ads' => 'getAutoAds',
+        'frequency_cap' => 'getFrequencyCap'
     ];
 
     /**
@@ -329,6 +335,7 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
         $this->setIfExists('floor_auto', $data ?? [], null);
         $this->setIfExists('floor_soft', $data ?? [], null);
         $this->setIfExists('auto_ads', $data ?? [], null);
+        $this->setIfExists('frequency_cap', $data ?? [], null);
     }
 
     /**
@@ -761,6 +768,40 @@ class UpdatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
             }
         }
         $this->container['auto_ads'] = $auto_ads;
+
+        return $this;
+    }
+
+    /**
+     * Gets frequency_cap
+     *
+     * @return object|null
+     */
+    public function getFrequencyCap()
+    {
+        return $this->container['frequency_cap'];
+    }
+
+    /**
+     * Sets frequency_cap
+     *
+     * @param object|null $frequency_cap frequency_cap
+     *
+     * @return self
+     */
+    public function setFrequencyCap($frequency_cap)
+    {
+        if (is_null($frequency_cap)) {
+            array_push($this->openAPINullablesSetToNull, 'frequency_cap');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('frequency_cap', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['frequency_cap'] = $frequency_cap;
 
         return $this;
     }
