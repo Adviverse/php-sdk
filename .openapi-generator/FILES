@@ -14,6 +14,7 @@ lib/Api/ComboApi.php
 lib/Api/ComplianceApi.php
 lib/Api/ConversionsApi.php
 lib/Api/DealsApi.php
+lib/Api/DeviceAuthApi.php
 lib/Api/DoohApi.php
 lib/Api/EdgeApi.php
 lib/Api/ExportsApi.php
@@ -213,6 +214,13 @@ lib/Model/DealsControllerLookupAdvertiser200Response.php
 lib/Model/DealsControllerPreviewClaim200Response.php
 lib/Model/DealsControllerStatus201Response.php
 lib/Model/DepositDto.php
+lib/Model/DeviceApproveDto.php
+lib/Model/DeviceAuthControllerApprove201Response.php
+lib/Model/DeviceAuthControllerCode200Response.php
+lib/Model/DeviceAuthControllerDescribe200Response.php
+lib/Model/DeviceAuthControllerToken200Response.php
+lib/Model/DeviceCodeDto.php
+lib/Model/DeviceTokenDto.php
 lib/Model/DoohControllerList200ResponseInner.php
 lib/Model/DoohControllerSaveSetup201Response.php
 lib/Model/DoohSetupDto.php
@@ -465,7 +473,7 @@ lib/Model/SettingsControllerBidRec200Response.php
 lib/Model/SettingsControllerCreateTerminalToken201Response.php
 lib/Model/SettingsControllerCreateTerminalToken201ResponseSwitch.php
 lib/Model/SettingsControllerListTerminalTokens200ResponseInner.php
-lib/Model/SettingsControllerRevokeKey200Response.php
+lib/Model/SettingsControllerRevokeCurrentKey200Response.php
 lib/Model/SettingsControllerRotateTerminalToken201Response.php
 lib/Model/SettingsControllerSetTerminalTokenPolicy200Response.php
 lib/Model/SettingsControllerUpdateNetwork200Response.php
@@ -505,6 +513,7 @@ lib/Model/UpdateScreenDto.php
 lib/Model/UpdateSurfaceDto.php
 lib/Model/UpdateWebhookDto.php
 lib/Model/VerificationControllerCategories200ResponseInner.php
+lib/Model/VerifyAppDto.php
 lib/Model/WebhookDelivery.php
 lib/Model/WebhookDeliveryResult.php
 lib/Model/WebhookEndpoint.php

@@ -391,7 +391,7 @@ class PublisherControllerVerify201ResponseCheck implements ModelInterface, Array
     /**
      * Sets target
      *
-     * @param string $target URL fetched (file/meta) or DNS name queried (dns)
+     * @param string $target URL fetched (file/meta/app-ads.txt/store listing) or DNS name queried (dns)
      *
      * @return self
      */

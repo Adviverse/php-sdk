@@ -58,6 +58,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
       */
     protected static $openAPITypes = [
         'property_id' => 'string',
+        'app_id' => 'string',
         'name' => 'string',
         'format' => 'string',
         'width' => 'float',
@@ -84,6 +85,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
       */
     protected static $openAPIFormats = [
         'property_id' => null,
+        'app_id' => null,
         'name' => null,
         'format' => null,
         'width' => null,
@@ -108,6 +110,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
       */
     protected static array $openAPINullables = [
         'property_id' => false,
+        'app_id' => false,
         'name' => false,
         'format' => false,
         'width' => false,
@@ -212,6 +215,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
      */
     protected static $attributeMap = [
         'property_id' => 'propertyId',
+        'app_id' => 'appId',
         'name' => 'name',
         'format' => 'format',
         'width' => 'width',
@@ -236,6 +240,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
      */
     protected static $setters = [
         'property_id' => 'setPropertyId',
+        'app_id' => 'setAppId',
         'name' => 'setName',
         'format' => 'setFormat',
         'width' => 'setWidth',
@@ -260,6 +265,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
      */
     protected static $getters = [
         'property_id' => 'getPropertyId',
+        'app_id' => 'getAppId',
         'name' => 'getName',
         'format' => 'getFormat',
         'width' => 'getWidth',
@@ -335,6 +341,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
     public function __construct(array $data = null)
     {
         $this->setIfExists('property_id', $data ?? [], null);
+        $this->setIfExists('app_id', $data ?? [], null);
         $this->setIfExists('name', $data ?? [], null);
         $this->setIfExists('format', $data ?? [], null);
         $this->setIfExists('width', $data ?? [], null);
@@ -379,9 +386,6 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
     {
         $invalidProperties = [];
 
-        if ($this->container['property_id'] === null) {
-            $invalidProperties[] = "'property_id' can't be null";
-        }
         if ($this->container['name'] === null) {
             $invalidProperties[] = "'name' can't be null";
         }
@@ -418,7 +422,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
     /**
      * Gets property_id
      *
-     * @return string
+     * @return string|null
      */
     public function getPropertyId()
     {
@@ -428,7 +432,7 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
     /**
      * Sets property_id
      *
-     * @param string $property_id property_id
+     * @param string|null $property_id property_id
      *
      * @return self
      */
@@ -438,6 +442,33 @@ class CreatePlacementDto implements ModelInterface, ArrayAccess, \JsonSerializab
             throw new \InvalidArgumentException('non-nullable property_id cannot be null');
         }
         $this->container['property_id'] = $property_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets app_id
+     *
+     * @return string|null
+     */
+    public function getAppId()
+    {
+        return $this->container['app_id'];
+    }
+
+    /**
+     * Sets app_id
+     *
+     * @param string|null $app_id app_id
+     *
+     * @return self
+     */
+    public function setAppId($app_id)
+    {
+        if (is_null($app_id)) {
+            throw new \InvalidArgumentException('non-nullable app_id cannot be null');
+        }
+        $this->container['app_id'] = $app_id;
 
         return $this;
     }

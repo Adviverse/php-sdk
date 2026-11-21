@@ -57,6 +57,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
       * @var string[]
       */
     protected static $openAPITypes = [
+        'id' => 'string',
         'key' => 'string',
         'prefix' => 'string',
         'scopes' => 'string[]',
@@ -71,6 +72,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
       * @psalm-var array<string, string|null>
       */
     protected static $openAPIFormats = [
+        'id' => 'uuid',
         'key' => null,
         'prefix' => null,
         'scopes' => null,
@@ -83,6 +85,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
       * @var boolean[]
       */
     protected static array $openAPINullables = [
+        'id' => false,
         'key' => false,
         'prefix' => false,
         'scopes' => false,
@@ -175,6 +178,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
      * @var string[]
      */
     protected static $attributeMap = [
+        'id' => 'id',
         'key' => 'key',
         'prefix' => 'prefix',
         'scopes' => 'scopes',
@@ -187,6 +191,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
      * @var string[]
      */
     protected static $setters = [
+        'id' => 'setId',
         'key' => 'setKey',
         'prefix' => 'setPrefix',
         'scopes' => 'setScopes',
@@ -199,6 +204,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
      * @var string[]
      */
     protected static $getters = [
+        'id' => 'getId',
         'key' => 'getKey',
         'prefix' => 'getPrefix',
         'scopes' => 'getScopes',
@@ -262,6 +268,7 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
      */
     public function __construct(array $data = null)
     {
+        $this->setIfExists('id', $data ?? [], null);
         $this->setIfExists('key', $data ?? [], null);
         $this->setIfExists('prefix', $data ?? [], null);
         $this->setIfExists('scopes', $data ?? [], null);
@@ -321,6 +328,33 @@ class ApiKeyCreated implements ModelInterface, ArrayAccess, \JsonSerializable
         return count($this->listInvalidProperties()) === 0;
     }
 
+
+    /**
+     * Gets id
+     *
+     * @return string|null
+     */
+    public function getId()
+    {
+        return $this->container['id'];
+    }
+
+    /**
+     * Sets id
+     *
+     * @param string|null $id The key id (for DELETE /v1/keys/{id}).
+     *
+     * @return self
+     */
+    public function setId($id)
+    {
+        if (is_null($id)) {
+            throw new \InvalidArgumentException('non-nullable id cannot be null');
+        }
+        $this->container['id'] = $id;
+
+        return $this;
+    }
 
     /**
      * Gets key

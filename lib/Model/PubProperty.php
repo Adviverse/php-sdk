@@ -90,6 +90,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => 'array<string,mixed>[]',
         'skadnetwork_ids' => 'string[]',
         'ctv_meta' => 'array<string,mixed>',
+        'developer_property_id' => 'string',
         'created_at' => '\DateTime',
         'updated_at' => '\DateTime',
         'deleted_at' => '\DateTime'
@@ -135,6 +136,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => null,
         'skadnetwork_ids' => null,
         'ctv_meta' => null,
+        'developer_property_id' => 'uuid',
         'created_at' => 'date-time',
         'updated_at' => 'date-time',
         'deleted_at' => 'date-time'
@@ -178,6 +180,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => false,
         'skadnetwork_ids' => false,
         'ctv_meta' => false,
+        'developer_property_id' => true,
         'created_at' => false,
         'updated_at' => false,
         'deleted_at' => true
@@ -301,6 +304,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => 'app_ads_txt',
         'skadnetwork_ids' => 'skadnetwork_ids',
         'ctv_meta' => 'ctv_meta',
+        'developer_property_id' => 'developer_property_id',
         'created_at' => 'created_at',
         'updated_at' => 'updated_at',
         'deleted_at' => 'deleted_at'
@@ -344,6 +348,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => 'setAppAdsTxt',
         'skadnetwork_ids' => 'setSkadnetworkIds',
         'ctv_meta' => 'setCtvMeta',
+        'developer_property_id' => 'setDeveloperPropertyId',
         'created_at' => 'setCreatedAt',
         'updated_at' => 'setUpdatedAt',
         'deleted_at' => 'setDeletedAt'
@@ -387,6 +392,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         'app_ads_txt' => 'getAppAdsTxt',
         'skadnetwork_ids' => 'getSkadnetworkIds',
         'ctv_meta' => 'getCtvMeta',
+        'developer_property_id' => 'getDeveloperPropertyId',
         'created_at' => 'getCreatedAt',
         'updated_at' => 'getUpdatedAt',
         'deleted_at' => 'getDeletedAt'
@@ -543,6 +549,7 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('app_ads_txt', $data ?? [], null);
         $this->setIfExists('skadnetwork_ids', $data ?? [], null);
         $this->setIfExists('ctv_meta', $data ?? [], null);
+        $this->setIfExists('developer_property_id', $data ?? [], null);
         $this->setIfExists('created_at', $data ?? [], null);
         $this->setIfExists('updated_at', $data ?? [], null);
         $this->setIfExists('deleted_at', $data ?? [], null);
@@ -1617,6 +1624,40 @@ class PubProperty implements ModelInterface, ArrayAccess, \JsonSerializable
             throw new \InvalidArgumentException('non-nullable ctv_meta cannot be null');
         }
         $this->container['ctv_meta'] = $ctv_meta;
+
+        return $this;
+    }
+
+    /**
+     * Gets developer_property_id
+     *
+     * @return string|null
+     */
+    public function getDeveloperPropertyId()
+    {
+        return $this->container['developer_property_id'];
+    }
+
+    /**
+     * Sets developer_property_id
+     *
+     * @param string|null $developer_property_id Apps: the website property whose /app-ads.txt verifies the app
+     *
+     * @return self
+     */
+    public function setDeveloperPropertyId($developer_property_id)
+    {
+        if (is_null($developer_property_id)) {
+            array_push($this->openAPINullablesSetToNull, 'developer_property_id');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('developer_property_id', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['developer_property_id'] = $developer_property_id;
 
         return $this;
     }

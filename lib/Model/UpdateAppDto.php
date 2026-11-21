@@ -61,7 +61,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => 'string[]',
         'ctv_meta' => 'object',
         'store_url' => 'string',
-        'platform' => 'string'
+        'platform' => 'string',
+        'developer_property_id' => 'string'
     ];
 
     /**
@@ -76,7 +77,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => null,
         'ctv_meta' => null,
         'store_url' => null,
-        'platform' => null
+        'platform' => null,
+        'developer_property_id' => null
     ];
 
     /**
@@ -89,7 +91,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => false,
         'ctv_meta' => false,
         'store_url' => false,
-        'platform' => false
+        'platform' => false,
+        'developer_property_id' => true
     ];
 
     /**
@@ -182,7 +185,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => 'skadnetworkIds',
         'ctv_meta' => 'ctvMeta',
         'store_url' => 'storeUrl',
-        'platform' => 'platform'
+        'platform' => 'platform',
+        'developer_property_id' => 'developerPropertyId'
     ];
 
     /**
@@ -195,7 +199,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => 'setSkadnetworkIds',
         'ctv_meta' => 'setCtvMeta',
         'store_url' => 'setStoreUrl',
-        'platform' => 'setPlatform'
+        'platform' => 'setPlatform',
+        'developer_property_id' => 'setDeveloperPropertyId'
     ];
 
     /**
@@ -208,7 +213,8 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'skadnetwork_ids' => 'getSkadnetworkIds',
         'ctv_meta' => 'getCtvMeta',
         'store_url' => 'getStoreUrl',
-        'platform' => 'getPlatform'
+        'platform' => 'getPlatform',
+        'developer_property_id' => 'getDeveloperPropertyId'
     ];
 
     /**
@@ -298,6 +304,7 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('ctv_meta', $data ?? [], null);
         $this->setIfExists('store_url', $data ?? [], null);
         $this->setIfExists('platform', $data ?? [], null);
+        $this->setIfExists('developer_property_id', $data ?? [], null);
     }
 
     /**
@@ -492,6 +499,40 @@ class UpdateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
             );
         }
         $this->container['platform'] = $platform;
+
+        return $this;
+    }
+
+    /**
+     * Gets developer_property_id
+     *
+     * @return string|null
+     */
+    public function getDeveloperPropertyId()
+    {
+        return $this->container['developer_property_id'];
+    }
+
+    /**
+     * Sets developer_property_id
+     *
+     * @param string|null $developer_property_id developer_property_id
+     *
+     * @return self
+     */
+    public function setDeveloperPropertyId($developer_property_id)
+    {
+        if (is_null($developer_property_id)) {
+            array_push($this->openAPINullablesSetToNull, 'developer_property_id');
+        } else {
+            $nullablesSetToNull = $this->getOpenAPINullablesSetToNull();
+            $index = array_search('developer_property_id', $nullablesSetToNull);
+            if ($index !== FALSE) {
+                unset($nullablesSetToNull[$index]);
+                $this->setOpenAPINullablesSetToNull($nullablesSetToNull);
+            }
+        }
+        $this->container['developer_property_id'] = $developer_property_id;
 
         return $this;
     }

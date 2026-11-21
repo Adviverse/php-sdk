@@ -64,7 +64,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => 'string',
         'app_store_id' => 'string',
         'category' => 'float',
-        'ctv_meta' => 'object'
+        'ctv_meta' => 'object',
+        'developer_property_id' => 'string'
     ];
 
     /**
@@ -82,7 +83,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => null,
         'app_store_id' => null,
         'category' => null,
-        'ctv_meta' => null
+        'ctv_meta' => null,
+        'developer_property_id' => null
     ];
 
     /**
@@ -98,7 +100,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => false,
         'app_store_id' => false,
         'category' => false,
-        'ctv_meta' => false
+        'ctv_meta' => false,
+        'developer_property_id' => false
     ];
 
     /**
@@ -194,7 +197,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => 'storeUrl',
         'app_store_id' => 'appStoreId',
         'category' => 'category',
-        'ctv_meta' => 'ctvMeta'
+        'ctv_meta' => 'ctvMeta',
+        'developer_property_id' => 'developerPropertyId'
     ];
 
     /**
@@ -210,7 +214,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => 'setStoreUrl',
         'app_store_id' => 'setAppStoreId',
         'category' => 'setCategory',
-        'ctv_meta' => 'setCtvMeta'
+        'ctv_meta' => 'setCtvMeta',
+        'developer_property_id' => 'setDeveloperPropertyId'
     ];
 
     /**
@@ -226,7 +231,8 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         'store_url' => 'getStoreUrl',
         'app_store_id' => 'getAppStoreId',
         'category' => 'getCategory',
-        'ctv_meta' => 'getCtvMeta'
+        'ctv_meta' => 'getCtvMeta',
+        'developer_property_id' => 'getDeveloperPropertyId'
     ];
 
     /**
@@ -334,6 +340,7 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
         $this->setIfExists('app_store_id', $data ?? [], null);
         $this->setIfExists('category', $data ?? [], null);
         $this->setIfExists('ctv_meta', $data ?? [], null);
+        $this->setIfExists('developer_property_id', $data ?? [], null);
     }
 
     /**
@@ -640,6 +647,33 @@ class CreateAppDto implements ModelInterface, ArrayAccess, \JsonSerializable
             throw new \InvalidArgumentException('non-nullable ctv_meta cannot be null');
         }
         $this->container['ctv_meta'] = $ctv_meta;
+
+        return $this;
+    }
+
+    /**
+     * Gets developer_property_id
+     *
+     * @return string|null
+     */
+    public function getDeveloperPropertyId()
+    {
+        return $this->container['developer_property_id'];
+    }
+
+    /**
+     * Sets developer_property_id
+     *
+     * @param string|null $developer_property_id developer_property_id
+     *
+     * @return self
+     */
+    public function setDeveloperPropertyId($developer_property_id)
+    {
+        if (is_null($developer_property_id)) {
+            throw new \InvalidArgumentException('non-nullable developer_property_id cannot be null');
+        }
+        $this->container['developer_property_id'] = $developer_property_id;
 
         return $this;
     }
